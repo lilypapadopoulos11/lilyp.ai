@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library — Lily Papadopoulos</title>
+  <meta name="description" content="AI workflows, CRE systems, building in public, and prompts. Notes from inside the work." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #F5F0E8;
+      --cream-dark: #EDE7D9;
+      --ink: #1A1612;
+      --ink-soft: #3D3530;
+      --ink-muted: #7A6E65;
+      --accent: #C4773B;
+      --accent-light: #E8C49A;
+      --line: rgba(26,22,18,0.10);
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 52px;
+      background: var(--cream);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 18px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--ink); }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 148px 52px 72px;
+      border-bottom: 1px solid var(--line);
+    }
+    .page-eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+    .page-title {
+      font-family: var(--serif);
+      font-size: clamp(48px, 7vw, 88px);
+      line-height: 0.94;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+    .page-title em { font-style: italic; color: var(--accent); }
+    .page-desc {
+      font-size: 17px;
+      font-weight: 300;
+      color: var(--ink-soft);
+      max-width: 520px;
+      line-height: 1.75;
+    }
+
+    /* CATEGORY FILTER */
+    .filter-bar {
+      padding: 0 52px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-btn {
+      padding: 20px 28px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -1px;
+    }
+    .filter-btn:hover { color: var(--ink); }
+    .filter-btn.active {
+      color: var(--ink);
+      border-bottom-color: var(--accent);
+    }
+
+    /* CATEGORY DESCRIPTIONS */
+    .cat-descriptions {
+      display: none;
+      padding: 52px 52px 0;
+    }
+    .cat-descriptions.visible { display: block; }
+
+    .cat-block {
+      display: none;
+    }
+    .cat-block.active { display: block; }
+
+    .cat-block-inner {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 60px;
+      align-items: start;
+      padding-bottom: 52px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 52px;
+    }
+    .cat-block-heading {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3.5vw, 44px);
+      line-height: 1.1;
+      letter-spacing: -0.015em;
+    }
+    .cat-block-heading em { font-style: italic; color: var(--accent); }
+    .cat-block-desc {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--ink-soft);
+    }
+    .cat-block-desc strong { font-weight: 500; color: var(--ink); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      padding: 0 52px 96px;
+    }
+    .empty-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+    .empty-card {
+      border: 2px dashed var(--line);
+      padding: 40px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .empty-card-tag {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.5;
+    }
+    .empty-card-hint {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 18px;
+      color: var(--ink-muted);
+      opacity: 0.5;
+    }
+
+    /* COMING SOON BANNER */
+    .coming-banner {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 64px 52px;
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 48px;
+    }
+    .coming-banner-left h3 {
+      font-family: var(--serif);
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .coming-banner-left h3 em {
+      font-style: italic;
+      color: var(--accent-light);
+    }
+    .coming-banner-left p {
+      font-size: 15px;
+      font-weight: 300;
+      color: rgba(245,240,232,0.55);
+      max-width: 420px;
+      line-height: 1.7;
+    }
+    .btn-ghost-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid rgba(245,240,232,0.2);
+      color: rgba(245,240,232,0.6);
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .btn-ghost-dark:hover {
+      border-color: var(--accent-light);
+      color: var(--accent-light);
+    }
+    .btn-ghost-dark svg { transition: transform 0.2s; }
+    .btn-ghost-dark:hover svg { transform: translateX(3px); }
+
+    /* WHEN CONTENT EXISTS — article card template (hidden for now) */
+    .article-card {
+      display: none; /* shown via JS when content exists */
+      background: var(--cream-dark);
+      padding: 36px 40px;
+      transition: background 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .article-card:hover { background: #E4DDD0; }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .article-cat {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .article-date { font-size: 12px; color: var(--ink-muted); }
+    .article-title {
+      font-family: var(--serif);
+      font-size: 22px;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .article-summary {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--ink-soft);
+      margin-bottom: 20px;
+    }
+    .article-read {
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--ink);
+      border-top: 1px solid rgba(245,240,232,0.07);
+      padding: 22px 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer p { font-size: 11px; color: rgba(245,240,232,0.25); letter-spacing: 0.04em; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      font-size: 11px;
+      color: rgba(245,240,232,0.25);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: rgba(245,240,232,0.6); }
+
+    @media (max-width: 960px) {
+      nav { padding: 20px 24px; }
+      .nav-links { display: none; }
+      .page-header { padding: 120px 24px 56px; }
+      .filter-bar { padding: 0 24px; }
+      .cat-descriptions { padding: 40px 24px 0; }
+      .cat-block-inner { grid-template-columns: 1fr; gap: 20px; }
+      .empty-state { padding: 0 24px 72px; }
+      .coming-banner { padding: 48px 24px; flex-direction: column; align-items: flex-start; }
+      footer { padding: 18px 24px; flex-direction: column; gap: 10px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">Lily P.</a>
+    <ul class="nav-links">
+      <li><a href="index.html#now">Now</a></li>
+      <li><a href="index.html#builds">Builds</a></li>
+      <li><a href="library.html" class="active">Library</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="index.html#connect">Connect</a></li>
+    </ul>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <p class="page-eyebrow">Library</p>
+    <h1 class="page-title">
+      Notes from<br>
+      inside the <em>work.</em>
+    </h1>
+    <p class="page-desc">
+      I write about what I'm building, what I'm testing, and what I'm figuring out.
+      Not polished retrospectives. Real-time dispatches from inside the process.
+    </p>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <button class="filter-btn active" data-cat="all">All</button>
+    <button class="filter-btn" data-cat="ai-workflows">AI Workflows</button>
+    <button class="filter-btn" data-cat="cre-systems">CRE Systems</button>
+    <button class="filter-btn" data-cat="building-in-public">Building in Public</button>
+    <button class="filter-btn" data-cat="prompts-resources">Prompts and Resources</button>
+  </div>
+
+  <!-- CATEGORY DESCRIPTIONS (visible when a category tab is selected) -->
+  <div class="cat-descriptions" id="cat-descriptions">
+
+    <div class="cat-block" id="cat-ai-workflows">
+      <div class="cat-block-inner">
+        <h2 class="cat-block-heading">AI <em>Workflows</em></h2>
+        <p class="cat-block-desc">
+          Building with Claude, automating repetitive work, prompt design, tool comparisons.
+          <strong>The CRE-agnostic layer.</strong> If you work in any field where the same tasks
+          keep happening the same slow way, this is probably relevant to you.
+        </p>
+      </div>
+    </div>
+
+    <div class="cat-block" id="cat-cre-systems">
+      <div class="cat-block-inner">
+        <h2 class="cat-block-heading">CRE <em>Systems</em></h2>
+        <p class="cat-block-desc">
+          Tour packages, comp research, deal workflows. Specific to commercial real estate,
+          built from actually working in it. <strong>The proof layer.</strong> If you're a broker
+          or in CRE and you're wondering what AI actually looks like in your day-to-day, start here.
+        </p>
+      </div>
+    </div>
+
+    <div class="cat-block" id="cat-building-in-public">
+      <div class="cat-block-inner">
+        <h2 class="cat-block-heading">Building <em>in Public</em></h2>
+        <p class="cat-block-desc">
+          What I tried. What broke. What I'd do differently. <strong>The documentation layer.</strong>
+          Less polished than a case study, more honest than a LinkedIn post.
+          This is where the actual thinking gets written down.
+        </p>
+      </div>
+    </div>
+
+    <div class="cat-block" id="cat-prompts-resources">
+      <div class="cat-block-inner">
+        <h2 class="cat-block-heading">Prompts and <em>Resources</em></h2>
+        <p class="cat-block-desc">
+          Actual things you can use. Prompt templates, workflow frameworks, quick-start guides.
+          <strong>The utility layer.</strong> Built because I kept finding myself explaining
+          the same things and thought: I should just write this down properly.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EMPTY STATE (shown until articles exist) -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-grid">
+      <div class="empty-card">
+        <p class="empty-card-tag">AI Workflows</p>
+        <p class="empty-card-hint">First piece coming soon</p>
+      </div>
+      <div class="empty-card">
+        <p class="empty-card-tag">CRE Systems</p>
+        <p class="empty-card-hint">First piece coming soon</p>
+      </div>
+      <div class="empty-card">
+        <p class="empty-card-tag">Building in Public</p>
+        <p class="empty-card-hint">First piece coming soon</p>
+      </div>
+      <div class="empty-card">
+        <p class="empty-card-tag">Prompts and Resources</p>
+        <p class="empty-card-hint">First piece coming soon</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMING SOON BANNER -->
+  <div class="coming-banner">
+    <div class="coming-banner-left">
+      <h3>Building this out <em>now.</em></h3>
+      <p>
+        The library is being built in real time. First pieces are in progress.
+        Follow on LinkedIn for a preview before they land here.
+      </p>
+    </div>
+    <a href="https://www.linkedin.com/in/lily-papadopoulos" target="_blank" rel="noopener" class="btn-ghost-dark">
+      Follow along
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+        <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+
+  <footer>
+    <p>2026 Lily Papadopoulos</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="https://www.linkedin.com/in/lily-papadopoulos" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </footer>
+
+  <script>
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const catDescriptions = document.getElementById('cat-descriptions');
+    const catBlocks = document.querySelectorAll('.cat-block');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const cat = btn.dataset.cat;
+
+        if (cat === 'all') {
+          catDescriptions.classList.remove('visible');
+          catBlocks.forEach(b => b.classList.remove('active'));
+        } else {
+          catDescriptions.classList.add('visible');
+          catBlocks.forEach(b => b.classList.remove('active'));
+          const target = document.getElementById('cat-' + cat);
+          if (target) target.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
