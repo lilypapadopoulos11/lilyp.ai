@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — lilyp.ai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+    .amb1{width:500px;height:420px;top:-80px;right:-100px;background:var(--blush);opacity:.45}
+    .amb2{width:380px;height:300px;bottom:5%;left:-70px;background:rgba(236,168,36,.12);opacity:1}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:1320px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.35rem;font-weight:500;text-decoration:none;color:var(--ink);letter-spacing:-.01em}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-links{display:flex;align-items:center;gap:2rem}
+    .nav-link{font-family:var(--sans);font-size:.85rem;font-weight:500;color:var(--inklight);text-decoration:none;transition:color .2s;position:relative}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:var(--honey);transition:width .25s}
+    .nav-link:hover{color:var(--ink)}
+    .nav-link:hover::after{width:100%}
+    .nav-link.active{color:var(--ink)}.nav-link.active::after{width:100%}
+    .nav-cta{background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.85rem;font-weight:600;padding:.5rem 1.25rem;border-radius:999px;text-decoration:none;transition:background .2s}
+    .nav-cta:hover{background:var(--honey);color:var(--ink)}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:660px;margin:0 auto;padding:5rem 2rem 8rem}
+
+    /* EYEBROW */
+    .eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:2rem;display:flex;align-items:center;gap:.75rem}
+    .eyebrow::before{content:'';display:block;width:24px;height:1.5px;background:var(--apricot)}
+
+    /* HERO */
+    .about-hero{margin-bottom:3.5rem}
+    .about-hero h1{font-family:var(--serif);font-size:clamp(2.6rem,5vw,3.8rem);font-weight:400;line-height:1.05;letter-spacing:-.025em;margin-bottom:1.5rem}
+    .about-hero h1 em{font-style:italic;color:var(--apricot)}
+    .about-hero .lead{font-family:var(--serif);font-size:1.2rem;font-weight:300;font-style:italic;color:var(--inklight);line-height:1.7;max-width:540px}
+
+    /* DIVIDER */
+    .divider{height:1px;background:var(--border);margin:3rem 0}
+
+    /* PROSE */
+    .prose-section{margin-bottom:3rem}
+    .section-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem}
+    .section-label::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:var(--apricot);flex-shrink:0}
+    .prose-section p{font-size:1.05rem;color:var(--inklight);line-height:1.8;margin-bottom:1.3rem}
+    .prose-section p:last-child{margin-bottom:0}
+    .prose-section strong{color:var(--ink);font-weight:600}
+
+    /* PULL QUOTE */
+    .pull-quote{
+      font-family:var(--serif);font-style:italic;
+      font-size:1.45rem;font-weight:300;
+      color:var(--ink);line-height:1.5;
+      border-left:3px solid var(--honey);
+      padding:.25rem 0 .25rem 1.4rem;
+      margin:2.75rem 0;
+    }
+
+    /* OBSERVATION PANEL — the CRE insight */
+    .observation{
+      position:relative;
+      background:var(--stone);
+      border-radius:16px;
+      padding:2rem 2.25rem;
+      margin:2.5rem 0;
+      overflow:hidden;
+    }
+    .observation::before{
+      content:'\201C';
+      position:absolute;
+      right:1.25rem;top:-.75rem;
+      font-family:var(--serif);
+      font-size:7rem;line-height:1;
+      color:var(--sand);
+      pointer-events:none;
+    }
+    .obs-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1rem}
+    .obs-text{font-family:var(--serif);font-size:1.15rem;font-weight:300;font-style:italic;color:var(--inklight);line-height:1.65;position:relative;z-index:1}
+    .obs-text strong{font-style:normal;color:var(--ink);font-weight:500}
+
+    /* CURRENTLY */
+    .currently{background:white;border:1px solid var(--border);border-radius:16px;padding:2rem 2.25rem;margin:3rem 0}
+    .currently-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.5rem}
+    .currently-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.85rem}
+    .ci{display:flex;align-items:flex-start;gap:1rem}
+    .ci-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:.45rem}
+    .ci-dot.live{background:#27c93f}
+    .ci-dot.active{background:var(--honey)}
+    .ci-dot.open{background:var(--sand)}
+    .ci-title{font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--ink);margin-bottom:.2rem}
+    .ci-desc{font-family:var(--sans);font-size:.85rem;color:var(--inklight);line-height:1.5}
+
+    /* HUMAN DETAILS */
+    .human-details{
+      background:var(--blush);border-radius:16px;
+      padding:2rem 2.25rem;margin:3rem 0;
+      position:relative;overflow:hidden;
+    }
+    .human-details::after{
+      content:'\201C';
+      position:absolute;right:1.5rem;bottom:-1rem;
+      font-family:var(--serif);font-size:8rem;
+      color:var(--apricot);opacity:.18;line-height:1;
+      pointer-events:none;
+    }
+    .hd-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.25rem}
+    .hd-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.7rem}
+    .hd-list li{font-family:var(--sans);font-size:.95rem;color:var(--inklight);line-height:1.6;padding-left:1.25rem;position:relative}
+    .hd-list li::before{content:'→';position:absolute;left:0;color:var(--apricot)}
+
+    /* CONNECT */
+    .connect-section{margin-top:3.5rem;padding-top:2.5rem;border-top:1px solid var(--border)}
+    .connect-section h2{font-family:var(--serif);font-size:2rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+    .connect-section p{font-size:1rem;color:var(--inklight);line-height:1.7;margin-bottom:1.75rem;max-width:460px}
+    .connect-actions{display:flex;flex-wrap:wrap;gap:.75rem}
+    .btn-primary{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.875rem;font-weight:600;padding:.8rem 1.75rem;border-radius:999px;text-decoration:none;transition:background .2s,box-shadow .2s}
+    .btn-primary:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
+    .btn-primary svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .btn-secondary{display:inline-flex;align-items:center;gap:.6rem;background:transparent;color:var(--ink);font-family:var(--sans);font-size:.875rem;font-weight:600;padding:.8rem 1.75rem;border-radius:999px;border:1.5px solid var(--ink);text-decoration:none;transition:background .2s,color .2s}
+    .btn-secondary:hover{background:var(--ink);color:var(--paper)}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .65s var(--out),transform .65s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+    .d4{transition-delay:.32s}.d5{transition-delay:.4s}
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <div class="nav-links">
+        <a href="/library" class="nav-link">Library</a>
+        <a href="/builds" class="nav-link">Builds</a>
+        <a href="/about" class="nav-link active">About</a>
+        <a href="/#help" class="nav-cta">Say hi</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <div class="eyebrow rv">About</div>
+
+    <!-- HERO -->
+    <div class="about-hero rv d1">
+      <h1>Hi, I'm Lily.<br>I'm interested in<br>the parts of work<br>that are still <em>way harder</em><br>than they need to be.</h1>
+      <p class="lead">I'm a fifth-year Real Estate student at Guelph, interning in Toronto and building practical AI workflows in public. I'm trying to make AI feel like something you can actually use, not just something you know you should understand by now.</p>
+    </div>
+
+    <div class="divider rv d2"></div>
+
+    <!-- WHO -->
+    <div class="prose-section rv d2">
+      <div class="section-label">Who I am</div>
+      <p>My day-to-day sits at the intersection of commercial real estate and the kind of operational work that most people assume just has to be manual. Comp research, client outreach, meeting follow-ups, document review. I've been doing that work up close, watching how it actually gets done, and building systems to make it less painful.</p>
+      <p>I pay attention to how people actually work, how rooms actually feel, and where the friction really is. That has been surprisingly useful, especially in environments where a lot of people default to sounding more polished than human.</p>
+    </div>
+
+    <!-- OBSERVATION -->
+    <div class="observation rv d2">
+      <div class="obs-label">Something I've noticed</div>
+      <p class="obs-text">A lot of smart people in CRE are still <strong>held together by repetition, memory, and workarounds</strong>. Things get done. But not always because the system is good. A lot of the time it's because someone knows the workaround, stayed late, or rebuilt the same thing again. That's not a criticism. It's just something worth noticing.</p>
+    </div>
+
+    <div class="pull-quote rv d3">
+      A lot of work is still way harder than it needs to be. I'm figuring out how to fix that.
+    </div>
+
+    <!-- WHY -->
+    <div class="prose-section rv d3">
+      <div class="section-label">Why practical AI</div>
+      <p>Three reasons that are hard to separate. I saw how much unnecessary manual work exists in real environments and got frustrated by it. I got curious and went deep, and it clicked for me in a way a lot of things hadn't. And I want to stay ahead of what's changing in the industries I'm going into.</p>
+      <p>But the thing that keeps me interested isn't the technology. It's the gap between <strong>what AI can actually do for someone with a real job</strong> and what most AI content is teaching. The advice out there is mostly written for people with unlimited time to build elaborate systems. It's not written for a junior analyst with five other priorities and a deliverable due tomorrow.</p>
+      <p>That gap is what I'm working on closing. Not with theory. With things I've actually built and tested in real work, documented honestly, including what broke.</p>
+    </div>
+
+    <!-- CURRENTLY -->
+    <div class="currently rv d3">
+      <div class="currently-label">Currently</div>
+      <ul class="currently-list">
+        <li class="ci">
+          <span class="ci-dot live"></span>
+          <div>
+            <div class="ci-title">Building lilyp.ai in public</div>
+            <div class="ci-desc">Designing and building this site as a documented experiment. The process itself ends up in the Library.</div>
+          </div>
+        </li>
+        <li class="ci">
+          <span class="ci-dot active"></span>
+          <div>
+            <div class="ci-title">CRE advisory internship, Toronto</div>
+            <div class="ci-desc">Real campaigns, real data, real friction. This is where most of what ends up in the Library gets tested first.</div>
+          </div>
+        </li>
+        <li class="ci">
+          <span class="ci-dot active"></span>
+          <div>
+            <div class="ci-title">Fifth year at Guelph, Real Estate (Co-op)</div>
+            <div class="ci-desc">Alternating between school and real work since second year. The co-op model is probably why I care more about practical systems than theoretical ones.</div>
+          </div>
+        </li>
+        <li class="ci">
+          <span class="ci-dot open"></span>
+          <div>
+            <div class="ci-title">Figuring out what comes next</div>
+            <div class="ci-desc">Where real estate, AI, and building in public intersect long-term. Still working that out. Documenting it here as I go.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- WHY THIS SITE -->
+    <div class="prose-section rv d4">
+      <div class="section-label">Why this site exists</div>
+      <p>lilyp.ai is where I document what I'm actually figuring out. The Library holds the prompts, workflows, and systems I use in real work, along with the honest accounts of what didn't work. The Builds section is proof of work: real things I've built, tested, and shipped, not concept decks.</p>
+      <p>I'm not positioning myself as an expert. I'm a person in motion, sharing what I'm learning as I learn it, in a way that's hopefully useful to other people who are figuring out the same things.</p>
+      <p>If you're early in your career, you know AI matters, and most of the content around it feels either overwhelming or irrelevant to your actual day, this is built for you.</p>
+    </div>
+
+    <!-- HUMAN DETAILS -->
+    <div class="human-details rv d4">
+      <div class="hd-label">A few other true things</div>
+      <ul class="hd-list">
+        <li>I think in systems and categories even when I'm not trying to, which is part of why I build tools to manage my own chaos.</li>
+        <li>My working style is iterative. I catch my own over-engineering tendencies mid-build and course-correct in real time.</li>
+        <li>I care about being honest more than being impressive. Both are good, but if I have to pick one, it's honesty.</li>
+        <li>This site is a living thing. The "Currently Testing" section on the homepage isn't decorative.</li>
+      </ul>
+    </div>
+
+    <!-- CONNECT -->
+    <div class="connect-section rv d5">
+      <h2>Come with me.</h2>
+      <p>I write about what I'm building, what I'm learning, and what I'm getting wrong. If any of that sounds useful, or if you have a workflow problem you want to think through, I'd genuinely like to hear from you.</p>
+      <div class="connect-actions">
+        <a href="/#help" class="btn-primary">
+          Tell me what's slowing you down
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/library" class="btn-secondary">Browse the Library</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+    setTimeout(() => {
+      document.querySelectorAll('.rv').forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('vis');
+      });
+    }, 100);
+  </script>
+</body>
+</html>

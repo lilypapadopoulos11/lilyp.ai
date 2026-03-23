@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>lilyp.ai</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FDFCF9',
+            ink: '#121211',
+            inklight: '#4A4A46',
+            honey: '#ECA824',
+            apricot: '#F4AA96',
+            blush: '#FCECE9',
+            stone: '#F0EFEA',
+            sand: '#E5E3DC',
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'Georgia', 'serif'],
+            sans: ['Manrope', 'sans-serif'],
+            mono: ['Space Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: #FDFCF9;
+      color: #121211;
+      font-family: 'Manrope', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Dot grid texture */
+    .dot-texture {
+      background-image: radial-gradient(#121211 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.03;
+    }
+    @media(max-width: 768px) { .dot-texture { display: none; } }
+
+    /* Paper noise */
+    .paper-noise {
+      background-color: #FDFCF9;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* Hero float animation */
+    @keyframes float-gentle {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes glow-breathe {
+      0%, 100% { opacity: 0.35; transform: scale(0.97); }
+      50% { opacity: 0.6; transform: scale(1.03); }
+    }
+    .float-card { animation: float-gentle 6s ease-in-out infinite; }
+    .glow-blob { animation: glow-breathe 5s ease-in-out infinite; }
+
+    /* Typing cursor */
+    .typing-cursor::after {
+      content: '|';
+      animation: blink 1s step-end infinite;
+      color: #F4AA96;
+      font-weight: 300;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Textarea grid */
+    .input-grid {
+      background-image: linear-gradient(to right, rgba(229,227,220,0.3) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(229,227,220,0.3) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Textarea focus lift */
+    .input-card {
+      transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .input-card:focus-within {
+      box-shadow: 0 32px 64px -16px rgba(0,0,0,0.1), 0 0 0 2px rgba(244,170,150,0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Tag pill hover */
+    .tag-pill {
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .tag-pill:hover {
+      background-color: #121211;
+      color: #FDFCF9;
+      border-color: #121211;
+    }
+
+    /* Build card */
+    .build-card {
+      transition: box-shadow 0.4s ease, transform 0.3s ease;
+    }
+    .build-card:hover {
+      box-shadow: 0 16px 48px -12px rgba(0,0,0,0.12);
+      transform: translateY(-3px);
+    }
+
+    /* Honey underline on hero */
+    .honey-underline {
+      position: relative;
+      display: inline;
+    }
+    .honey-underline::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #F4AA96, #ECA824);
+      border-radius: 2px;
+    }
+
+    /* Section divider */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(18,18,17,0.08), transparent);
+    }
+
+    /* Nav link hover */
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1.5px;
+      background: #ECA824;
+      transition: width 0.25s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Ping dot */
+    @keyframes ping {
+      75%, 100% { transform: scale(2); opacity: 0; }
+    }
+    .animate-ping { animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite; }
+
+    /* CTA arrow hover */
+    .cta-arrow { transition: transform 0.2s ease; }
+    .cta-btn:hover .cta-arrow { transform: translateX(5px); }
+
+    /* Build card data reveal */
+    .data-row {
+      transform: translateX(12px);
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+    .build-card:hover .data-row:nth-child(1) { transform: translateX(0); opacity: 1; transition-delay: 0s; }
+    .build-card:hover .data-row:nth-child(2) { transform: translateX(0); opacity: 1; transition-delay: 0.07s; }
+    .build-card:hover .data-row:nth-child(3) { transform: translateX(0); opacity: 1; transition-delay: 0.14s; }
+
+    /* Progress bar animation on hover */
+    .progress-fill {
+      transition: width 1s ease;
+    }
+
+    /* Footer gradient top */
+    .footer-top {
+      background: linear-gradient(180deg, #FDFCF9 0%, #F5F3EC 100%);
+    }
+
+    textarea { resize: none; }
+    textarea::-webkit-scrollbar { width: 4px; }
+    textarea::-webkit-scrollbar-thumb { background-color: #E5E3DC; border-radius: 4px; }
+  </style>
+</head>
+
+<body class="paper-noise">
+
+  <!-- ─── DOT TEXTURE OVERLAY ─── -->
+  <div class="dot-texture fixed inset-0 pointer-events-none z-0"></div>
+
+  <!-- ─── NAV ─── -->
+  <nav class="sticky top-0 z-50 w-full border-b border-ink/[0.06] backdrop-blur-md bg-paper/90">
+    <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16 py-5 flex justify-between items-center">
+      <div class="font-serif font-semibold text-xl tracking-tight">lilyp.ai</div>
+      <div class="hidden md:flex items-center gap-8 font-sans text-sm font-medium text-inklight">
+        <a href="#builds" class="nav-link hover:text-ink transition-colors">Builds</a>
+        <a href="#library" class="nav-link hover:text-ink transition-colors">Library</a>
+        <a href="#about" class="nav-link hover:text-ink transition-colors">About</a>
+        <button class="bg-ink text-paper px-5 py-2 rounded-full text-sm font-semibold hover:bg-honey hover:text-ink transition-colors duration-200">
+          Subscribe
+        </button>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 1 — HERO                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="hero" class="relative min-h-[92vh] flex items-center overflow-hidden">
+    <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16 py-20 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
+
+      <!-- LEFT: COPY -->
+      <div class="lg:col-span-6 xl:col-span-7 flex flex-col">
+
+        <!-- Eyebrow -->
+        <div class="reveal flex items-center gap-3 mb-10">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-apricot opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-apricot"></span>
+          </span>
+          <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-inklight">Building in public // 2026</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="reveal reveal-delay-1 font-serif text-[4.5rem] md:text-[5.5rem] lg:text-[6.2rem] leading-[0.93] tracking-tight mb-10">
+          A lot of work<br>
+          is still <span class="italic font-light text-inklight honey-underline">way harder</span><br>
+          than it needs<br>
+          to be.
+        </h1>
+
+        <!-- Sub + CTA -->
+        <div class="reveal reveal-delay-2 ml-0 lg:ml-20 relative">
+          <div class="absolute -left-8 top-1 w-[2px] h-16 bg-honey hidden lg:block"></div>
+          <p class="font-serif italic font-light text-[2.1rem] text-inklight leading-tight mb-10">
+            I'm trying to fix that.
+          </p>
+          <a href="#builds" class="cta-btn group inline-flex items-center gap-4 font-sans font-bold text-ink uppercase tracking-widest text-sm border-b-2 border-ink pb-2 hover:text-honey hover:border-honey transition-all duration-200">
+            See what I'm building
+            <svg class="cta-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: INTERFACE CARD -->
+      <div class="lg:col-span-6 xl:col-span-5 relative flex items-center justify-center min-h-[420px]">
+
+        <!-- Background shape -->
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-stone/50 rounded-l-full -z-10"></div>
+
+        <!-- Background ghost card -->
+        <div class="absolute right-4 top-10 w-[340px] bg-white/80 rounded-xl border border-ink/[0.07] overflow-hidden shadow-sm rotate-3 opacity-50 pointer-events-none hidden lg:block">
+          <div class="h-7 bg-ink/[0.03] border-b border-ink/[0.06] flex items-center px-4 gap-1.5">
+            <div class="w-2 h-2 rounded-full bg-ink/15"></div>
+            <div class="w-2 h-2 rounded-full bg-ink/15"></div>
+            <div class="w-2 h-2 rounded-full bg-ink/15"></div>
+          </div>
+          <div class="p-5 space-y-3">
+            <div class="h-3 bg-ink/[0.06] rounded w-3/4"></div>
+            <div class="h-3 bg-ink/[0.06] rounded w-1/2"></div>
+            <div class="h-24 bg-stone rounded border border-ink/[0.04] mt-3"></div>
+          </div>
+        </div>
+
+        <!-- Main float card -->
+        <div class="reveal reveal-delay-3 relative float-card mt-8 lg:mt-0 z-10">
+          <!-- Glow -->
+          <div class="glow-blob absolute -inset-6 bg-gradient-to-br from-apricot to-honey rounded-[2rem] blur-2xl -z-10"></div>
+
+          <!-- Window -->
+          <div class="w-[380px] md:w-[420px] bg-white rounded-xl shadow-2xl border border-ink/[0.08] overflow-hidden">
+            <!-- Window bar -->
+            <div class="h-9 bg-[#F8F8F6] flex items-center px-4 gap-2 border-b border-ink/[0.07] justify-between">
+              <div class="flex gap-1.5">
+                <div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                <div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+              </div>
+              <div class="font-mono text-[10px] text-inklight/50">workflow_v2.ts</div>
+              <div class="w-4"></div>
+            </div>
+
+            <!-- Window body -->
+            <div class="p-5 bg-[#FAFAF8]">
+              <!-- Status row -->
+              <div class="flex items-center gap-3 mb-5 pb-5 border-b border-ink/[0.07]">
+                <div class="w-12 h-12 rounded-full bg-apricot/40 flex items-center justify-center font-serif text-xl text-ink/40">L</div>
+                <div>
+                  <div class="font-serif font-medium text-base">System Status</div>
+                  <div class="font-mono text-[10px] text-green-600 flex items-center gap-1.5 mt-0.5">
+                    <span class="relative flex h-1.5 w-1.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                    </span>
+                    Running smoothly
+                  </div>
+                </div>
+              </div>
+
+              <!-- Code block -->
+              <div class="font-mono text-[12px] leading-relaxed text-inklight bg-white p-4 rounded-lg border border-ink/[0.05]">
+                <div class="text-ink/30 mb-2">// automating the boring parts</div>
+                <div><span class="text-honey font-bold">const</span> <span class="text-ink">friction</span> = analyze(work);</div>
+                <div><span class="text-honey font-bold">if</span> (friction &gt; <span class="text-apricot">threshold</span>) {</div>
+                <div class="pl-4">buildTool({</div>
+                <div class="pl-8 text-ink">target: <span class="text-apricot">'real_work'</span>,</div>
+                <div class="pl-8 text-ink">goal: <span class="text-apricot">'practical'</span>,</div>
+                <div class="pl-8 text-ink">public: <span class="text-honey font-bold">true</span></div>
+                <div class="pl-4">});</div>
+                <div>} <span class="text-honey font-bold">else</span> {</div>
+                <div class="pl-4">keepIterating();</div>
+                <div>}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <div class="section-divider mx-8 md:mx-16 lg:mx-24"></div>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 2 — HELP ME HELP YOU               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="help" class="py-28 relative">
+    <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16 grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+
+      <!-- LEFT: STICKY COPY -->
+      <div class="lg:col-span-5 flex flex-col lg:sticky lg:top-28">
+
+        <div class="reveal flex items-center gap-3 mb-8">
+          <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-inklight">Section 02</span>
+          <span class="w-8 h-[1px] bg-sand"></span>
+        </div>
+
+        <p class="reveal font-serif italic text-inklight text-2xl font-light mb-3">Help me help you.</p>
+
+        <h2 class="reveal reveal-delay-1 font-serif text-[3.4rem] md:text-[4rem] leading-[1.0] tracking-tight mb-7">
+          Tell me what's<br>
+          <span class="italic font-light text-inklight">slowing</span><br>
+          you down.
+        </h2>
+
+        <p class="reveal reveal-delay-2 text-base text-inklight leading-relaxed font-sans font-light max-w-sm mb-12">
+          AI isn't magic — but it is a very good lever. Tell me what's tedious, broken, or boring in your week. Let's see if we can build something practical for it.
+        </p>
+
+        <div class="reveal reveal-delay-3 mt-auto pt-8 border-t border-sand">
+          <div class="flex gap-3">
+            <svg class="w-7 h-7 text-sand shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+            </svg>
+            <p class="font-serif italic text-inklight text-[15px] leading-snug">
+              "If you find yourself copying and pasting the same thing more than twice a week, we should talk."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: INTERACTIVE INPUT -->
+      <div class="lg:col-span-7 flex flex-col reveal reveal-delay-1">
+
+        <!-- Tag pills -->
+        <div class="mb-7">
+          <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-inklight mb-4 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-apricot" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Common frictions
+          </p>
+          <div class="flex flex-wrap gap-2.5">
+            <button class="tag-pill tag-btn px-4 py-2 rounded-full border border-sand bg-white text-[12px] font-medium font-sans text-inklight shadow-sm cursor-pointer"
+              data-prompt="I spend too much time copying the same update into three different places every week.">
+              Weekly status updates
+            </button>
+            <button class="tag-pill tag-btn px-4 py-2 rounded-full border border-sand bg-white text-[12px] font-medium font-sans text-inklight shadow-sm cursor-pointer"
+              data-prompt="Parsing a 50-page commercial lease just to find three specific dates and obligations.">
+              Lease data extraction
+            </button>
+            <button class="tag-pill tag-btn px-4 py-2 rounded-full border border-sand bg-white text-[12px] font-medium font-sans text-inklight shadow-sm cursor-pointer"
+              data-prompt="My meeting notes are scattered everywhere and I can never find the action items when I need them.">
+              Lost action items
+            </button>
+            <button class="tag-pill tag-btn px-4 py-2 rounded-full border border-sand bg-white text-[12px] font-medium font-sans text-inklight shadow-sm cursor-pointer"
+              data-prompt="Writing follow-up emails politely when I'm actually pretty impatient about the reply.">
+              Email tone-polishing
+            </button>
+            <button class="tag-pill tag-btn px-4 py-2 rounded-full border border-sand bg-white text-[12px] font-medium font-sans text-inklight shadow-sm cursor-pointer"
+              data-prompt="Reformatting the same data into a new PowerPoint template for the third time this month.">
+              Deck rebuilds
+            </button>
+          </div>
+        </div>
+
+        <!-- Input card -->
+        <div class="input-card bg-white rounded-2xl border border-sand/80 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.06)] flex flex-col h-[460px] overflow-hidden">
+
+          <!-- Card top accent -->
+          <div class="h-1 w-full bg-gradient-to-r from-apricot via-honey to-apricot opacity-70 flex-shrink-0"></div>
+
+          <!-- Textarea area -->
+          <div class="flex-grow relative p-7 input-grid">
+            <textarea id="friction-input"
+              class="absolute inset-0 w-full h-full p-7 outline-none text-[1.45rem] leading-relaxed font-serif text-ink placeholder-transparent bg-transparent z-10"
+              placeholder="Type here..."></textarea>
+            <div id="animated-placeholder"
+              class="absolute inset-0 p-7 text-[1.45rem] leading-relaxed font-serif text-inklight/35 pointer-events-none typing-cursor"></div>
+          </div>
+
+          <!-- Card footer -->
+          <div class="flex-shrink-0 bg-stone/30 border-t border-sand/60 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-inklight">
+              <div class="bg-white p-1.5 rounded border border-sand shadow-sm">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </div>
+              <span class="text-[12px] font-sans font-medium">Read by a human. No automated jargon.</span>
+            </div>
+            <button id="submit-btn"
+              class="bg-ink text-paper px-7 py-2.5 rounded-lg text-sm font-semibold font-sans hover:bg-inklight transition-colors duration-200 flex items-center gap-2.5">
+              <span>Send it</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <div class="section-divider mx-8 md:mx-16 lg:mx-24"></div>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 3 — FEATURED BUILDS                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="builds" class="py-28 relative">
+    <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16">
+
+      <!-- Section header -->
+      <header class="reveal flex flex-col md:flex-row md:items-end justify-between border-b border-sand pb-8 mb-14 gap-6">
+        <div>
+          <div class="flex items-center gap-3 mb-5">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-honey opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-honey"></span>
+            </span>
+            <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-inklight">Section 03 — Experiments</span>
+          </div>
+          <h2 class="font-serif text-[3rem] md:text-[3.6rem] font-medium tracking-tight">Featured Builds</h2>
+        </div>
+        <p class="font-serif italic text-lg text-inklight leading-relaxed max-w-xs md:text-right">
+          Less theoretical roadmaps, more practical tools turning chaos into structure.
+        </p>
+      </header>
+
+      <!-- Cards -->
+      <div class="flex flex-col gap-7">
+
+        <!-- ── FEATURED CARD (large) ── -->
+        <article class="build-card reveal group bg-white rounded-3xl border border-sand/80 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col lg:flex-row gap-0">
+
+          <!-- Text side -->
+          <div class="w-full lg:w-[48%] p-8 lg:p-12 flex flex-col justify-center">
+            <div class="flex flex-wrap items-center gap-3 mb-7">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono font-bold bg-honey/15 text-honey border border-honey/25">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Active Experiment
+              </span>
+              <span class="font-mono text-[10px] text-inklight/50 uppercase tracking-widest">#CRE_AUTOMATION</span>
+            </div>
+
+            <h3 class="font-serif text-[2.2rem] lg:text-[2.8rem] leading-tight mb-5 text-ink group-hover:text-honey transition-colors duration-300">
+              Meeting Notes → Action Items Pipeline
+            </h3>
+
+            <p class="font-sans text-base text-inklight leading-relaxed mb-9 max-w-lg">
+              A three-step workflow that takes raw CRE meeting notes, extracts structured action items with owners and deadlines, and drafts a professional follow-up email — in under 90 seconds.
+            </p>
+
+            <div class="mt-auto">
+              <a href="#" class="group/link inline-flex items-center gap-2 text-sm font-bold font-mono tracking-tight text-ink group-hover:text-honey transition-colors duration-300">
+                Read the case study
+                <span class="transform group-hover/link:translate-x-1 transition-transform duration-300">→</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Visual side -->
+          <div class="w-full lg:w-[52%] min-h-[300px] lg:min-h-[400px] bg-stone/40 relative overflow-hidden flex items-center justify-center p-8">
+            <!-- Grid texture -->
+            <div class="absolute inset-0 opacity-[0.04]" style="background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+            <!-- Chaotic "before" lines -->
+            <div class="w-[38%] flex flex-col justify-center gap-3 opacity-30 group-hover:opacity-20 transition-opacity duration-500">
+              <div class="h-1.5 w-full bg-inklight rounded-full rotate-2"></div>
+              <div class="h-1.5 w-4/5 bg-inklight rounded-full -rotate-1"></div>
+              <div class="h-1.5 w-11/12 bg-inklight rounded-full rotate-4"></div>
+              <div class="h-1.5 w-2/3 bg-inklight rounded-full -rotate-3"></div>
+              <div class="h-1.5 w-full bg-inklight rounded-full rotate-1"></div>
+              <div class="h-1.5 w-3/4 bg-inklight rounded-full -rotate-2"></div>
+            </div>
+
+            <!-- Center icon -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-2xl shadow-lg border border-honey/20 flex items-center justify-center z-10 group-hover:rotate-12 transition-transform duration-500">
+              <svg class="w-5 h-5 text-honey" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+
+            <!-- "After" data rows -->
+            <div class="w-[38%] flex flex-col justify-center gap-3">
+              <div class="data-row bg-white rounded-xl border border-apricot/25 shadow-sm p-3 flex items-center gap-3">
+                <div class="w-6 h-6 rounded bg-apricot/20 flex items-center justify-center flex-shrink-0">
+                  <span class="text-[9px] font-mono text-apricot">01</span>
+                </div>
+                <div class="flex-1">
+                  <div class="h-1.5 w-1/2 bg-sand rounded mb-1.5"></div>
+                  <div class="h-1.5 w-full bg-inklight/20 rounded"></div>
+                </div>
+              </div>
+              <div class="data-row bg-white rounded-xl border border-honey/25 shadow-sm p-3 flex items-center gap-3">
+                <div class="w-6 h-6 rounded bg-honey/20 flex items-center justify-center flex-shrink-0">
+                  <span class="text-[9px] font-mono text-honey">02</span>
+                </div>
+                <div class="flex-1">
+                  <div class="h-1.5 w-1/3 bg-sand rounded mb-1.5"></div>
+                  <div class="h-1.5 w-4/5 bg-inklight/20 rounded"></div>
+                </div>
+              </div>
+              <div class="data-row bg-white rounded-xl border border-blush shadow-sm p-3 flex items-center gap-3">
+                <div class="w-6 h-6 rounded bg-blush flex items-center justify-center flex-shrink-0">
+                  <span class="text-[9px] font-mono text-inklight/60">03</span>
+                </div>
+                <div class="flex-1">
+                  <div class="h-1.5 w-2/3 bg-sand rounded mb-1.5"></div>
+                  <div class="h-1.5 w-3/4 bg-inklight/20 rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- ── TWO SMALLER CARDS ── -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
+
+          <!-- Card 2 -->
+          <article class="build-card reveal reveal-delay-1 group bg-white rounded-3xl border border-sand/80 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
+            <!-- Visual area -->
+            <div class="h-52 bg-stone/30 border-b border-sand/60 relative overflow-hidden flex items-center justify-center">
+              <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px); background-size: 16px 16px;"></div>
+              <!-- Animated progress bars -->
+              <div class="relative z-10 w-[200px] flex flex-col gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-white border border-sand shadow-sm flex items-center justify-center flex-shrink-0">
+                    <div class="w-2.5 h-2.5 rounded-full bg-sand group-hover:bg-apricot transition-colors duration-500"></div>
+                  </div>
+                  <div class="flex-1 h-2 bg-white rounded-full overflow-hidden border border-sand/60">
+                    <div class="h-full w-[40%] bg-sand group-hover:w-[88%] group-hover:bg-apricot/60 progress-fill"></div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-white border border-sand shadow-sm flex items-center justify-center flex-shrink-0">
+                    <div class="w-2.5 h-2.5 rounded-full bg-sand transition-colors duration-500"></div>
+                  </div>
+                  <div class="flex-1 h-2 bg-white rounded-full overflow-hidden border border-sand/60">
+                    <div class="h-full w-[25%] bg-sand group-hover:w-[60%] progress-fill" style="transition-delay:0.1s"></div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-white border border-sand shadow-sm flex items-center justify-center flex-shrink-0">
+                    <div class="w-2.5 h-2.5 rounded-full bg-sand group-hover:bg-honey/60 transition-colors duration-500 delay-200"></div>
+                  </div>
+                  <div class="flex-1 h-2 bg-white rounded-full overflow-hidden border border-sand/60">
+                    <div class="h-full w-[55%] bg-sand group-hover:w-[100%] group-hover:bg-honey/50 progress-fill" style="transition-delay:0.2s"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Ghost letter -->
+              <div class="absolute -right-3 -bottom-6 font-serif text-[120px] text-ink/[0.04] leading-none italic group-hover:-translate-y-2 transition-transform duration-500">A</div>
+            </div>
+
+            <!-- Text -->
+            <div class="p-7 flex flex-col flex-1">
+              <div class="flex items-center gap-2 mb-5">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone text-inklight border border-sand">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  In Testing
+                </span>
+              </div>
+              <h3 class="font-serif text-[1.7rem] leading-tight mb-3 text-ink group-hover:text-apricot transition-colors duration-300">
+                Lease Renewal Analysis Automator
+              </h3>
+              <p class="font-sans text-sm text-inklight leading-relaxed mb-7 flex-1">
+                A two-step Excel + PowerPoint workflow that turns raw comp data into an executive-ready lease renewal memo — showing exactly how far automation can go without manual templating.
+              </p>
+              <div class="pt-5 border-t border-stone mt-auto">
+                <a href="#" class="inline-flex items-center gap-2 text-xs font-mono text-inklight/60 group-hover:text-apricot transition-colors">
+                  Explore the workflow <span class="font-sans group-hover:translate-x-1 transition-transform inline-block">→</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3 -->
+          <article class="build-card reveal reveal-delay-2 group bg-white rounded-3xl border border-sand/80 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
+            <!-- Visual area -->
+            <div class="h-52 bg-stone/30 border-b border-sand/60 relative overflow-hidden flex items-center justify-center">
+              <!-- Flowing line viz -->
+              <svg class="absolute inset-0 w-full h-full" fill="none" viewBox="0 0 340 200" preserveAspectRatio="none">
+                <path d="M0,100 C80,100 80,50 170,50 C260,50 260,150 340,150"
+                  stroke="#E5E3DC" stroke-width="2"
+                  class="group-hover:[stroke:#F4AA96] transition-colors duration-700"/>
+                <path d="M0,100 C80,100 80,150 170,150 C260,150 260,50 340,50"
+                  stroke="#E5E3DC" stroke-width="2" stroke-dasharray="4 4"
+                  class="group-hover:[stroke:#ECA824]/50 transition-colors duration-700 delay-100"/>
+              </svg>
+
+              <!-- Center motif -->
+              <div class="relative z-10 flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-white border border-sand shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <div class="w-3 h-3 rounded-full bg-sand group-hover:bg-honey transition-colors duration-300"></div>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-white border border-apricot/25 shadow-sm flex items-center justify-center rotate-45 group-hover:rotate-90 transition-transform duration-700">
+                  <div class="w-4 h-4 border-2 border-apricot/50 rounded -rotate-45 group-hover:-rotate-90 transition-transform duration-700"></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-white border border-sand shadow-sm flex items-center justify-center group-hover:translate-x-2 transition-transform duration-300">
+                    <div class="w-2 h-2 rounded bg-sand"></div>
+                  </div>
+                  <div class="w-8 h-8 rounded-lg bg-white border border-sand shadow-sm flex items-center justify-center group-hover:translate-x-4 transition-transform duration-300 delay-75">
+                    <div class="w-2 h-2 rounded bg-apricot/50"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Text -->
+            <div class="p-7 flex flex-col flex-1">
+              <div class="flex items-center gap-2 mb-5">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-stone text-inklight border border-sand">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Personal Tool
+                </span>
+              </div>
+              <h3 class="font-serif text-[1.7rem] leading-tight mb-3 text-ink group-hover:text-honey transition-colors duration-300">
+                Tone Matcher Prompt Library
+              </h3>
+              <p class="font-sans text-sm text-inklight leading-relaxed mb-7 flex-1">
+                A dynamic prompt pipeline that analyzes writing style on the fly and helps generate first drafts that actually sound like me — not like a generic AI assistant trying to be helpful.
+              </p>
+              <div class="pt-5 border-t border-stone mt-auto">
+                <a href="#" class="inline-flex items-center gap-2 text-xs font-mono text-inklight/60 group-hover:text-honey transition-colors">
+                  See the prompts <span class="font-sans group-hover:translate-x-1 transition-transform inline-block">→</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- View all CTA -->
+      <div class="reveal reveal-delay-2 flex justify-center mt-12">
+        <a href="#" class="group relative inline-flex items-center gap-3 px-8 py-4 bg-ink text-paper rounded-full font-sans text-sm font-semibold hover:bg-inklight transition-colors shadow-lg hover:shadow-xl overflow-hidden">
+          <span class="relative z-10">View all experiments &amp; builds</span>
+          <span class="relative z-10 flex items-center justify-center w-6 h-6 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors">
+            <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </span>
+          <!-- Warm gradient overlay on hover -->
+          <div class="absolute inset-0 bg-gradient-to-r from-honey/20 via-apricot/20 to-blush/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="section-divider mx-8 md:mx-16 lg:mx-24"></div>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 4 — FEATURED LIBRARY (PLACEHOLDER) -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="library" class="py-28">
+    <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16">
+
+      <!-- Header -->
+      <header class="reveal flex flex-col md:flex-row md:items-end justify-between border-b border-sand pb-8 mb-14 gap-6">
+        <div>
+          <div class="flex items-center gap-3 mb-5">
+            <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-inklight">Section 04 — Resources</span>
+            <span class="w-8 h-[1px] bg-sand"></span>
+          </div>
+          <h2 class="font-serif text-[3rem] md:text-[3.6rem] font-medium tracking-tight">Library</h2>
+        </div>
+        <p class="font-serif italic text-lg text-inklight leading-relaxed max-w-xs md:text-right">
+          Prompts worth keeping, workflows worth copying, honest experiments worth learning from.
+        </p>
+      </header>
+
+      <!-- Category row -->
+      <div class="reveal flex flex-wrap gap-2.5 mb-12">
+        <button class="px-4 py-2 rounded-full bg-ink text-paper text-[12px] font-mono font-bold">All</button>
+        <button class="tag-pill px-4 py-2 rounded-full border border-sand text-[12px] font-mono text-inklight">AI Workflows</button>
+        <button class="tag-pill px-4 py-2 rounded-full border border-sand text-[12px] font-mono text-inklight">Prompts Worth Keeping</button>
+        <button class="tag-pill px-4 py-2 rounded-full border border-sand text-[12px] font-mono text-inklight">What I Tried</button>
+        <button class="tag-pill px-4 py-2 rounded-full border border-sand text-[12px] font-mono text-inklight">Building in Public</button>
+        <button class="tag-pill px-4 py-2 rounded-full border border-sand text-[12px] font-mono text-inklight">Honest Takes</button>
+      </div>
+
+      <!-- Placeholder grid -->
+      <div class="reveal grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Placeholder cards -->
+        <div class="bg-white rounded-2xl border border-sand/80 p-7 flex flex-col min-h-[220px] relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-inklight/50 mb-4">AI Workflows</div>
+          <div class="h-4 bg-stone rounded w-3/4 mb-3"></div>
+          <div class="h-4 bg-stone rounded w-full mb-2"></div>
+          <div class="h-4 bg-stone rounded w-2/3"></div>
+          <div class="mt-auto pt-6">
+            <div class="h-3 bg-stone/60 rounded w-1/3"></div>
+          </div>
+          <div class="absolute -right-6 -bottom-6 font-serif text-[80px] text-ink/[0.03] italic leading-none">01</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-sand/80 p-7 flex flex-col min-h-[220px] relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-inklight/50 mb-4">Prompts Worth Keeping</div>
+          <div class="h-4 bg-stone rounded w-5/6 mb-3"></div>
+          <div class="h-4 bg-stone rounded w-full mb-2"></div>
+          <div class="h-4 bg-stone rounded w-1/2"></div>
+          <div class="mt-auto pt-6">
+            <div class="h-3 bg-stone/60 rounded w-1/4"></div>
+          </div>
+          <div class="absolute -right-6 -bottom-6 font-serif text-[80px] text-ink/[0.03] italic leading-none">02</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-sand/80 p-7 flex flex-col min-h-[220px] relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-inklight/50 mb-4">What I Tried</div>
+          <div class="h-4 bg-stone rounded w-2/3 mb-3"></div>
+          <div class="h-4 bg-stone rounded w-full mb-2"></div>
+          <div class="h-4 bg-stone rounded w-3/4"></div>
+          <div class="mt-auto pt-6">
+            <div class="h-3 bg-stone/60 rounded w-1/3"></div>
+          </div>
+          <div class="absolute -right-6 -bottom-6 font-serif text-[80px] text-ink/[0.03] italic leading-none">03</div>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <p class="reveal reveal-delay-1 mt-8 font-mono text-[11px] text-inklight/40 uppercase tracking-widest text-center">
+        // Library populates as content ships — September 2026
+      </p>
+
+    </div>
+  </section>
+
+
+  <div class="section-divider mx-8 md:mx-16 lg:mx-24"></div>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 5 — NOW / CURRENTLY TESTING        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section id="now" class="py-28">
+    <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16">
+
+      <div class="reveal grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+
+        <!-- Left label -->
+        <div class="lg:col-span-4">
+          <div class="flex items-center gap-3 mb-5">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-apricot opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-apricot"></span>
+            </span>
+            <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-inklight">Section 05 — Live</span>
+          </div>
+          <h2 class="font-serif text-[2.6rem] md:text-[3rem] font-medium tracking-tight leading-tight mb-5">
+            Now /<br>Currently<br>Testing
+          </h2>
+          <p class="font-sans text-sm text-inklight leading-relaxed">
+            What's live, what's messy, what's being figured out right now. This updates when things change.
+          </p>
+        </div>
+
+        <!-- Right: status items -->
+        <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+          <div class="reveal reveal-delay-1 bg-white rounded-2xl border border-sand/80 p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span class="font-mono text-[10px] uppercase tracking-widest text-green-600">Live</span>
+            </div>
+            <div class="font-serif text-lg mb-2">Building lilyp.ai</div>
+            <p class="font-sans text-sm text-inklight leading-relaxed">Designing and building this site in public using Claude Code. The whole thing is an experiment in itself.</p>
+          </div>
+
+          <div class="reveal reveal-delay-2 bg-white rounded-2xl border border-sand/80 p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-honey opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-honey"></span>
+              </span>
+              <span class="font-mono text-[10px] uppercase tracking-widest text-honey">In Progress</span>
+            </div>
+            <div class="font-serif text-lg mb-2">Meeting Notes Pipeline Demo</div>
+            <p class="font-sans text-sm text-inklight leading-relaxed">Recording a full walkthrough — meeting transcript → Claude → structured action items → Airtable, live.</p>
+          </div>
+
+          <div class="reveal reveal-delay-3 bg-white rounded-2xl border border-sand/80 p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="w-2 h-2 rounded-full bg-sand flex-shrink-0"></span>
+              <span class="font-mono text-[10px] uppercase tracking-widest text-inklight/50">Up Next</span>
+            </div>
+            <div class="font-serif text-lg mb-2">September Content System</div>
+            <p class="font-sans text-sm text-inklight leading-relaxed">Two posts per week for 8 weeks, building an audience before telling anyone I'm building an audience.</p>
+          </div>
+
+          <div class="reveal reveal-delay-4 bg-white rounded-2xl border border-sand/80 p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="w-2 h-2 rounded-full bg-sand flex-shrink-0"></span>
+              <span class="font-mono text-[10px] uppercase tracking-widest text-inklight/50">Still Messy</span>
+            </div>
+            <div class="font-serif text-lg mb-2">The Library Architecture</div>
+            <p class="font-sans text-sm text-inklight leading-relaxed">Category structure, URL design, and how to make it actually useful instead of just another link dump.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="section-divider mx-8 md:mx-16 lg:mx-24"></div>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SECTION 6 — FOOTER / CONNECT               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <footer id="connect" class="footer-top pt-28 pb-16">
+    <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16">
+
+      <!-- Connect CTA -->
+      <div class="reveal text-center mb-20">
+        <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-inklight/50 mb-6">Stay in the loop</p>
+        <h2 class="font-serif text-[3rem] md:text-[4rem] leading-tight tracking-tight mb-6">
+          Come with me.<br>
+          <span class="italic font-light text-inklight">I'll make this easier.</span>
+        </h2>
+        <p class="font-sans text-base text-inklight leading-relaxed max-w-md mx-auto mb-10">
+          Practical AI workflows, honest experiments, and resources for people who find this stuff overwhelming. No newsletter cadence guilt. Just useful things when there's something useful to say.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button class="group bg-ink text-paper px-8 py-3.5 rounded-full font-sans text-sm font-semibold hover:bg-honey hover:text-ink transition-colors duration-200 flex items-center gap-3">
+            Browse the library
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </button>
+          <button class="px-8 py-3.5 rounded-full font-sans text-sm font-semibold border border-ink text-ink hover:bg-ink hover:text-paper transition-colors duration-200">
+            Say hi
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="border-t border-sand pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="font-serif font-semibold text-lg">lilyp.ai</div>
+        <div class="flex items-center gap-6 font-mono text-[11px] uppercase tracking-widest text-inklight/40">
+          <a href="#" class="hover:text-inklight transition-colors">LinkedIn</a>
+          <a href="#" class="hover:text-inklight transition-colors">Builds</a>
+          <a href="#" class="hover:text-inklight transition-colors">Library</a>
+        </div>
+        <div class="font-mono text-[11px] text-inklight/30">© 2026 Lily Papadopoulos</div>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ─── SCRIPTS ─── -->
+  <script>
+    // ── Scroll reveal ──
+    const reveals = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => revealObserver.observe(el));
+
+    // Trigger hero reveals immediately
+    document.querySelectorAll('#hero .reveal').forEach(el => {
+      setTimeout(() => el.classList.add('visible'), 100);
+    });
+
+
+    // ── Typing animation ──
+    const phrases = [
+      "Copying the same update into 3 different tools...",
+      "Parsing a 50-page lease just to find one date...",
+      "Reformatting a deck that was fine the first time...",
+      "Pretending I remember what we agreed on last Tuesday...",
+      "Writing a polite follow-up when I'm actually impatient...",
+      "Updating a tracker that nobody looks at anyway...",
+    ];
+
+    const placeholder = document.getElementById('animated-placeholder');
+    const textarea = document.getElementById('friction-input');
+    let phraseIdx = 0, charIdx = 0, isDeleting = false, isTypingActive = true, typingTimer = null;
+
+    function typeEffect() {
+      if (!isTypingActive) return;
+      const phrase = phrases[phraseIdx];
+      if (isDeleting) {
+        placeholder.textContent = phrase.substring(0, charIdx - 1);
+        charIdx--;
+      } else {
+        placeholder.textContent = phrase.substring(0, charIdx + 1);
+        charIdx++;
+      }
+
+      let speed = isDeleting ? 20 : 48 + Math.random() * 20;
+      if (!isDeleting && charIdx === phrase.length) { speed = 2400; isDeleting = true; }
+      else if (isDeleting && charIdx === 0) { isDeleting = false; phraseIdx = (phraseIdx + 1) % phrases.length; speed = 500; }
+
+      typingTimer = setTimeout(typeEffect, speed);
+    }
+
+    typingTimer = setTimeout(typeEffect, 1200);
+
+    textarea.addEventListener('focus', () => {
+      isTypingActive = false;
+      clearTimeout(typingTimer);
+      placeholder.style.opacity = '0';
+    });
+    textarea.addEventListener('blur', () => {
+      if (!textarea.value.trim()) {
+        isTypingActive = true;
+        placeholder.style.opacity = '1';
+        placeholder.textContent = '';
+        charIdx = 0; isDeleting = false;
+        typeEffect();
+      }
+    });
+
+
+    // ── Tag pills ──
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.getAttribute('data-prompt');
+        isTypingActive = false;
+        clearTimeout(typingTimer);
+        placeholder.style.opacity = '0';
+        textarea.value = '';
+        let i = 0;
+        function typeTag() {
+          if (i < text.length) { textarea.value += text[i++]; setTimeout(typeTag, 12); }
+          else { textarea.focus(); textarea.selectionStart = textarea.selectionEnd = textarea.value.length; }
+        }
+        typeTag();
+      });
+    });
+
+
+    // ── Submit ──
+    document.getElementById('submit-btn').addEventListener('click', () => {
+      if (!textarea.value.trim()) { textarea.focus(); return; }
+      const btn = document.getElementById('submit-btn');
+      btn.innerHTML = '<span>Sent ✓</span>';
+      btn.classList.add('bg-green-700');
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = '<span>Send it</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
+        btn.classList.remove('bg-green-700');
+        btn.disabled = false;
+      }, 2500);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library — lilyp.ai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --spring:cubic-bezier(0.34,1.56,0.64,1);--out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(72px);pointer-events:none;z-index:0}
+    .amb1{width:480px;height:380px;top:-60px;right:-60px;background:var(--blush);opacity:.5}
+    .amb2{width:360px;height:280px;bottom:8%;left:-50px;background:rgba(236,168,36,.13);opacity:1}
+
+    /* LAYOUT */
+    .wrap{position:relative;z-index:1;display:grid;grid-template-columns:300px 1fr;min-height:100vh;max-width:1500px;margin:0 auto}
+
+    /* SIDEBAR */
+    aside{position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--border);padding:3.5rem 2.5rem;display:flex;flex-direction:column;background:var(--paper);scrollbar-width:none}
+    aside::-webkit-scrollbar{display:none}
+    .brand{display:inline-block;text-decoration:none;color:var(--ink);margin-bottom:3rem}
+    .brand-name{font-family:var(--serif);font-size:1.75rem;font-weight:500;letter-spacing:-.02em}
+    .brand-name em{font-style:italic;color:var(--honey);font-weight:400}
+    .nav-lbl{font-family:var(--mono);font-size:.67rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.25rem}
+    .cat-nav{list-style:none;display:flex;flex-direction:column;gap:.2rem;flex:1}
+    .cl{display:block;text-decoration:none;color:var(--ink);padding:.65rem 1rem;margin-left:-1rem;border-radius:10px;position:relative;overflow:hidden;transition:color .25s;cursor:pointer}
+    .cl::before{content:'';position:absolute;inset:0;background:var(--blush);border-radius:10px;transform:scaleX(0);transform-origin:left;transition:transform .28s var(--snappy);z-index:-1}
+    .cl:hover::before,.cl.active::before{transform:scaleX(1)}
+    .ct-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.18rem}
+    .ct-name{font-family:var(--sans);font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:9px;transition:transform .28s var(--snappy)}
+    .ct-name::before{content:'';display:block;width:0;height:2px;background:var(--honey);border-radius:2px;flex-shrink:0;transition:width .28s var(--snappy)}
+    .cl:hover .ct-name::before,.cl.active .ct-name::before{width:13px}
+    .cl:hover .ct-name,.cl.active .ct-name{transform:translateX(4px)}
+    .cbadge{font-family:var(--mono);font-size:.63rem;background:rgba(18,18,17,.06);color:var(--inklight);padding:2px 6px;border-radius:4px;flex-shrink:0}
+    .ct-desc{font-family:var(--serif);font-style:italic;font-size:.82rem;color:var(--muted);line-height:1.4;transition:transform .28s var(--snappy),color .28s}
+    .cl:hover .ct-desc,.cl.active .ct-desc{transform:translateX(18px);color:var(--inklight)}
+    .sb-foot{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+    .sb-foot a{display:block;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .2s;margin-bottom:.55rem}
+    .sb-foot a:hover{color:var(--ink)}
+
+    /* MAIN */
+    main{padding:3.5rem 4rem;display:flex;flex-direction:column;gap:3rem}
+    h1{font-family:var(--serif);font-size:clamp(2.8rem,4.5vw,4.2rem);font-weight:400;line-height:1;letter-spacing:-.025em;margin-bottom:.9rem}
+    .accent{font-style:italic;color:var(--apricot)}
+    .intro-p{font-size:1.05rem;color:var(--inklight);max-width:500px;line-height:1.7}
+
+    /* START HERE */
+    .sh{display:grid;grid-template-columns:1fr auto;gap:2.5rem;align-items:center;background:var(--blush);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2.75rem;text-decoration:none;color:var(--ink);position:relative;overflow:hidden;transition:transform .32s var(--snappy),box-shadow .32s var(--snappy),border-color .32s}
+    .sh::after{content:'';position:absolute;top:-30%;right:-5%;width:340px;height:340px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.16;border-radius:50%;transition:transform .7s,opacity .5s;pointer-events:none}
+    .sh:hover::after{transform:scale(1.3) translate(-5%,5%);opacity:.26}
+    .sh:hover{transform:translateY(-4px);box-shadow:7px 7px 0 var(--apricot);border-color:var(--ink)}
+    .pin{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;background:rgba(18,18,17,.07);border:1px solid rgba(18,18,17,.12);border-radius:999px;padding:.28rem .8rem;margin-bottom:1.2rem}
+    .pin svg{width:10px;height:10px;fill:var(--honey);animation:spin 12s linear infinite}
+    @keyframes spin{100%{transform:rotate(360deg)}}
+    .sh-title{font-family:var(--serif);font-size:1.9rem;font-weight:500;line-height:1.15;letter-spacing:-.02em;margin-bottom:.7rem}
+    .sh-desc{font-size:.975rem;color:var(--inklight);line-height:1.65;max-width:460px}
+    .sh-arr{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:2;transition:background .25s,color .25s,transform .4s var(--spring)}
+    .sh:hover .sh-arr{background:var(--ink);color:var(--paper);transform:scale(1.08) rotate(45deg)}
+    .sh-arr svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .4s var(--spring)}
+    .sh:hover .sh-arr svg{transform:rotate(-45deg)}
+
+    /* FILTERS */
+    .fg-lbl{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem}
+    .chips{display:flex;flex-wrap:wrap;gap:.42rem;margin-bottom:1rem}
+    .chip{font-family:var(--mono);font-size:.7rem;padding:.32rem .8rem;border-radius:999px;border:1px solid var(--sand);background:white;color:var(--inklight);cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .2s var(--spring),box-shadow .18s;user-select:none}
+    .chip:hover{border-color:var(--inklight);transform:translateY(-1px)}
+    .chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper);box-shadow:3px 3px 0 var(--honey)}
+
+    /* CONTROLS */
+    .ctrl{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:.8rem;margin-top:-.5rem}
+    .ctrl span{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+
+    /* GRID */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.6rem}
+
+    /* FEATURED */
+    .card.feat{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;padding:0;overflow:hidden;border-radius:20px}
+    .feat-body{padding:2.25rem 2.5rem;display:flex;flex-direction:column}
+    .feat-vis{background:var(--stone);border-left:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:2.5rem}
+    .feat-vis::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;height:240px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.16;border-radius:50%;transition:opacity .4s;pointer-events:none}
+    .card.feat:hover .feat-vis::after{opacity:.3}
+    .pull{font-family:var(--serif);font-style:italic;font-size:1.3rem;font-weight:300;color:var(--inklight);line-height:1.55;text-align:center;position:relative;z-index:2}
+    .pull::before{content:'\201C';display:block;font-size:3.5rem;line-height:.8;color:var(--apricot);margin-bottom:.6rem;font-style:normal}
+
+    /* STANDARD CARD */
+    .card{background:white;border:1px solid var(--border);border-radius:16px;padding:1.7rem;display:flex;flex-direction:column;text-decoration:none;color:var(--ink);position:relative;opacity:0;transform:translateY(18px);transition:opacity .5s var(--out),transform .5s var(--out),box-shadow .28s var(--snappy),border-color .28s,background .2s}
+    .card.vis{opacity:1;transform:translateY(0)}
+    .card:not(.feat):hover{transform:translateY(-5px);border-color:var(--ink)}
+    .card.feat:hover{transform:translateY(-4px);box-shadow:7px 7px 0 var(--honey);border-color:var(--ink)}
+    .card:not(.feat):nth-child(3n+1):hover{box-shadow:5px 5px 0 var(--honey)}
+    .card:not(.feat):nth-child(3n+2):hover{box-shadow:5px 5px 0 var(--apricot)}
+    .card:not(.feat):nth-child(3n):hover{box-shadow:5px 5px 0 var(--blush);border-color:var(--inklight)}
+
+    .ch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.2rem;gap:.6rem}
+    .feat-body .ch{margin-bottom:1rem}
+    .tags{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}
+    .tag{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.22rem .55rem;border-radius:5px;border:1px solid var(--border);color:var(--inklight)}
+    .t-wf{border-color:rgba(236,168,36,.35);color:#9a6c00;background:rgba(236,168,36,.08)}
+    .t-pr{border-color:rgba(244,170,150,.4);color:#a85040;background:rgba(244,170,150,.1)}
+    .t-ht{border-color:rgba(236,168,36,.25);color:#9a6c00;background:rgba(236,168,36,.06)}
+    .t-td,.t-ex{border-color:var(--border);background:var(--stone)}
+    .t-cat{border-color:transparent;background:var(--stone);color:var(--inklight);font-size:.58rem}
+
+    .new-b{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--apricot);background:rgba(244,170,150,.14);border:1px solid rgba(244,170,150,.3);border-radius:999px;padding:.22rem .6rem;flex-shrink:0}
+    .pdot{width:5px;height:5px;background:var(--apricot);border-radius:50%;animation:pr 2s ease-in-out infinite}
+    @keyframes pr{0%{box-shadow:0 0 0 0 rgba(244,170,150,.7)}60%{box-shadow:0 0 0 5px rgba(244,170,150,0)}100%{box-shadow:0 0 0 0 rgba(244,170,150,0)}}
+
+    .ct{font-family:var(--serif);font-size:1.3rem;font-weight:400;line-height:1.25;letter-spacing:-.01em;margin-bottom:.5rem;transition:color .22s}
+    .card:hover .ct{color:var(--honey)}
+    .feat-body .ct{font-size:1.65rem;margin-bottom:.65rem}
+    .cd{font-size:.86rem;color:var(--inklight);line-height:1.65;flex-grow:1;margin-bottom:1.35rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .feat-body .cd{font-size:.95rem;-webkit-line-clamp:4}
+    .cf{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:.9rem;font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:auto}
+    .cfl{display:flex;align-items:center;gap:.5rem}
+    .csep{color:var(--sand)}
+    .harr{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.68rem;color:var(--inklight);opacity:0;transform:translateX(-8px);transition:opacity .22s,transform .28s var(--spring)}
+    .card:hover .harr{opacity:1;transform:translateX(0)}
+    .harr svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* LOADING */
+    .loading{grid-column:1/-1;text-align:center;padding:4rem 2rem;font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+    .loading::after{content:'...';animation:dots 1.2s steps(3,end) infinite}
+    @keyframes dots{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}}
+
+    /* EMPTY */
+    .empty{grid-column:1/-1;text-align:center;padding:4rem 2rem;opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s}
+    .empty.vis{opacity:1;transform:translateY(0)}
+    .empty p{font-family:var(--serif);font-style:italic;font-size:1.15rem;color:var(--muted)}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(18px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.1s}.d2{transition-delay:.18s}.d3{transition-delay:.26s}
+
+    /* RESPONSIVE */
+    @media(max-width:1100px){.wrap{grid-template-columns:260px 1fr}main{padding:3rem 2.5rem}}
+    @media(max-width:900px){
+      .wrap{grid-template-columns:1fr}
+      aside{position:relative;height:auto;border-right:none;border-bottom:1px solid var(--border);padding:2rem}
+      .cat-nav{flex-direction:row;flex-wrap:wrap;gap:.35rem}
+      .ct-desc{display:none}.brand{margin-bottom:1.25rem}main{padding:2rem}
+      .card.feat{grid-column:span 2;grid-template-columns:1fr}.feat-vis{display:none}
+    }
+    @media(max-width:640px){
+      .sh{grid-template-columns:1fr}.sh-arr{display:none}
+      .grid{grid-template-columns:1fr}.card.feat{grid-column:span 1}
+    }
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <div class="wrap">
+    <aside>
+      <a href="/" class="brand"><div class="brand-name">lilyp.<em>ai</em></div></a>
+      <div class="nav-lbl">Browse the Library</div>
+      <ul class="cat-nav" id="cat-nav">
+        <li><div class="cl active" data-cat="all"><div class="ct-row"><div class="ct-name">Everything <span class="cbadge" id="c-all">0</span></div></div><div class="ct-desc">The full archive.</div></div></li>
+        <li><div class="cl" data-cat="AI Workflows"><div class="ct-row"><div class="ct-name">AI Workflows <span class="cbadge" id="c-wf">0</span></div></div><div class="ct-desc">Step-by-step, built and tested.</div></div></li>
+        <li><div class="cl" data-cat="Prompts Worth Keeping"><div class="ct-row"><div class="ct-name">Prompts Worth Keeping <span class="cbadge" id="c-pr">0</span></div></div><div class="ct-desc">The ones I actually use again.</div></div></li>
+        <li><div class="cl" data-cat="Systems"><div class="ct-row"><div class="ct-name">Systems <span class="cbadge" id="c-sy">0</span></div></div><div class="ct-desc">Full pipeline architecture.</div></div></li>
+        <li><div class="cl" data-cat="What I Tried"><div class="ct-row"><div class="ct-name">What I Tried <span class="cbadge" id="c-tr">0</span></div></div><div class="ct-desc">Experiments and honest failures.</div></div></li>
+        <li><div class="cl" data-cat="Honest Takes"><div class="ct-row"><div class="ct-name">Honest Takes <span class="cbadge" id="c-ht">0</span></div></div><div class="ct-desc">Opinions, not advice columns.</div></div></li>
+        <li><div class="cl" data-cat="Building in Public"><div class="ct-row"><div class="ct-name">Building in Public <span class="cbadge" id="c-bp">0</span></div></div><div class="ct-desc">Behind the scenes on this site.</div></div></li>
+      </ul>
+      <div class="sb-foot">
+        <a href="/">Back to home</a>
+        <a href="/builds">Builds</a>
+        <a href="/about">About</a>
+      </div>
+    </aside>
+
+    <main>
+      <header class="rv">
+        <h1>The <span class="accent">Library.</span></h1>
+        <p class="intro-p">Things I've actually figured out -- and things I'm still figuring out. Filtered by what's useful to you, not by what's newest.</p>
+      </header>
+
+      <a href="/library/how-i-actually-use-claude-at-work" class="sh rv d1">
+        <div>
+          <div class="pin"><svg viewBox="0 0 24 24"><path d="M12 2l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z"/></svg>Start Here</div>
+          <div class="sh-title">How I actually use Claude at work -- and what I got wrong first</div>
+          <div class="sh-desc">New here? Start with this. The shift from one-off prompts to real workflows, and why most AI advice for early-career professionals misses the point.</div>
+        </div>
+        <div class="sh-arr"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+      <div class="rv d2">
+        <div class="fg-lbl">Type</div>
+        <div class="chips" id="chips-type">
+          <div class="chip on" data-g="type" data-v="all">All types</div>
+          <div class="chip" data-g="type" data-v="Workflow">Workflow</div>
+          <div class="chip" data-g="type" data-v="Prompt">Prompt</div>
+          <div class="chip" data-g="type" data-v="How-To">How-To</div>
+          <div class="chip" data-g="type" data-v="Teardown">Teardown</div>
+          <div class="chip" data-g="type" data-v="Experiment">Experiment</div>
+          <div class="chip" data-g="type" data-v="Opinion">Opinion</div>
+        </div>
+        <div class="fg-lbl">Read length</div>
+        <div class="chips" id="chips-len">
+          <div class="chip on" data-g="length" data-v="all">Any length</div>
+          <div class="chip" data-g="length" data-v="Quick">Quick &lt;5 min</div>
+          <div class="chip" data-g="length" data-v="Medium">Medium 5-10</div>
+          <div class="chip" data-g="length" data-v="Deep Dive">Deep dive</div>
+        </div>
+      </div>
+
+      <div class="ctrl rv d3">
+        <span id="st">Loading...</span>
+        <span id="sc"></span>
+      </div>
+
+      <section class="grid" id="grid"><div class="loading">Loading library</div></section>
+    </main>
+  </div>
+
+  <script>
+    let DATA = [];
+    let catF = 'all', typeF = 'all', lenF = 'all';
+
+    const TC = {'Workflow':'t-wf','Prompt':'t-pr','How-To':'t-ht','Teardown':'t-td','Experiment':'t-ex','Opinion':''};
+
+    function filtered() {
+      return DATA.filter(e =>
+        (catF === 'all' || e.cat === catF) &&
+        (typeF === 'all' || e.type === typeF) &&
+        (lenF === 'all' || e.len === lenF)
+      );
+    }
+
+    function badge(e) {
+      return `<span class="tag t-cat">${e.cat}</span><span class="tag ${TC[e.type] || ''}">${e.type}</span>`;
+    }
+
+    function render() {
+      const g = document.getElementById('grid');
+      const f = filtered();
+      let st = 'Viewing: ' + (catF === 'all' ? 'Everything' : catF);
+      if (typeF !== 'all') st += ` · ${typeF}`;
+      if (lenF !== 'all')  st += ` · ${lenF}`;
+      document.getElementById('st').textContent = st;
+      document.getElementById('sc').textContent = `${f.length} ${f.length === 1 ? 'entry' : 'entries'}`;
+      g.innerHTML = '';
+
+      if (!f.length) {
+        const el = document.createElement('div');
+        el.className = 'empty';
+        el.innerHTML = '<p>Nothing here for that combination yet.</p><p style="margin-top:.75rem;font-size:.9rem;font-style:normal;font-family:var(--sans)">Try clearing a filter above.</p>';
+        g.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('vis'));
+        return;
+      }
+
+      f.forEach((e, i) => {
+        const feat = e.status === 'featured';
+        const newB = e.status === 'new' ? `<span class="new-b"><span class="pdot"></span>New</span>` : '';
+        const card = document.createElement('a');
+        card.href = '/library/' + e.slug;
+        card.className = 'card' + (feat ? ' feat' : '');
+        card.style.transitionDelay = `${i * .065}s`;
+
+        if (feat) {
+          card.innerHTML = `
+            <div class="feat-body">
+              <div class="ch"><div class="tags">${newB}${badge(e)}</div></div>
+              <div class="ct">${e.title}</div>
+              <div class="cd">${e.desc}</div>
+              <div class="cf">
+                <div class="cfl"><span>${e.date}</span></div>
+                <span class="harr">Read <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+              </div>
+            </div>
+            <div class="feat-vis"><div class="pull">${e.pull || e.hook}</div></div>`;
+        } else {
+          card.innerHTML = `
+            <div class="ch"><div class="tags">${newB}<span class="tag ${TC[e.type] || ''}">${e.type}</span></div></div>
+            <div class="ct">${e.title}</div>
+            <div class="cd">${e.hook || e.desc}</div>
+            <div class="cf">
+              <div class="cfl"><span class="tag t-cat">${e.cat}</span><span class="csep">·</span><span>${e.date}</span></div>
+              <span class="harr">Read <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+            </div>`;
+        }
+        g.appendChild(card);
+        requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('vis')));
+      });
+    }
+
+    function counts() {
+      document.getElementById('c-all').textContent = DATA.length;
+      document.getElementById('c-wf').textContent = DATA.filter(e => e.cat === 'AI Workflows').length;
+      document.getElementById('c-pr').textContent = DATA.filter(e => e.cat === 'Prompts Worth Keeping').length;
+      document.getElementById('c-sy').textContent = DATA.filter(e => e.cat === 'Systems').length;
+      document.getElementById('c-tr').textContent = DATA.filter(e => e.cat === 'What I Tried').length;
+      document.getElementById('c-ht').textContent = DATA.filter(e => e.cat === 'Honest Takes').length;
+      document.getElementById('c-bp').textContent = DATA.filter(e => e.cat === 'Building in Public').length;
+    }
+
+    // ── Fetch from Airtable API ──
+    async function loadLibrary() {
+      try {
+        const res = await fetch('/api/library');
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        DATA = await res.json();
+        counts();
+        render();
+      } catch (err) {
+        document.getElementById('grid').innerHTML =
+          '<div class="empty vis"><p>Could not load library entries.</p></div>';
+        document.getElementById('st').textContent = 'Error loading library';
+        console.error(err);
+      }
+    }
+
+    // ── Filter interactions ──
+    document.querySelectorAll('.cl').forEach(l => {
+      l.addEventListener('click', () => {
+        document.querySelectorAll('.cl').forEach(x => x.classList.remove('active'));
+        l.classList.add('active');
+        catF = l.dataset.cat;
+        render();
+      });
+    });
+
+    document.querySelectorAll('.chip').forEach(c => {
+      c.addEventListener('click', () => {
+        document.querySelectorAll(`.chip[data-g="${c.dataset.g}"]`).forEach(x => x.classList.remove('on'));
+        c.classList.add('on');
+        if (c.dataset.g === 'type')   typeF = c.dataset.v;
+        if (c.dataset.g === 'length') lenF  = c.dataset.v;
+        render();
+      });
+    });
+
+    // ── Scroll reveals ──
+    const obs = new IntersectionObserver(es => {
+      es.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: .1, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+    loadLibrary();
+  </script>
+</body>
+</html>

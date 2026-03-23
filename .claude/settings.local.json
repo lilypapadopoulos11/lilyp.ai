@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(node -e \"const express=require\\(''express''\\); console.log\\(''Express loads OK''\\);\")",
+      "Bash(pkill -f \"node.*server.js\")",
+      "Bash(git -C \"C:/Users/lilyp/OneDrive/lilyp.ai\" rev-parse --show-toplevel)",
+      "Bash(git config:*)"
+    ]
+  }
+}

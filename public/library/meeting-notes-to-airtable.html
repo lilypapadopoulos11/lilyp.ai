@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Notes → Action Items → Airtable — lilyp.ai Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+    .amb1{width:500px;height:400px;top:-80px;right:-80px;background:var(--blush);opacity:.4}
+    .amb2{width:350px;height:280px;bottom:10%;left:-60px;background:rgba(236,168,36,.12);opacity:1}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:780px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.25rem;font-weight:500;text-decoration:none;color:var(--ink)}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .2s}
+    .nav-back:hover{color:var(--ink)}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:4rem 2rem 8rem}
+
+    /* META TAGS */
+    .meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+    .tag{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.22rem .6rem;border-radius:5px;border:1px solid var(--border);color:var(--inklight)}
+    .tag-cat{background:var(--stone);border-color:transparent}
+    .tag-wf{border-color:rgba(236,168,36,.35);color:#9a6c00;background:rgba(236,168,36,.08)}
+    .date-txt{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+
+    /* HEADER */
+    h1.entry-title{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.2rem);font-weight:400;line-height:1.1;letter-spacing:-.025em;margin-bottom:1.2rem}
+    .hook-line{font-family:var(--serif);font-style:italic;font-size:1.25rem;font-weight:300;color:var(--inklight);line-height:1.5;border-left:3px solid var(--apricot);padding-left:1.2rem;margin-bottom:2rem}
+
+    /* WHAT YOU'LL GET */
+    .get-out{display:flex;align-items:flex-start;gap:.9rem;background:var(--blush);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:0}
+    .get-out svg{width:18px;height:18px;flex-shrink:0;margin-top:2px;stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .get-out p{font-family:var(--sans);font-size:.9rem;color:var(--inklight);line-height:1.6}
+    .get-out strong{color:var(--ink);font-weight:600}
+
+    /* STATS BAR */
+    .stats-bar{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:white;margin:2.5rem 0}
+    .stat{flex:1;min-width:140px;padding:1.1rem 1.4rem;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:.35rem}
+    .stat:last-child{border-right:none}
+    .stat-label{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .stat-value{font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--ink)}
+    .stat-value em{font-style:normal;color:var(--honey)}
+
+    /* DIVIDER */
+    .entry-divider{height:1px;background:var(--border);margin:2.5rem 0}
+
+    /* BODY TEXT */
+    .entry-body{font-size:1.05rem;line-height:1.75;color:var(--inklight)}
+    .entry-body h2{font-family:var(--serif);font-size:1.6rem;font-weight:400;color:var(--ink);margin:2.5rem 0 1rem;letter-spacing:-.015em}
+    .entry-body p{margin-bottom:1.25rem}
+    .entry-body p:last-child{margin-bottom:0}
+    .entry-body ul{margin:0 0 1.25rem;padding-left:0;list-style:none}
+    .entry-body ul li{position:relative;padding-left:1.4rem;margin-bottom:.5rem;font-size:1rem}
+    .entry-body ul li::before{content:'→';position:absolute;left:0;color:var(--apricot);font-family:var(--sans)}
+    .entry-body strong{color:var(--ink);font-weight:600}
+
+    /* BEFORE / AFTER */
+    .before-after{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:2rem 0}
+    .ba-panel{border-radius:12px;padding:1.4rem}
+    .ba-panel.before{background:var(--stone);border:1px solid var(--border)}
+    .ba-panel.after{background:rgba(236,168,36,.08);border:1px solid rgba(236,168,36,.2)}
+    .ba-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+    .ba-panel.before .ba-label{color:var(--inklight)}
+    .ba-panel.after  .ba-label{color:#9a6c00}
+    .ba-label::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+    .ba-list{list-style:none;padding:0;margin:0}
+    .ba-list li{font-size:.88rem;color:var(--inklight);line-height:1.5;padding:.3rem 0;border-bottom:1px solid rgba(18,18,17,.06)}
+    .ba-list li:last-child{border-bottom:none}
+    .ba-panel.after .ba-list li{color:var(--inklight)}
+
+    /* ══ TIMELINE ══ */
+    .timeline{position:relative;margin:2.5rem 0;padding-left:2.5rem}
+
+    /* Vertical connecting line */
+    .timeline::before{
+      content:'';
+      position:absolute;
+      left:.85rem;
+      top:1.5rem;
+      bottom:1.5rem;
+      width:1.5px;
+      background:linear-gradient(180deg, var(--apricot) 0%, var(--honey) 60%, transparent 100%);
+    }
+
+    .step{position:relative;margin-bottom:2.75rem}
+    .step:last-child{margin-bottom:0}
+
+    /* Step number bubble */
+    .step-num{
+      position:absolute;
+      left:-2.5rem;
+      top:.15rem;
+      width:1.7rem;height:1.7rem;
+      border-radius:50%;
+      background:var(--ink);
+      color:var(--paper);
+      font-family:var(--mono);
+      font-size:.65rem;
+      font-weight:700;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+      z-index:2;
+      transition:background .25s,transform .25s var(--spring);
+    }
+    .step:hover .step-num{background:var(--honey);color:var(--ink);transform:scale(1.12)}
+
+    .step-title{
+      font-family:var(--sans);font-size:1.05rem;font-weight:700;
+      color:var(--ink);margin-bottom:.5rem;
+      transition:color .2s;
+    }
+    .step:hover .step-title{color:var(--honey)}
+
+    .step-desc{font-family:var(--sans);font-size:.93rem;color:var(--inklight);line-height:1.65;margin-bottom:.9rem}
+
+    /* "What Claude does here" callout inside a step */
+    .step-claude{
+      display:flex;align-items:flex-start;gap:.75rem;
+      background:#1e1e1e;
+      border-radius:10px;
+      padding:1rem 1.2rem;
+      margin-top:.75rem;
+    }
+    .step-claude-label{
+      font-family:var(--mono);font-size:.6rem;
+      text-transform:uppercase;letter-spacing:.1em;
+      color:rgba(255,255,255,.35);
+      white-space:nowrap;margin-top:2px;flex-shrink:0;
+    }
+    .step-claude-text{
+      font-family:var(--mono);font-size:.78rem;
+      color:rgba(255,255,255,.75);
+      line-height:1.65;
+    }
+    .step-claude-text .hl{color:var(--apricot)}
+
+    /* Optional step note */
+    .step-note{
+      display:flex;align-items:flex-start;gap:.6rem;
+      background:var(--stone);border-radius:8px;
+      padding:.75rem 1rem;margin-top:.75rem;
+      font-size:.84rem;color:var(--inklight);line-height:1.5;
+    }
+    .step-note svg{width:14px;height:14px;flex-shrink:0;margin-top:2px;stroke:var(--inklight);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* USE / DON'T USE */
+    .use-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:2rem 0}
+    .use-panel{border-radius:12px;padding:1.4rem}
+    .use-panel.yes{background:rgba(39,201,63,.06);border:1px solid rgba(39,201,63,.2)}
+    .use-panel.no{background:rgba(244,170,150,.08);border:1px solid rgba(244,170,150,.25)}
+    .use-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+    .use-panel.yes .use-label{color:#1a8a2a}
+    .use-panel.no  .use-label{color:#a85040}
+    .use-label::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+    .use-list{list-style:none;padding:0;margin:0}
+    .use-list li{font-size:.88rem;color:var(--inklight);line-height:1.5;padding:.3rem 0;border-bottom:1px solid rgba(18,18,17,.06)}
+    .use-list li:last-child{border-bottom:none}
+
+    /* WHERE THIS BREAKS callout */
+    .breaks-block{background:var(--stone);border-left:3px solid var(--sand);border-radius:0 12px 12px 0;padding:1.4rem 1.6rem;margin:2rem 0}
+    .breaks-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.9rem}
+    .breaks-list{list-style:none;padding:0;margin:0}
+    .breaks-list li{font-size:.93rem;color:var(--inklight);line-height:1.6;padding:.4rem 0;border-bottom:1px solid rgba(18,18,17,.06);display:flex;gap:.75rem;align-items:flex-start}
+    .breaks-list li:last-child{border-bottom:none}
+    .breaks-list li::before{content:'!';font-family:var(--mono);font-size:.6rem;font-weight:700;color:var(--apricot);background:rgba(244,170,150,.2);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px}
+
+    /* CALLOUT */
+    .callout{background:var(--stone);border-radius:12px;padding:1.25rem 1.4rem;margin:1.5rem 0;display:flex;gap:.9rem;align-items:flex-start}
+    .callout svg{width:16px;height:16px;flex-shrink:0;margin-top:3px;stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .callout p{font-size:.9rem;color:var(--inklight);line-height:1.6;margin:0}
+    .callout strong{color:var(--ink)}
+
+    /* RELATED */
+    .related-section{margin-top:4rem;padding-top:2.5rem;border-top:1px solid var(--border)}
+    .related-label{font-family:var(--mono);font-size:.67rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.5rem}
+    .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+    .rel-card{display:block;text-decoration:none;color:var(--ink);background:white;border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.4rem;transition:transform .25s var(--snappy),box-shadow .25s,border-color .25s}
+    .rel-card:hover{transform:translateY(-3px);box-shadow:4px 4px 0 var(--honey);border-color:var(--ink)}
+    .rel-role{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem}
+    .rel-title{font-family:var(--serif);font-size:1rem;line-height:1.3;transition:color .2s}
+    .rel-card:hover .rel-title{color:var(--honey)}
+
+    /* SOFT CTA */
+    .soft-cta{margin-top:3.5rem;background:var(--blush);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+    .soft-cta::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.15;border-radius:50%;pointer-events:none}
+    .soft-cta p.cta-eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.75rem}
+    .soft-cta h3{font-family:var(--serif);font-size:1.7rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+    .soft-cta p.cta-sub{font-size:.95rem;color:var(--inklight);max-width:400px;margin:0 auto 1.75rem;line-height:1.65}
+    .cta-btn{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.9rem;font-weight:600;padding:.85rem 2rem;border-radius:999px;text-decoration:none;transition:background .2s,box-shadow .2s}
+    .cta-btn:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
+    .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}
+
+    @media(max-width:600px){
+      .before-after,.use-grid{grid-template-columns:1fr}
+      .stats-bar{flex-direction:column}
+      .stat{border-right:none;border-bottom:1px solid var(--border)}
+      .stat:last-child{border-bottom:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <a href="/library" class="nav-back">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="rv">
+      <div class="meta-row">
+        <span class="tag tag-cat">AI Workflows</span>
+        <span class="tag tag-wf">Workflow</span>
+        <span class="tag">Medium · 5–10 min read</span>
+        <span class="date-txt">Mar 2026</span>
+      </div>
+      <h1 class="entry-title">Meeting notes → action items → Airtable</h1>
+      <p class="hook-line">A three-step Claude workflow that turns any meeting transcript into structured, trackable action items — populated directly into your Airtable base.</p>
+      <div class="get-out">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p><strong>What you'll get out of this:</strong> A repeatable three-step process you can run after any meeting — from raw transcript to structured, owner-assigned action items in Airtable in under two minutes. No template required, no manual reformatting.</p>
+      </div>
+    </header>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar rv d1">
+      <div class="stat">
+        <span class="stat-label">Tools</span>
+        <span class="stat-value">Claude + <em>Airtable MCP</em></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Setup time</span>
+        <span class="stat-value">~20 min first time</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Time per use</span>
+        <span class="stat-value">&lt;2 min</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Difficulty</span>
+        <span class="stat-value">Beginner</span>
+      </div>
+    </div>
+
+    <div class="entry-divider"></div>
+
+    <div class="entry-body">
+
+      <!-- BEFORE / AFTER -->
+      <div class="rv d1">
+        <h2>What this actually replaces</h2>
+        <p>Every meeting ends the same way: someone has notes in a doc somewhere, people leave with different ideas about what they committed to, and the follow-up email takes 20 minutes to write. By the time action items make it into a tracker, half of them are stale or missing an owner.</p>
+        <div class="before-after">
+          <div class="ba-panel before">
+            <div class="ba-label">Before</div>
+            <ul class="ba-list">
+              <li>Reread notes to find action items</li>
+              <li>Manually assign owners from memory</li>
+              <li>Copy items into tracker row by row</li>
+              <li>Write follow-up email from scratch</li>
+              <li>~30–45 min total per meeting</li>
+            </ul>
+          </div>
+          <div class="ba-panel after">
+            <div class="ba-label">After</div>
+            <ul class="ba-list">
+              <li>Paste transcript, run workflow</li>
+              <li>Claude extracts + assigns owners</li>
+              <li>Items populate Airtable automatically</li>
+              <li>Follow-up email drafted in same pass</li>
+              <li>&lt;2 min total per meeting</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- USE THIS WHEN / NOT WHEN -->
+      <div class="rv d2">
+        <h2>Use this when</h2>
+        <div class="use-grid">
+          <div class="use-panel yes">
+            <div class="use-label">Good fit</div>
+            <ul class="use-list">
+              <li>You have a transcript or detailed notes</li>
+              <li>Multiple people with different action items</li>
+              <li>You already use Airtable to track work</li>
+              <li>Meeting happens on a regular cadence</li>
+              <li>You need to share a follow-up with attendees</li>
+            </ul>
+          </div>
+          <div class="use-panel no">
+            <div class="use-label">Not the right fit</div>
+            <ul class="use-list">
+              <li>Notes are just a few bullet points</li>
+              <li>Single owner, no coordination needed</li>
+              <li>You don't have a tracker to push into</li>
+              <li>Meeting was exploratory with no decisions</li>
+              <li>You need a summary, not action items</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry-divider rv d2"></div>
+
+      <!-- TIMELINE -->
+      <div class="rv d2">
+        <h2>The workflow</h2>
+        <p>Three steps. The first two happen inside a Claude conversation. The third uses the Airtable MCP connector to push directly into your base.</p>
+      </div>
+
+      <div class="timeline rv d3">
+
+        <!-- STEP 1 -->
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-title">Paste the transcript and set the context</div>
+          <div class="step-desc">Open a Claude conversation and drop in your raw meeting notes or transcript. Before the notes, give Claude one sentence of context: what kind of meeting it was and what matters. You don't need to clean anything up first — messy is fine.</div>
+          <div class="step-claude">
+            <span class="step-claude-label">Example</span>
+            <span class="step-claude-text"><span class="hl">This was a CRE deal team check-in on the York industrial property.</span> Here are the raw notes from today's call. Extract all action items with owners and deadlines.<br><br>[PASTE NOTES HERE]</span>
+          </div>
+          <div class="step-note">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            The context sentence matters more than you'd think. "CRE deal team check-in" tells Claude what kinds of commitments are likely — broker follow-ups, client callbacks, deadline milestones — and it extracts more accurately as a result.
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-title">Extract and review the structured output</div>
+          <div class="step-desc">Claude returns a structured list of action items — each with an owner, a deadline, a priority level, and any relevant context. Read through it quickly. This is your one human-in-the-loop moment: check that owners are right and nothing critical was missed.</div>
+          <div class="step-claude">
+            <span class="step-claude-label">What Claude does here</span>
+            <span class="step-claude-text">Returns a <span class="hl">JSON array</span> of action items, each with:<br>→ item (one clear sentence)<br>→ owner (name or "TBD")<br>→ deadline (date or "Not specified")<br>→ priority (High / Medium / Low)<br>→ notes (context or empty string)</span>
+          </div>
+          <div class="step-note">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            If an owner is wrong or a deadline is missing, just correct it in plain language in the next message — "Change the owner on item 3 to Sarah, deadline is end of week." Claude updates the array and you move on.
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-title">Push to Airtable via MCP</div>
+          <div class="step-desc">Once you're happy with the output, tell Claude to push it to your Airtable base using the Airtable MCP connector. Each action item becomes a new row, with fields mapped to your base's column names. The whole push takes a few seconds.</div>
+          <div class="step-claude">
+            <span class="step-claude-label">Example</span>
+            <span class="step-claude-text"><span class="hl">Now push these to my Airtable base.</span> Base ID: appXXXXXXXX, Table: Action Items. Map "item" → Task, "owner" → Owner, "deadline" → Due Date, "priority" → Priority.</span>
+          </div>
+          <div class="step-note">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            You only need to spell out the field mapping the first time. After that, save it as a Claude Project instruction so it's included automatically on every run — you won't need to type it again.
+          </div>
+        </div>
+
+      </div><!-- /timeline -->
+
+      <!-- WHERE IT BREAKS -->
+      <div class="rv d4">
+        <h2>Where this breaks</h2>
+        <p>Honest version. This workflow works well most of the time — but there are specific failure modes worth knowing about before you rely on it.</p>
+        <div class="breaks-block">
+          <div class="breaks-label">Known failure modes</div>
+          <ul class="breaks-list">
+            <li>
+              <div><strong>Vague commitments get vague action items.</strong> If your meeting notes say "we'll sort out the timeline later," Claude can't make that specific. Garbage in, garbage out — the workflow doesn't fix unclear decision-making, it just surfaces it faster.</div>
+            </li>
+            <li>
+              <div><strong>Owner attribution fails on group meetings with similar names or pronouns.</strong> "She'll handle it" with three women in the room means Claude has to guess. It will, and it might be wrong. Always review Step 2.</div>
+            </li>
+            <li>
+              <div><strong>Airtable field type mismatches will cause silent failures.</strong> If your Due Date field expects a date format and Claude pushes a string like "end of next week," the record will create but the field will be empty. Make sure your base uses the right field types before the first push.</div>
+            </li>
+            <li>
+              <div><strong>Long transcripts (&gt;10,000 words) can cause Claude to miss items near the middle.</strong> For very long recordings, split into sections and run extraction in batches — then combine before pushing to Airtable.</div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="callout">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <p><strong>The one rule that prevents most problems:</strong> always keep a human in the loop at Step 2 before anything goes to Airtable. The two minutes you spend reviewing the extracted items is the quality control layer. Skip it and you'll eventually push something wrong into your tracker and spend longer fixing it than the workflow saved you.</p>
+        </div>
+      </div>
+
+      <!-- ADAPT IT -->
+      <div class="rv d4">
+        <h2>How to adapt this</h2>
+        <p>The three-step structure works for anything where you're turning meeting output into tracked work. Swap out the pieces:</p>
+        <ul>
+          <li><strong>Different meeting types</strong> — client calls, investor updates, team standups. The context sentence in Step 1 is what changes the extraction behaviour.</li>
+          <li><strong>Different trackers</strong> — replace the Airtable push with a Notion database, a Google Sheet, or a HubSpot task via MCP. The extraction step is the same; only the destination changes.</li>
+          <li><strong>Add a follow-up email step</strong> — after Step 2, ask Claude to draft a follow-up email using the extracted items. Each owner gets a paragraph summarising their commitments. Takes 10 extra seconds and means you never write another post-meeting email from scratch.</li>
+        </ul>
+      </div>
+
+    </div><!-- /entry-body -->
+
+    <!-- RELATED -->
+    <div class="related-section rv d4">
+      <div class="related-label">What to read next</div>
+      <div class="related-grid">
+        <a href="/library/extract-and-structure-megaprompt" class="rel-card">
+          <div class="rel-role">Next logical step · Prompt</div>
+          <div class="rel-title">The "Extract &amp; Structure" megaprompt</div>
+        </a>
+        <a href="/library/cre-outbound-engine" class="rel-card">
+          <div class="rel-role">Same category · Teardown</div>
+          <div class="rel-title">The CRE Outbound Engine</div>
+        </a>
+        <a href="/library/failing-to-automate-the-comp-pack" class="rel-card">
+          <div class="rel-role">Adjacent idea · Experiment</div>
+          <div class="rel-title">Failing to automate the comp pack</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- SOFT CTA -->
+    <div class="soft-cta rv d5">
+      <p class="cta-eyebrow">Found this useful?</p>
+      <h3>Tell me what's slowing you down.</h3>
+      <p class="cta-sub">If you're spending 30 minutes after every meeting doing something that should take two, there's probably a workflow for it.</p>
+      <a href="/#help" class="cta-btn">
+        Tell me what's broken
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "lilyp-ai",
+  "version": "1.0.0",
+  "description": "lilyp.ai personal site",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

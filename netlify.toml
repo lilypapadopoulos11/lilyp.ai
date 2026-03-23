@@ -1,0 +1,26 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# ── API: single item (must come before the list rule) ──
+[[redirects]]
+  from   = "/api/library/:slug"
+  to     = "/.netlify/functions/library-item?slug=:slug"
+  status = 200
+
+# ── API: full list ──
+[[redirects]]
+  from   = "/api/library"
+  to     = "/.netlify/functions/library"
+  status = 200
+
+# ── Dynamic library item pages ──
+# Static files (the three hand-crafted pages) are served first by Netlify.
+# Any slug that doesn't match a real file falls through to item.html.
+[[redirects]]
+  from   = "/library/:slug"
+  to     = "/library/item.html"
+  status = 200

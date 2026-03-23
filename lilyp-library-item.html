@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The "Extract & Structure" Megaprompt — lilyp.ai Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+    .amb1{width:500px;height:400px;top:-80px;right:-80px;background:var(--blush);opacity:.45}
+    .amb2{width:350px;height:280px;bottom:10%;left:-60px;background:rgba(236,168,36,.12);opacity:1}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:780px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.25rem;font-weight:500;text-decoration:none;color:var(--ink)}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .2s}
+    .nav-back:hover{color:var(--ink)}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:4rem 2rem 8rem}
+
+    /* HEADER */
+    .entry-header{margin-bottom:3rem}
+    .meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+    .tag{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.22rem .6rem;border-radius:5px;border:1px solid var(--border);color:var(--inklight)}
+    .tag-cat{background:var(--stone);border-color:transparent}
+    .tag-prompt{border-color:rgba(244,170,150,.4);color:#a85040;background:rgba(244,170,150,.1)}
+    .tag-new{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--apricot);background:rgba(244,170,150,.14);border:1px solid rgba(244,170,150,.3);border-radius:999px;padding:.22rem .6rem}
+    .pdot{width:5px;height:5px;background:var(--apricot);border-radius:50%;animation:pr 2s ease-in-out infinite}
+    @keyframes pr{0%{box-shadow:0 0 0 0 rgba(244,170,150,.7)}60%{box-shadow:0 0 0 5px rgba(244,170,150,0)}100%{box-shadow:0 0 0 0 rgba(244,170,150,0)}}
+
+    .date-txt{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+
+    h1.entry-title{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.2rem);font-weight:400;line-height:1.1;letter-spacing:-.025em;margin-bottom:1.2rem}
+
+    .hook-line{font-family:var(--serif);font-style:italic;font-size:1.25rem;font-weight:300;color:var(--inklight);line-height:1.5;border-left:3px solid var(--apricot);padding-left:1.2rem;margin-bottom:2rem}
+
+    .get-out{display:flex;align-items:flex-start;gap:.9rem;background:var(--blush);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:0}
+    .get-out-icon{width:18px;height:18px;flex-shrink:0;margin-top:2px}
+    .get-out-icon path{stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .get-out p{font-family:var(--sans);font-size:.9rem;color:var(--inklight);line-height:1.6}
+    .get-out strong{color:var(--ink);font-weight:600}
+
+    /* DIVIDER */
+    .entry-divider{height:1px;background:var(--border);margin:2.5rem 0}
+
+    /* BODY CONTENT */
+    .entry-body{font-size:1.05rem;line-height:1.75;color:var(--inklight)}
+    .entry-body h2{font-family:var(--serif);font-size:1.6rem;font-weight:400;color:var(--ink);margin:2.5rem 0 1rem;letter-spacing:-.015em}
+    .entry-body h3{font-family:var(--sans);font-size:1rem;font-weight:700;color:var(--ink);margin:2rem 0 .7rem;text-transform:uppercase;letter-spacing:.06em;font-size:.85rem}
+    .entry-body p{margin-bottom:1.25rem}
+    .entry-body p:last-child{margin-bottom:0}
+    .entry-body ul{margin:0 0 1.25rem 0;padding-left:0;list-style:none}
+    .entry-body ul li{position:relative;padding-left:1.4rem;margin-bottom:.5rem;font-size:1rem}
+    .entry-body ul li::before{content:'→';position:absolute;left:0;color:var(--apricot);font-family:var(--sans)}
+    .entry-body strong{color:var(--ink);font-weight:600}
+
+    /* USE THIS WHEN */
+    .use-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.75rem 0}
+    .use-panel{border-radius:12px;padding:1.4rem}
+    .use-panel.yes{background:rgba(39,201,63,.06);border:1px solid rgba(39,201,63,.2)}
+    .use-panel.no{background:rgba(244,170,150,.08);border:1px solid rgba(244,170,150,.25)}
+    .use-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+    .use-panel.yes .use-label{color:#1a8a2a}
+    .use-panel.no  .use-label{color:#a85040}
+    .use-label::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+    .use-list{list-style:none;padding:0;margin:0}
+    .use-list li{font-size:.88rem;color:var(--inklight);line-height:1.5;padding:.3rem 0;border-bottom:1px solid rgba(18,18,17,.06)}
+    .use-list li:last-child{border-bottom:none}
+
+    @media(max-width:600px){.use-grid{grid-template-columns:1fr}}
+    /* Outer container — mimics Claude's code block */
+    .prompt-block{
+      position:relative;
+      background:#1e1e1e;
+      border-radius:12px;
+      overflow:hidden;
+      margin:2rem 0;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    /* Top bar — dark pill row like Claude */
+    .prompt-bar{
+      display:flex;align-items:center;justify-content:space-between;
+      background:#2a2a2a;
+      padding:.6rem 1rem;
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
+    .prompt-label{
+      font-family:var(--mono);font-size:.68rem;
+      text-transform:uppercase;letter-spacing:.1em;
+      color:rgba(255,255,255,.4);
+    }
+
+    /* Copy button */
+    .copy-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:6px;
+      padding:.3rem .7rem;
+      font-family:var(--mono);font-size:.65rem;
+      text-transform:uppercase;letter-spacing:.06em;
+      color:rgba(255,255,255,.55);
+      cursor:pointer;
+      transition:background .18s,color .18s,border-color .18s;
+      user-select:none;
+    }
+    .copy-btn:hover{background:rgba(255,255,255,.13);color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.2)}
+    .copy-btn.copied{background:rgba(39,201,63,.12);border-color:rgba(39,201,63,.3);color:#27c93f}
+    .copy-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+    /* Prompt text area */
+    .prompt-text{
+      padding:1.5rem 1.4rem;
+      font-family:var(--mono);font-size:.82rem;
+      line-height:1.75;
+      color:rgba(255,255,255,.82);
+      white-space:pre-wrap;
+      word-break:break-word;
+      overflow-x:auto;
+    }
+    /* Syntax-style colour hints */
+    .pt-comment{color:rgba(255,255,255,.28)}
+    .pt-label{color:#F4AA96}
+    .pt-bracket{color:#ECA824}
+    .pt-value{color:rgba(255,255,255,.82)}
+
+    /* CALLOUT */
+    .callout{background:var(--stone);border-radius:12px;padding:1.25rem 1.4rem;margin:1.5rem 0;display:flex;gap:.9rem;align-items:flex-start}
+    .callout svg{width:16px;height:16px;flex-shrink:0;margin-top:3px}
+    .callout p{font-size:.9rem;color:var(--inklight);line-height:1.6;margin:0}
+    .callout strong{color:var(--ink)}
+
+    /* RELATED */
+    .related-section{margin-top:4rem;padding-top:2.5rem;border-top:1px solid var(--border)}
+    .related-label{font-family:var(--mono);font-size:.67rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.5rem}
+    .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.1rem}
+    .rel-card{display:block;text-decoration:none;color:var(--ink);background:white;border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.4rem;transition:transform .25s var(--snappy),box-shadow .25s,border-color .25s}
+    .rel-card:hover{transform:translateY(-3px);box-shadow:4px 4px 0 var(--honey);border-color:var(--ink)}
+    .rel-cat{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem}
+    .rel-title{font-family:var(--serif);font-size:1.05rem;line-height:1.3;transition:color .2s}
+    .rel-card:hover .rel-title{color:var(--honey)}
+
+    /* SOFT CTA */
+    .soft-cta{margin-top:3.5rem;background:var(--blush);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+    .soft-cta::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.15;border-radius:50%;pointer-events:none}
+    .soft-cta p.cta-eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.75rem}
+    .soft-cta h3{font-family:var(--serif);font-size:1.7rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+    .soft-cta p.cta-sub{font-size:.95rem;color:var(--inklight);max-width:400px;margin:0 auto 1.75rem;line-height:1.65}
+    .cta-btn{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.9rem;font-weight:600;padding:.85rem 2rem;border-radius:999px;text-decoration:none;transition:background .2s,box-shadow .2s;border:none;cursor:pointer}
+    .cta-btn:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
+    .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <a href="/library" class="nav-back">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="entry-header rv">
+      <div class="meta-row">
+        <span class="tag tag-new"><span class="pdot"></span>New</span>
+        <span class="tag tag-cat">Prompts Worth Keeping</span>
+        <span class="tag tag-prompt">Prompt</span>
+        <span class="tag">Quick &lt;5 min</span>
+        <span class="date-txt">Mar 2026</span>
+      </div>
+      <h1 class="entry-title">The "Extract &amp; Structure" Megaprompt</h1>
+      <p class="hook-line">Stop asking Claude to summarize. This is the prompt that turns messy transcripts into database-ready structured data.</p>
+      <div class="get-out">
+        <svg class="get-out-icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p><strong>What you'll get out of this:</strong> A reusable prompt structure you can drop into any Claude conversation to pull clean, structured output from meeting notes, call transcripts, or any dense document — without writing JSON schema from scratch.</p>
+      </div>
+    </header>
+
+    <div class="entry-divider"></div>
+
+    <!-- BODY -->
+    <div class="entry-body">
+
+      <div class="rv d1">
+        <h2>Why "summarize this" isn't good enough</h2>
+        <p>When you ask Claude to summarize a meeting, you get a summary. That's fine for reading. It's useless for doing anything with the output downstream — dropping it into a tracker, populating a CRM field, feeding it into another workflow.</p>
+        <p>The difference between a summary and structured data is the difference between something you read and something you can use. This prompt is built for the second thing.</p>
+      </div>
+
+      <div class="rv d2">
+        <h2>Use this when</h2>
+        <div class="use-grid">
+          <div class="use-panel yes">
+            <div class="use-label">Good fit</div>
+            <ul class="use-list">
+              <li>You have a meeting transcript or dense notes</li>
+              <li>Multiple people with different action items</li>
+              <li>You need output you can drop into a tracker</li>
+              <li>You're feeding results into another workflow</li>
+              <li>You need consistent structure across many docs</li>
+            </ul>
+          </div>
+          <div class="use-panel no">
+            <div class="use-label">Not the right fit</div>
+            <ul class="use-list">
+              <li>You just want a quick summary to read</li>
+              <li>The document is already structured</li>
+              <li>There are no clear decisions or commitments</li>
+              <li>You need nuanced analysis, not extraction</li>
+              <li>One person, no coordination needed</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="rv d2">
+        <h2>The prompt</h2>
+        <p>Copy this exactly. The sections in <strong>[brackets]</strong> are the only things you need to change per use case.</p>
+      </div>
+
+      <!-- ══ PROMPT BLOCK ══ -->
+      <div class="prompt-block rv d2">
+        <div class="prompt-bar">
+          <span class="prompt-label">Prompt · Copy and adapt</span>
+          <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">
+            <svg id="copy-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            <span id="copy-label">Copy</span>
+          </button>
+        </div>
+        <div class="prompt-text" id="prompt-content"><span class="pt-comment"># ROLE</span>
+<span class="pt-value">You are a precise data extraction assistant. Your job is to read unstructured text and return clean, structured output — nothing more.</span>
+
+<span class="pt-comment"># INPUT</span>
+<span class="pt-value">Here is the raw content to extract from:</span>
+<span class="pt-bracket">"""</span>
+<span class="pt-value">[PASTE YOUR MEETING NOTES / TRANSCRIPT / DOCUMENT HERE]</span>
+<span class="pt-bracket">"""</span>
+
+<span class="pt-comment"># TASK</span>
+<span class="pt-value">Extract all [ACTION ITEMS / KEY DECISIONS / OPEN QUESTIONS] from the above.</span>
+
+<span class="pt-comment"># OUTPUT FORMAT</span>
+<span class="pt-value">Return ONLY a JSON array. Each object must include these exact fields:</span>
+<span class="pt-bracket">{</span>
+  <span class="pt-label">"item"</span><span class="pt-value">: string — the action item or decision in one clear sentence,</span>
+  <span class="pt-label">"owner"</span><span class="pt-value">: string — the person responsible (use "TBD" if unclear),</span>
+  <span class="pt-label">"deadline"</span><span class="pt-value">: string — the due date or timeframe (use "Not specified" if unclear),</span>
+  <span class="pt-label">"priority"</span><span class="pt-value">: string — one of: High / Medium / Low,</span>
+  <span class="pt-label">"notes"</span><span class="pt-value">: string — any relevant context, or empty string if none</span>
+<span class="pt-bracket">}</span>
+
+<span class="pt-comment"># RULES</span>
+<span class="pt-value">- Do not include any text outside the JSON array
+- Do not add commentary, preamble, or a summary
+- Do not guess at owners or deadlines — use the fallback values
+- If nothing of the requested type exists in the content, return an empty array: []</span></div>
+      </div>
+
+      <div class="rv d3">
+        <div class="callout">
+          <svg viewBox="0 0 24 24" style="stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <p><strong>The "Do not guess" rule is the most important line.</strong> Without it, Claude will fill in owners and deadlines it doesn't actually know — and confident-sounding fabrications are worse than empty fields. Be explicit that the fallback values are the right answer when information isn't there.</p>
+        </div>
+
+        <h2>How to adapt it</h2>
+        <p>The structure works for anything where you need consistent output from messy input. Change the bracketed sections:</p>
+        <ul>
+          <li><strong>[ACTION ITEMS / KEY DECISIONS / OPEN QUESTIONS]</strong> — swap for whatever you're extracting. "Objections raised by the client", "commitments made", "risks mentioned" all work the same way.</li>
+          <li><strong>The JSON fields</strong> — add or remove fields to match where the data is going. If you're feeding this into Airtable, match the field names exactly to your column names.</li>
+          <li><strong>The priority field</strong> — if you don't need it, delete it. Fewer fields means fewer opportunities for Claude to fabricate something plausible-sounding.</li>
+        </ul>
+
+        <h2>Real example output</h2>
+        <p>From a 45-minute CRE deal meeting transcript, this prompt returned 11 action items, correctly attributed to four different owners, with deadlines pulled verbatim from the conversation. Zero fabricated owners. Three "TBD" deadline fields where timing genuinely wasn't discussed.</p>
+        <p>That last part matters — the fallback values tell you where your meeting actually had gaps, which is useful information on its own.</p>
+
+        <h3>What this pairs well with</h3>
+        <ul>
+          <li>The <strong>Meeting notes → Airtable</strong> workflow (feed the JSON output directly into that pipeline)</li>
+          <li>Any Airtable automation that expects structured input</li>
+          <li>A second Claude call that takes the JSON and drafts a follow-up email per owner</li>
+        </ul>
+      </div>
+
+    </div><!-- /entry-body -->
+
+    <!-- RELATED -->
+    <div class="related-section rv d3">
+      <div class="related-label">Related entries</div>
+      <div class="related-grid">
+        <a href="/library/meeting-notes-to-airtable" class="rel-card">
+          <div class="rel-cat">AI Workflows · Workflow</div>
+          <div class="rel-title">Meeting notes → action items → Airtable</div>
+        </a>
+        <a href="/library/tone-calibrator-prompt" class="rel-card">
+          <div class="rel-cat">Prompts Worth Keeping · Prompt</div>
+          <div class="rel-title">The email tone calibrator</div>
+        </a>
+        <a href="/library/failing-to-automate-the-comp-pack" class="rel-card">
+          <div class="rel-cat">What I Tried · Experiment</div>
+          <div class="rel-title">Failing to automate the comp pack</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- SOFT CTA -->
+    <div class="soft-cta rv d4">
+      <p class="cta-eyebrow">Found this useful?</p>
+      <h3>Tell me what's slowing you down.</h3>
+      <p class="cta-sub">If you're copying and pasting the same thing more than twice a week, there's probably a workflow for it. I build these things — ask me.</p>
+      <a href="/#help" class="cta-btn">
+        Tell me what's broken
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div><!-- /page -->
+
+  <script>
+    // ── Copy button ──
+    function copyPrompt() {
+      // Extract plain text from the styled prompt block
+      const block = document.getElementById('prompt-content');
+      const text = block.innerText || block.textContent;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn   = document.getElementById('copy-btn');
+        const icon  = document.getElementById('copy-icon');
+        const label = document.getElementById('copy-label');
+
+        btn.classList.add('copied');
+        label.textContent = 'Copied!';
+        icon.innerHTML = '<path d="M20 6L9 17l-5-5"/>';
+
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          label.textContent = 'Copy';
+          icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>';
+        }, 2000);
+      }).catch(() => {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      });
+    }
+
+    // ── Scroll reveals ──
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>

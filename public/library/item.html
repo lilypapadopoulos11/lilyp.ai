@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading... — lilyp.ai Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+    .amb1{width:500px;height:400px;top:-80px;right:-80px;background:var(--blush);opacity:.45}
+    .amb2{width:350px;height:280px;bottom:10%;left:-60px;background:rgba(236,168,36,.12);opacity:1}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:780px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.25rem;font-weight:500;text-decoration:none;color:var(--ink)}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .2s}
+    .nav-back:hover{color:var(--ink)}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:4rem 2rem 8rem}
+
+    /* LOADING STATE */
+    .loading-state{text-align:center;padding:6rem 2rem;font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+
+    /* ERROR STATE */
+    .error-state{text-align:center;padding:6rem 2rem}
+    .error-state p{font-family:var(--serif);font-style:italic;font-size:1.1rem;color:var(--muted);margin-bottom:1.5rem}
+    .error-state a{font-family:var(--mono);font-size:.75rem;color:var(--ink);text-decoration:underline}
+
+    /* HEADER */
+    .entry-header{margin-bottom:3rem}
+    .meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+    .tag{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.22rem .6rem;border-radius:5px;border:1px solid var(--border);color:var(--inklight)}
+    .tag-cat{background:var(--stone);border-color:transparent}
+    .tag-wf{border-color:rgba(236,168,36,.35);color:#9a6c00;background:rgba(236,168,36,.08)}
+    .tag-prompt{border-color:rgba(244,170,150,.4);color:#a85040;background:rgba(244,170,150,.1)}
+    .tag-ht{border-color:rgba(236,168,36,.25);color:#9a6c00;background:rgba(236,168,36,.06)}
+    .tag-td,.tag-ex{border-color:var(--border);background:var(--stone)}
+    .tag-new{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--apricot);background:rgba(244,170,150,.14);border:1px solid rgba(244,170,150,.3);border-radius:999px;padding:.22rem .6rem}
+    .pdot{width:5px;height:5px;background:var(--apricot);border-radius:50%;animation:pr 2s ease-in-out infinite}
+    @keyframes pr{0%{box-shadow:0 0 0 0 rgba(244,170,150,.7)}60%{box-shadow:0 0 0 5px rgba(244,170,150,0)}100%{box-shadow:0 0 0 0 rgba(244,170,150,0)}}
+    .date-txt{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+
+    h1.entry-title{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.2rem);font-weight:400;line-height:1.1;letter-spacing:-.025em;margin-bottom:1.2rem}
+    .hook-line{font-family:var(--serif);font-style:italic;font-size:1.25rem;font-weight:300;color:var(--inklight);line-height:1.5;border-left:3px solid var(--apricot);padding-left:1.2rem;margin-bottom:2rem}
+
+    .get-out{display:flex;align-items:flex-start;gap:.9rem;background:var(--blush);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:0}
+    .get-out svg{width:18px;height:18px;flex-shrink:0;margin-top:2px;stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .get-out p{font-family:var(--sans);font-size:.9rem;color:var(--inklight);line-height:1.6}
+    .get-out strong{color:var(--ink);font-weight:600}
+
+    /* DIVIDER */
+    .entry-divider{height:1px;background:var(--border);margin:2.5rem 0}
+
+    /* BODY CONTENT */
+    .entry-body{font-size:1.05rem;line-height:1.75;color:var(--inklight)}
+    .entry-body h2{font-family:var(--serif);font-size:1.6rem;font-weight:400;color:var(--ink);margin:2.5rem 0 1rem;letter-spacing:-.015em}
+    .entry-body p{margin-bottom:1.25rem}
+    .entry-body p:last-child{margin-bottom:0}
+    .entry-body ul{margin:0 0 1.25rem 0;padding-left:0;list-style:none}
+    .entry-body ul li{position:relative;padding-left:1.4rem;margin-bottom:.5rem;font-size:1rem}
+    .entry-body ul li::before{content:'→';position:absolute;left:0;color:var(--apricot);font-family:var(--sans)}
+    .entry-body strong{color:var(--ink);font-weight:600}
+
+    /* TYPE ACCENT COLORS */
+    body.type-workflow .hook-line{border-left-color:var(--honey)}
+    body.type-prompt .hook-line{border-left-color:var(--apricot)}
+    body.type-opinion .hook-line{border-left-color:var(--honey)}
+    body.type-experiment .hook-line{border-left-color:var(--sand)}
+
+    /* SOFT CTA */
+    .soft-cta{margin-top:3.5rem;background:var(--blush);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+    .soft-cta::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.15;border-radius:50%;pointer-events:none}
+    .soft-cta p.cta-eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.75rem}
+    .soft-cta h3{font-family:var(--serif);font-size:1.7rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+    .soft-cta p.cta-sub{font-size:.95rem;color:var(--inklight);max-width:400px;margin:0 auto 1.75rem;line-height:1.65}
+    .cta-btn{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.9rem;font-weight:600;padding:.85rem 2rem;border-radius:999px;text-decoration:none;transition:background .2s,box-shadow .2s;border:none;cursor:pointer}
+    .cta-btn:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
+    .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+    #entry{display:none}
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <a href="/library" class="nav-back">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div id="loading" class="loading-state">Loading...</div>
+    <div id="error" class="error-state" style="display:none">
+      <p>This entry could not be found.</p>
+      <a href="/library">Back to Library</a>
+    </div>
+
+    <div id="entry">
+      <header class="entry-header rv">
+        <div class="meta-row" id="meta-row"></div>
+        <h1 class="entry-title" id="entry-title"></h1>
+        <p class="hook-line" id="hook-line"></p>
+        <div class="get-out">
+          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <p id="get-out-text"></p>
+        </div>
+      </header>
+
+      <div class="entry-divider"></div>
+
+      <div class="entry-body rv d1" id="entry-body"></div>
+
+      <div class="soft-cta rv d3">
+        <p class="cta-eyebrow">Found this useful?</p>
+        <h3>Tell me what's slowing you down.</h3>
+        <p class="cta-sub">If you're copying and pasting the same thing more than twice a week, there's probably a workflow for it. I build these things -- ask me.</p>
+        <a href="/#help" class="cta-btn">
+          Tell me what's broken
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TYPE_TAG_CLASS = {
+      'Workflow': 'tag-wf',
+      'Prompt':   'tag-prompt',
+      'How-To':   'tag-wf',
+      'Teardown': 'tag-td',
+      'Experiment':'tag-ex',
+      'Opinion':  'tag-ht',
+    };
+    const BODY_CLASS = {
+      'Workflow':   'type-workflow',
+      'Prompt':     'type-prompt',
+      'How-To':     'type-workflow',
+      'Teardown':   'type-experiment',
+      'Experiment': 'type-experiment',
+      'Opinion':    'type-opinion',
+    };
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;');
+    }
+
+    // Convert plain text summary to simple HTML paragraphs
+    function textToHtml(text) {
+      if (!text) return '<p>Coming soon.</p>';
+      return text.split(/\n\n+/).map(para => {
+        const trimmed = para.trim();
+        if (!trimmed) return '';
+        return `<p>${escapeHtml(trimmed)}</p>`;
+      }).filter(Boolean).join('\n');
+    }
+
+    function buildGetOut(entry) {
+      const typeLabel = {
+        'Workflow':    'A repeatable workflow you can run after any meeting or task.',
+        'Prompt':      'A reusable prompt you can adapt to your exact use case.',
+        'How-To':      'A step-by-step guide you can follow right now.',
+        'Teardown':    'An honest account of how this system was built and what broke.',
+        'Experiment':  'An honest experiment -- what worked, what failed, and what it taught.',
+        'Opinion':     'A take grounded in real experience, not theory.',
+      };
+      const base = typeLabel[entry.type] || 'Practical notes from real work.';
+      return `<strong>What you'll get out of this:</strong> ${base}`;
+    }
+
+    async function loadEntry() {
+      const slug = window.location.pathname.replace('/library/', '').replace(/\/$/, '');
+      if (!slug) { showError(); return; }
+
+      try {
+        const res = await fetch(`/api/library/${encodeURIComponent(slug)}`);
+        if (!res.ok) { showError(); return; }
+        const entry = await res.json();
+        render(entry);
+      } catch (err) {
+        console.error(err);
+        showError();
+      }
+    }
+
+    function showError() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+    }
+
+    function render(entry) {
+      document.title = `${entry.title} — lilyp.ai Library`;
+      document.body.classList.add(BODY_CLASS[entry.type] || '');
+
+      // Meta row
+      const meta = document.getElementById('meta-row');
+      let metaHtml = '';
+      if (entry.status === 'new') metaHtml += `<span class="tag tag-new"><span class="pdot"></span>New</span>`;
+      metaHtml += `<span class="tag tag-cat">${escapeHtml(entry.cat)}</span>`;
+      metaHtml += `<span class="tag ${TYPE_TAG_CLASS[entry.type] || ''}">${escapeHtml(entry.type)}</span>`;
+      if (entry.len) metaHtml += `<span class="tag">${escapeHtml(entry.len)}</span>`;
+      if (entry.date) metaHtml += `<span class="date-txt">${escapeHtml(entry.date)}</span>`;
+      meta.innerHTML = metaHtml;
+
+      document.getElementById('entry-title').textContent = entry.title;
+      document.getElementById('hook-line').textContent = entry.hook || entry.desc;
+      document.getElementById('get-out-text').innerHTML = buildGetOut(entry);
+      document.getElementById('entry-body').innerHTML = textToHtml(entry.desc);
+
+      // Show entry
+      document.getElementById('loading').style.display = 'none';
+      const entryEl = document.getElementById('entry');
+      entryEl.style.display = 'block';
+
+      // Trigger reveals
+      const obs = new IntersectionObserver(es => {
+        es.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+      }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+      document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+      // Immediate reveal for above-fold elements
+      setTimeout(() => {
+        document.querySelectorAll('.rv').forEach(el => {
+          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('vis');
+        });
+      }, 50);
+    }
+
+    loadEntry();
+  </script>
+</body>
+</html>
