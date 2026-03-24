@@ -1,25 +1,27 @@
 // GET /api/library
-// Returns all records where Featured on Website = true AND status != draft,
-// sorted by Date_Added descending. Filtering done client-side after fetch
-// per Airtable reliability rules.
+// Returns all Content Library records where Featured on Website = true
+// and Status != draft, sorted by Date_Added descending.
+// Filtering is done client-side after fetching all records.
 
-const BASE_ID  = process.env.AIRTABLE_BASE_ID  || 'apptNizhEwl2vpQUB';
-const TABLE    = 'Content Library';
-const API_KEY  = process.env.AIRTABLE_API_KEY;
+const https = require('https');
 
-const FIELDS = {
-  title:    'flddx9HKpB8xsL0VJ',
-  slug:     'fld17y0nx9DGSkPB9',
-  category: 'fldv2P8QNI0KPsLQt',
-  type:     'fldG6LQ81nc6XJPOR',
-  status:   'fldnjLX7sIcS3Fsub',
-  length:   'fldEhbydRztVOm8pT',
-  hook:     'fldzDYBkww0tms0zb',
-  summary:  'fldXnSJywa4PgkBuJ',
-  pull:     'fldtihqaF5TTVwbrY',
-  date:     'fld17XF3lzeesndSx',
-  featured: 'fldQ8uWahxuc7Tykx',
-};
+const BASE_ID = process.env.AIRTABLE_BASE_ID || 'apptNizhEwl2vpQUB';
+const TABLE   = 'Content Library';
+const API_KEY = process.env.AIRTABLE_API_KEY;
+
+const FIELD_NAMES = [
+  'Content Title',
+  'Slug',
+  'Category',
+  'Type',
+  'Status',
+  'Length',
+  'Hook',
+  'Summary',
+  'Pull_Quote',
+  'Date_Added',
+  'Featured on Website',
+];
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -27,6 +29,32 @@ const CORS = {
   'Content-Type':                 'application/json',
 };
 
+// ── Airtable fetch via built-in https (no fetch/node-fetch needed) ────────────
+function airtableGet(path) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.airtable.com',
+      path,
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch (e) { reject(new Error(`JSON parse failed: ${data.slice(0, 200)}`)); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function selectName(val) {
   if (!val) return '';
   if (typeof val === 'string') return val;
@@ -44,20 +72,21 @@ function normalise(record) {
   const f = record.fields;
   return {
     id:       record.id,
-    title:    f[FIELDS.title]    || '',
-    slug:     f[FIELDS.slug]     || '',
-    cat:      selectName(f[FIELDS.category]),
-    type:     selectName(f[FIELDS.type]),
-    status:   selectName(f[FIELDS.status]),
-    len:      selectName(f[FIELDS.length]),
-    hook:     f[FIELDS.hook]     || '',
-    desc:     f[FIELDS.summary]  || '',
-    pull:     f[FIELDS.pull]     || '',
-    date:     formatDate(f[FIELDS.date]),
-    featured: f[FIELDS.featured] || false,
+    title:    f['Content Title']       || '',
+    slug:     f['Slug']                || '',
+    cat:      selectName(f['Category']),
+    type:     selectName(f['Type']),
+    status:   selectName(f['Status']),
+    len:      selectName(f['Length']),
+    hook:     f['Hook']                || '',
+    desc:     f['Summary']             || '',
+    pull:     f['Pull_Quote']          || '',
+    date:     formatDate(f['Date_Added']),
+    featured: f['Featured on Website'] || false,
   };
 }
 
+// ── Handler ───────────────────────────────────────────────────────────────────
 exports.handler = async () => {
   if (!API_KEY) {
     return {
@@ -68,25 +97,25 @@ exports.handler = async () => {
   }
 
   try {
-    const fieldParams = Object.values(FIELDS).map(id => `fields[]=${id}`).join('&');
-    const sortParam   = `sort[0][field]=${FIELDS.date}&sort[0][direction]=desc`;
-    const url         = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?${fieldParams}&${sortParam}`;
+    // Build query string — use encodeURIComponent on each field name so
+    // spaces and special characters are safe in the URL.
+    const fieldParams = FIELD_NAMES
+      .map(name => `fields[]=${encodeURIComponent(name)}`)
+      .join('&');
+    const sortParam = `sort[0][field]=${encodeURIComponent('Date_Added')}&sort[0][direction]=desc`;
+    const path = `/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?${fieldParams}&${sortParam}`;
 
-    const resp = await fetch(url, {
-      headers: { Authorization: `Bearer ${API_KEY}` },
-    });
+    const { status, body } = await airtableGet(path);
 
-    if (!resp.ok) {
-      const text = await resp.text();
+    if (status !== 200) {
       return {
-        statusCode: resp.status,
+        statusCode: status,
         headers: CORS,
-        body: JSON.stringify({ error: `Airtable error ${resp.status}`, detail: text }),
+        body: JSON.stringify({ error: `Airtable returned ${status}`, detail: body }),
       };
     }
 
-    const data    = await resp.json();
-    const records = (data.records || [])
+    const records = (body.records || [])
       .map(normalise)
       .filter(r => r.featured && r.status !== 'draft');
 

@@ -1,24 +1,27 @@
 // GET /api/library/:slug
-// Routed here via netlify.toml as: /api/library/:slug → /.netlify/functions/library-item?slug=:slug
-// Returns the single Content Library record matching the given slug.
+// Routed here from netlify.toml as:
+//   /api/library/:slug → /.netlify/functions/library-item?slug=:slug
+// Returns the single Content Library record whose Slug field matches.
 
-const BASE_ID  = process.env.AIRTABLE_BASE_ID  || 'apptNizhEwl2vpQUB';
-const TABLE    = 'Content Library';
-const API_KEY  = process.env.AIRTABLE_API_KEY;
+const https = require('https');
 
-const FIELDS = {
-  title:    'flddx9HKpB8xsL0VJ',
-  slug:     'fld17y0nx9DGSkPB9',
-  category: 'fldv2P8QNI0KPsLQt',
-  type:     'fldG6LQ81nc6XJPOR',
-  status:   'fldnjLX7sIcS3Fsub',
-  length:   'fldEhbydRztVOm8pT',
-  hook:     'fldzDYBkww0tms0zb',
-  summary:  'fldXnSJywa4PgkBuJ',
-  pull:     'fldtihqaF5TTVwbrY',
-  date:     'fld17XF3lzeesndSx',
-  featured: 'fldQ8uWahxuc7Tykx',
-};
+const BASE_ID = process.env.AIRTABLE_BASE_ID || 'apptNizhEwl2vpQUB';
+const TABLE   = 'Content Library';
+const API_KEY = process.env.AIRTABLE_API_KEY;
+
+const FIELD_NAMES = [
+  'Content Title',
+  'Slug',
+  'Category',
+  'Type',
+  'Status',
+  'Length',
+  'Hook',
+  'Summary',
+  'Pull_Quote',
+  'Date_Added',
+  'Featured on Website',
+];
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -26,6 +29,32 @@ const CORS = {
   'Content-Type':                 'application/json',
 };
 
+// ── Airtable fetch via built-in https ─────────────────────────────────────────
+function airtableGet(path) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.airtable.com',
+      path,
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch (e) { reject(new Error(`JSON parse failed: ${data.slice(0, 200)}`)); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function selectName(val) {
   if (!val) return '';
   if (typeof val === 'string') return val;
@@ -43,20 +72,21 @@ function normalise(record) {
   const f = record.fields;
   return {
     id:       record.id,
-    title:    f[FIELDS.title]    || '',
-    slug:     f[FIELDS.slug]     || '',
-    cat:      selectName(f[FIELDS.category]),
-    type:     selectName(f[FIELDS.type]),
-    status:   selectName(f[FIELDS.status]),
-    len:      selectName(f[FIELDS.length]),
-    hook:     f[FIELDS.hook]     || '',
-    desc:     f[FIELDS.summary]  || '',
-    pull:     f[FIELDS.pull]     || '',
-    date:     formatDate(f[FIELDS.date]),
-    featured: f[FIELDS.featured] || false,
+    title:    f['Content Title']       || '',
+    slug:     f['Slug']                || '',
+    cat:      selectName(f['Category']),
+    type:     selectName(f['Type']),
+    status:   selectName(f['Status']),
+    len:      selectName(f['Length']),
+    hook:     f['Hook']                || '',
+    desc:     f['Summary']             || '',
+    pull:     f['Pull_Quote']          || '',
+    date:     formatDate(f['Date_Added']),
+    featured: f['Featured on Website'] || false,
   };
 }
 
+// ── Handler ───────────────────────────────────────────────────────────────────
 exports.handler = async (event) => {
   const slug = (event.queryStringParameters || {}).slug;
 
@@ -77,27 +107,25 @@ exports.handler = async (event) => {
   }
 
   try {
-    // Fetch all records then match client-side — avoids filterByFormula
-    // encoding issues and matches Airtable reliability rules.
-    const fieldParams = Object.values(FIELDS).map(id => `fields[]=${id}`).join('&');
-    const url         = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?${fieldParams}`;
+    // Fetch all records then match by slug client-side — avoids filterByFormula
+    // encoding issues and follows Airtable reliability rules.
+    const fieldParams = FIELD_NAMES
+      .map(name => `fields[]=${encodeURIComponent(name)}`)
+      .join('&');
+    const path = `/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?${fieldParams}`;
 
-    const resp = await fetch(url, {
-      headers: { Authorization: `Bearer ${API_KEY}` },
-    });
+    const { status, body } = await airtableGet(path);
 
-    if (!resp.ok) {
-      const text = await resp.text();
+    if (status !== 200) {
       return {
-        statusCode: resp.status,
+        statusCode: status,
         headers: CORS,
-        body: JSON.stringify({ error: `Airtable error ${resp.status}`, detail: text }),
+        body: JSON.stringify({ error: `Airtable returned ${status}`, detail: body }),
       };
     }
 
-    const data   = await resp.json();
-    const record = (data.records || []).find(
-      r => (r.fields[FIELDS.slug] || '') === slug
+    const record = (body.records || []).find(
+      r => (r.fields['Slug'] || '') === slug
     );
 
     if (!record) {
