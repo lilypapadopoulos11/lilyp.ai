@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# ── API: builds list ──
+[[redirects]]
+  from   = "/api/builds"
+  to     = "/.netlify/functions/builds"
+  status = 200
+
 # ── API: single item (must come before the list rule) ──
 [[redirects]]
   from   = "/api/library/:slug"
