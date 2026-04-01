@@ -88,7 +88,13 @@ function normalise(record) {
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 exports.handler = async (event) => {
-  const slug = (event.queryStringParameters || {}).slug;
+  // Try query parameter first (from netlify.toml rewrite),
+  // then fall back to extracting slug from the original URL path.
+  let slug = (event.queryStringParameters || {}).slug;
+  if (!slug) {
+    const match = (event.rawUrl || event.path || '').match(/\/api\/library\/([^/?#]+)/);
+    if (match) slug = decodeURIComponent(match[1]);
+  }
 
   if (!slug) {
     return {
