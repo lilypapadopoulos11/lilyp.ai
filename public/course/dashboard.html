@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Claude... Actually</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+
+    /* HEADER BAR */
+    .dash-header{background:var(--ink);padding:16px 32px;position:sticky;top:0;z-index:50}
+    .dash-header-inner{max-width:1060px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+    .dash-brand{font-family:var(--serif);font-size:1.2rem;font-weight:400;color:var(--paper);text-decoration:none}
+    .dash-right{display:flex;align-items:center;gap:1.5rem}
+    .dash-email{font-family:var(--sans);font-size:.8rem;color:rgba(253,252,249,.45)}
+    .dash-signout{font-family:var(--sans);font-size:.8rem;color:rgba(253,252,249,.6);text-decoration:none;transition:color .2s}
+    .dash-signout:hover{color:var(--paper)}
+
+    /* LAYOUT */
+    .dash-wrap{max-width:800px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+
+    /* WELCOME */
+    .welcome{background:var(--blush);border-radius:16px;padding:2.5rem;margin-top:2.5rem}
+    .welcome h1{font-family:var(--serif);font-size:clamp(1.8rem,3vw,2.4rem);font-weight:400;letter-spacing:-.025em;margin-bottom:.75rem}
+    .welcome p{font-family:var(--sans);font-size:1rem;color:var(--inklight);line-height:1.7}
+
+    /* PROGRESS */
+    .progress-wrap{margin:2rem 0;display:flex;align-items:center;gap:1rem}
+    .progress-bar{flex:1;height:6px;background:var(--stone);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--honey);border-radius:3px;transition:width .4s var(--out);width:0%}
+    .progress-label{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+
+    /* MODULE CARDS */
+    .module-list{display:flex;flex-direction:column;gap:1.25rem;margin-bottom:3rem}
+
+    .mod-card{background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:2rem;transition:transform .3s var(--out),box-shadow .3s var(--out)}
+    .mod-card:hover{transform:translateY(-3px);box-shadow:6px 6px 0 var(--honey)}
+
+    .mod-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem}
+    .mod-num{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+    .mod-badge{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;padding:.3rem .75rem;border-radius:999px}
+    .badge-not-started{background:var(--stone);color:var(--muted)}
+    .badge-in-progress{background:var(--blush);color:var(--apricot)}
+    .badge-complete{background:var(--honey);color:var(--ink)}
+
+    .mod-title{font-family:var(--serif);font-size:1.4rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.4rem}
+    .mod-desc{font-family:var(--sans);font-size:.95rem;color:var(--inklight);line-height:1.6;margin-bottom:1.25rem}
+    .mod-divider{height:1px;background:var(--border);margin-bottom:1.25rem}
+
+    .mod-content{display:flex;gap:1.5rem}
+    @media(max-width:640px){.mod-content{flex-direction:column}}
+    .mod-video{flex:1.4;min-width:0}
+    .mod-sidebar{flex:1;min-width:0;display:flex;flex-direction:column;gap:1rem}
+
+    .video-placeholder{background:var(--stone);border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.5rem}
+    .video-placeholder svg{width:40px;height:40px;color:var(--muted)}
+    .video-placeholder span{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+    .sidebar-section-label{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.25rem}
+    .sidebar-notes{font-family:var(--sans);font-size:.88rem;color:var(--inklight);line-height:1.6}
+    .sidebar-file{font-family:var(--mono);font-size:.75rem;color:var(--ink);margin-bottom:.4rem}
+
+    .btn-download{display:inline-flex;align-items:center;gap:.4rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;text-decoration:none;border:none;cursor:pointer;transition:background .2s}
+    .btn-download:hover{background:var(--inklight)}
+
+    .mod-footer{display:flex;justify-content:flex-end;margin-top:1.25rem}
+    .btn-complete{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--sans);font-size:.82rem;font-weight:600;padding:.55rem 1.25rem;border-radius:999px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:background .2s,color .2s,border-color .2s,transform .3s var(--spring)}
+    .btn-complete:hover{background:var(--ink);color:var(--paper);transform:translateY(-1px)}
+    .btn-complete.done{background:var(--honey);color:var(--ink);border-color:var(--honey)}
+    .btn-complete.done:hover{background:var(--honey);transform:translateY(-1px)}
+
+    /* RESOURCES FOLDER */
+    .resources-section{background:var(--stone);border-radius:16px;padding:2.5rem;margin-bottom:3rem}
+    .resources-section .eyebrow{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1rem}
+    .resources-section h2{font-family:var(--serif);font-size:1.8rem;font-weight:400;letter-spacing:-.02em;margin-bottom:1.5rem}
+    .res-row{display:flex;align-items:center;gap:1.25rem;padding:.75rem 0;border-bottom:1px solid var(--border)}
+    .res-row:last-of-type{border-bottom:none}
+    .res-name{font-family:var(--mono);font-size:.78rem;color:var(--ink);min-width:200px;flex-shrink:0}
+    .res-desc{font-family:var(--sans);font-size:.88rem;color:var(--inklight);line-height:1.5;flex:1}
+    .res-dl{font-family:var(--sans);font-size:.75rem;font-weight:600;color:var(--ink);text-decoration:none;border:1px solid var(--ink);padding:.35rem .85rem;border-radius:8px;flex-shrink:0;transition:background .2s,color .2s}
+    .res-dl:hover{background:var(--ink);color:var(--paper)}
+    @media(max-width:640px){
+      .res-row{flex-direction:column;align-items:flex-start;gap:.4rem}
+      .res-name{min-width:unset}
+    }
+    .btn-download-all{display:inline-flex;align-items:center;gap:.5rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.88rem;font-weight:600;padding:.75rem 1.75rem;border-radius:10px;border:none;cursor:pointer;margin-top:1.5rem;transition:background .2s}
+    .btn-download-all:hover{background:var(--inklight)}
+
+    /* COMPLETION */
+    .completion{background:var(--ink);border-radius:16px;padding:3rem;margin-bottom:3rem;text-align:center;display:none}
+    .completion.show{display:block;animation:fadeUp .6s var(--out) forwards}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .completion h2{font-family:var(--serif);font-style:italic;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:400;color:var(--paper);letter-spacing:-.025em;margin-bottom:.75rem}
+    .completion p{font-family:var(--sans);font-size:1rem;color:rgba(253,252,249,.65);line-height:1.7;max-width:520px;margin:0 auto 1.5rem}
+    .btn-back{display:inline-flex;align-items:center;background:var(--honey);color:var(--ink);font-family:var(--sans);font-size:.95rem;font-weight:600;padding:.8rem 2rem;border-radius:999px;text-decoration:none;border:none;cursor:pointer;transition:transform .3s var(--spring),box-shadow .3s var(--out)}
+    .btn-back:hover{transform:translateY(-2px);box-shadow:4px 4px 0 var(--apricot)}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border);padding:2rem;position:relative;z-index:1;margin-top:auto}
+    .footer-inner{max-width:1060px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .footer-brand{font-family:var(--serif);font-size:1rem;font-weight:400;color:var(--ink);text-decoration:none}
+    .footer-links{display:flex;gap:1.5rem}
+    .footer-links a{font-family:var(--sans);font-size:.8rem;color:var(--inklight);text-decoration:none;transition:color .2s}
+    .footer-links a:hover{color:var(--ink)}
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="dash-header">
+    <div class="dash-header-inner">
+      <a href="/course" class="dash-brand">Claude... Actually.</a>
+      <div class="dash-right">
+        <span class="dash-email" id="userEmail"></span>
+        <a href="#" class="dash-signout" id="signOut">Sign out</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-wrap">
+
+    <!-- WELCOME -->
+    <div class="welcome">
+      <h1>Welcome. Let's get into it.</h1>
+      <p>Five modules below. Watch them in order the first time through. Your resources folder is at the bottom of this page. Download everything before you start.</p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0 of 5 complete</span>
+    </div>
+
+    <!-- MODULES -->
+    <div class="module-list" id="moduleList">
+
+      <!-- MODULE 01 -->
+      <div class="mod-card" data-module="1">
+        <div class="mod-top">
+          <span class="mod-num">MODULE 01</span>
+          <span class="mod-badge badge-not-started" data-badge="1">NOT STARTED</span>
+        </div>
+        <div class="mod-title">Your Prompts Aren't As Good As You Think</div>
+        <div class="mod-desc">Find out exactly what's wrong with how you're prompting and fix it.</div>
+        <div class="mod-divider"></div>
+        <div class="mod-content">
+          <div class="mod-video">
+            <div class="video-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Video coming soon</span>
+            </div>
+          </div>
+          <div class="mod-sidebar">
+            <div>
+              <div class="sidebar-section-label">Lesson notes</div>
+              <p class="sidebar-notes">Lesson notes will appear here.</p>
+            </div>
+            <div>
+              <div class="sidebar-section-label">Your resource</div>
+              <div class="sidebar-file">prompt-auditor.txt</div>
+              <a href="/course/resources/prompt-auditor.txt" class="btn-download">Download prompt-auditor.txt</a>
+            </div>
+          </div>
+        </div>
+        <div class="mod-footer">
+          <button class="btn-complete" data-complete="1">Mark as complete</button>
+        </div>
+      </div>
+
+      <!-- MODULE 02 -->
+      <div class="mod-card" data-module="2">
+        <div class="mod-top">
+          <span class="mod-num">MODULE 02</span>
+          <span class="mod-badge badge-not-started" data-badge="2">NOT STARTED</span>
+        </div>
+        <div class="mod-title">Stop Starting From Scratch</div>
+        <div class="mod-desc">Three saved prompts for the tasks you do every week. Ready to paste.</div>
+        <div class="mod-divider"></div>
+        <div class="mod-content">
+          <div class="mod-video">
+            <div class="video-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Video coming soon</span>
+            </div>
+          </div>
+          <div class="mod-sidebar">
+            <div>
+              <div class="sidebar-section-label">Lesson notes</div>
+              <p class="sidebar-notes">Lesson notes will appear here.</p>
+            </div>
+            <div>
+              <div class="sidebar-section-label">Your resource</div>
+              <div class="sidebar-file">saved-prompts.txt</div>
+              <a href="/course/resources/saved-prompts.txt" class="btn-download">Download saved-prompts.txt</a>
+            </div>
+          </div>
+        </div>
+        <div class="mod-footer">
+          <button class="btn-complete" data-complete="2">Mark as complete</button>
+        </div>
+      </div>
+
+      <!-- MODULE 03 -->
+      <div class="mod-card" data-module="3">
+        <div class="mod-top">
+          <span class="mod-num">MODULE 03</span>
+          <span class="mod-badge badge-not-started" data-badge="3">NOT STARTED</span>
+        </div>
+        <div class="mod-title">Claude Inside Your Tools</div>
+        <div class="mod-desc">Get Claude into Excel. Formulas and formatting that live in the sheet permanently.</div>
+        <div class="mod-divider"></div>
+        <div class="mod-content">
+          <div class="mod-video">
+            <div class="video-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Video coming soon</span>
+            </div>
+          </div>
+          <div class="mod-sidebar">
+            <div>
+              <div class="sidebar-section-label">Lesson notes</div>
+              <p class="sidebar-notes">Lesson notes will appear here.</p>
+            </div>
+            <div>
+              <div class="sidebar-section-label">Your resource</div>
+              <div class="sidebar-file">claude-for-excel-cheatsheet.txt</div>
+              <a href="/course/resources/claude-for-excel-cheatsheet.txt" class="btn-download">Download claude-for-excel-cheatsheet.txt</a>
+            </div>
+          </div>
+        </div>
+        <div class="mod-footer">
+          <button class="btn-complete" data-complete="3">Mark as complete</button>
+        </div>
+      </div>
+
+      <!-- MODULE 04 -->
+      <div class="mod-card" data-module="4">
+        <div class="mod-top">
+          <span class="mod-num">MODULE 04</span>
+          <span class="mod-badge badge-not-started" data-badge="4">NOT STARTED</span>
+        </div>
+        <div class="mod-title">Give It a Project, Not a Question</div>
+        <div class="mod-desc">Hand Claude a complex brief and get a full workplan back in 30 seconds.</div>
+        <div class="mod-divider"></div>
+        <div class="mod-content">
+          <div class="mod-video">
+            <div class="video-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Video coming soon</span>
+            </div>
+          </div>
+          <div class="mod-sidebar">
+            <div>
+              <div class="sidebar-section-label">Lesson notes</div>
+              <p class="sidebar-notes">Lesson notes will appear here.</p>
+            </div>
+            <div>
+              <div class="sidebar-section-label">Your resource</div>
+              <div class="sidebar-file">project-kickoff-prompt.txt</div>
+              <a href="/course/resources/project-kickoff-prompt.txt" class="btn-download">Download project-kickoff-prompt.txt</a>
+            </div>
+          </div>
+        </div>
+        <div class="mod-footer">
+          <button class="btn-complete" data-complete="4">Mark as complete</button>
+        </div>
+      </div>
+
+      <!-- MODULE 05 -->
+      <div class="mod-card" data-module="5">
+        <div class="mod-top">
+          <span class="mod-num">MODULE 05</span>
+          <span class="mod-badge badge-not-started" data-badge="5">NOT STARTED</span>
+        </div>
+        <div class="mod-title">Build Your Claude Setup</div>
+        <div class="mod-desc">A questionnaire that builds your personal Claude Project instructions. Set it up once.</div>
+        <div class="mod-divider"></div>
+        <div class="mod-content">
+          <div class="mod-video">
+            <div class="video-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Video coming soon</span>
+            </div>
+          </div>
+          <div class="mod-sidebar">
+            <div>
+              <div class="sidebar-section-label">Lesson notes</div>
+              <p class="sidebar-notes">Lesson notes will appear here.</p>
+            </div>
+            <div>
+              <div class="sidebar-section-label">Your resource</div>
+              <div class="sidebar-file">project-instructions-builder.txt</div>
+              <a href="/course/resources/project-instructions-builder.txt" class="btn-download">Download project-instructions-builder.txt</a>
+            </div>
+          </div>
+        </div>
+        <div class="mod-footer">
+          <button class="btn-complete" data-complete="5">Mark as complete</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RESOURCES FOLDER -->
+    <div class="resources-section">
+      <div class="eyebrow">YOUR RESOURCES FOLDER</div>
+      <h2>Five tools. All yours.</h2>
+      <div class="res-row">
+        <span class="res-name">prompt-auditor.txt</span>
+        <span class="res-desc">Diagnose and fix the prompts you're already writing</span>
+        <a href="/course/resources/prompt-auditor.txt" class="res-dl">Download</a>
+      </div>
+      <div class="res-row">
+        <span class="res-name">saved-prompts.txt</span>
+        <span class="res-desc">Three reusable prompts for weekly recurring tasks</span>
+        <a href="/course/resources/saved-prompts.txt" class="res-dl">Download</a>
+      </div>
+      <div class="res-row">
+        <span class="res-name">claude-for-excel-cheatsheet.txt</span>
+        <span class="res-desc">Formulas and formatting commands for spreadsheets</span>
+        <a href="/course/resources/claude-for-excel-cheatsheet.txt" class="res-dl">Download</a>
+      </div>
+      <div class="res-row">
+        <span class="res-name">project-kickoff-prompt.txt</span>
+        <span class="res-desc">Turn a messy brief into a structured workplan</span>
+        <a href="/course/resources/project-kickoff-prompt.txt" class="res-dl">Download</a>
+      </div>
+      <div class="res-row">
+        <span class="res-name">project-instructions-builder.txt</span>
+        <span class="res-desc">Build your personalized Claude Project setup</span>
+        <a href="/course/resources/project-instructions-builder.txt" class="res-dl">Download</a>
+      </div>
+    </div>
+
+    <!-- COMPLETION -->
+    <div class="completion" id="completionSection">
+      <h2>You've done the hours.</h2>
+      <p>The resources folder is yours permanently. Keep using them. If you want to go deeper, the Skills course is coming. Find it at lilyp.ai when it's live.</p>
+      <a href="/" class="btn-back">Back to lilyp.ai</a>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <a href="/" class="footer-brand">lilyp.ai</a>
+      <div class="footer-links">
+        <a href="/">Back to site</a>
+        <a href="/library">lilyp.ai/library</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // AUTH CHECK
+    if (localStorage.getItem('course_access') !== 'true') {
+      window.location.href = '/course/login';
+    }
+
+    // Show email
+    const email = localStorage.getItem('course_email') || '';
+    document.getElementById('userEmail').textContent = email;
+
+    // Sign out
+    document.getElementById('signOut').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('course_access');
+      localStorage.removeItem('course_email');
+      // Clear module completion states
+      for (let i = 1; i <= 5; i++) {
+        localStorage.removeItem('module_' + i + '_complete');
+      }
+      window.location.href = '/course/login';
+    });
+
+    // MODULE COMPLETION STATE
+    const totalModules = 5;
+
+    function getCompletedCount() {
+      let count = 0;
+      for (let i = 1; i <= totalModules; i++) {
+        if (localStorage.getItem('module_' + i + '_complete') === 'true') count++;
+      }
+      return count;
+    }
+
+    function updateProgress() {
+      const count = getCompletedCount();
+      const pct = (count / totalModules) * 100;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = count + ' of ' + totalModules + ' complete';
+
+      // Show completion section when all done
+      const comp = document.getElementById('completionSection');
+      if (count === totalModules) {
+        comp.classList.add('show');
+      } else {
+        comp.classList.remove('show');
+      }
+    }
+
+    function updateBadge(num) {
+      const badge = document.querySelector('[data-badge="' + num + '"]');
+      const isComplete = localStorage.getItem('module_' + num + '_complete') === 'true';
+      if (isComplete) {
+        badge.className = 'mod-badge badge-complete';
+        badge.textContent = 'COMPLETE';
+      } else {
+        badge.className = 'mod-badge badge-not-started';
+        badge.textContent = 'NOT STARTED';
+      }
+    }
+
+    function updateButton(num) {
+      const btn = document.querySelector('[data-complete="' + num + '"]');
+      const isComplete = localStorage.getItem('module_' + num + '_complete') === 'true';
+      if (isComplete) {
+        btn.classList.add('done');
+        btn.textContent = 'Complete';
+      } else {
+        btn.classList.remove('done');
+        btn.textContent = 'Mark as complete';
+      }
+    }
+
+    // Initialize states
+    for (let i = 1; i <= totalModules; i++) {
+      updateBadge(i);
+      updateButton(i);
+    }
+    updateProgress();
+
+    // Handle complete button clicks
+    document.querySelectorAll('.btn-complete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const num = btn.getAttribute('data-complete');
+        const key = 'module_' + num + '_complete';
+        const current = localStorage.getItem(key) === 'true';
+        localStorage.setItem(key, current ? 'false' : 'true');
+        updateBadge(num);
+        updateButton(num);
+        updateProgress();
+      });
+    });
+  </script>
+
+</body>
+</html>

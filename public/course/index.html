@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude... Actually | lilyp.ai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:1320px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.35rem;font-weight:500;text-decoration:none;color:var(--ink);letter-spacing:-.01em}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-link{font-family:var(--sans);font-size:.85rem;font-weight:500;color:var(--inklight);text-decoration:none;transition:color .2s;position:relative}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:var(--honey);transition:width .25s}
+    .nav-link:hover{color:var(--ink)}
+    .nav-link:hover::after{width:100%}
+
+    /* SECTIONS */
+    section{position:relative;z-index:1}
+    .section-paper{background:var(--paper)}
+    .section-stone{background:var(--stone)}
+    .section-blush{background:var(--blush)}
+    .section-ink{background:var(--ink);color:var(--paper)}
+    .wrap{max-width:1060px;margin:0 auto;padding:5rem 2rem}
+    .wrap-narrow{max-width:680px;margin:0 auto;padding:5rem 2rem}
+
+    /* EYEBROW */
+    .eyebrow{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem}
+    .eyebrow::before{content:'';display:block;width:24px;height:1.5px;background:var(--apricot)}
+
+    /* TYPOGRAPHY */
+    h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.025em}
+    h1{font-size:clamp(2.8rem,5vw,5rem);line-height:1.05;margin-bottom:1.5rem}
+    h2{font-size:clamp(2rem,3.5vw,2.8rem);line-height:1.1;margin-bottom:1.5rem}
+    p.lead{font-family:var(--sans);font-size:1.1rem;color:var(--inklight);line-height:1.78;max-width:560px}
+    p.body{font-family:var(--sans);font-size:1.05rem;color:var(--inklight);line-height:1.78;margin-bottom:1.3rem}
+    p.body:last-child{margin-bottom:0}
+
+    /* BUTTONS */
+    .btn-primary{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.95rem;font-weight:600;padding:.9rem 2rem;border-radius:999px;text-decoration:none;border:none;cursor:pointer;transition:transform .3s var(--spring),box-shadow .3s var(--out)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:4px 4px 0 var(--honey)}
+    .btn-secondary{display:inline-flex;align-items:center;gap:.6rem;background:transparent;color:var(--ink);font-family:var(--sans);font-size:.95rem;font-weight:600;padding:.9rem 2rem;border-radius:999px;border:1.5px solid var(--ink);text-decoration:none;cursor:pointer;transition:background .2s,color .2s}
+    .btn-secondary:hover{background:var(--ink);color:var(--paper)}
+    .btn-honey{display:inline-flex;align-items:center;gap:.6rem;background:var(--honey);color:var(--ink);font-family:var(--sans);font-size:.95rem;font-weight:600;padding:.9rem 2rem;border-radius:999px;text-decoration:none;border:none;cursor:pointer;transition:transform .3s var(--spring),box-shadow .3s var(--out)}
+    .btn-honey:hover{transform:translateY(-2px);box-shadow:4px 4px 0 var(--apricot)}
+
+    /* META */
+    .meta{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em;margin-top:1.25rem}
+
+    /* HERO */
+    .hero{text-align:center;padding:6rem 2rem 5rem}
+    .hero .eyebrow{justify-content:center}
+    .hero .eyebrow::before{display:none}
+    .hero h1{max-width:700px;margin-left:auto;margin-right:auto}
+    .hero p.lead{max-width:520px;margin:0 auto 2rem}
+    .hero-buttons{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap}
+
+    /* PROOF STRIP */
+    .proof-strip{background:var(--stone);padding:1.4rem 2rem;text-align:center;font-family:var(--sans);font-size:.92rem;color:var(--inklight);line-height:1.6}
+
+    /* MODULE CARD */
+    .module-card{background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:1.75rem 2rem;display:flex;align-items:flex-start;gap:1.5rem;transition:transform .3s var(--out),box-shadow .3s var(--out);cursor:default}
+    .module-card:hover{transform:translateY(-3px);box-shadow:6px 6px 0 var(--honey)}
+    .module-num{font-family:var(--mono);font-size:.9rem;color:var(--muted);flex-shrink:0;padding-top:.15rem}
+    .module-body{flex:1;min-width:0}
+    .module-title{font-family:var(--serif);font-size:1.35rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.4rem}
+    .module-desc{font-family:var(--sans);font-size:.95rem;color:var(--inklight);line-height:1.6}
+    .module-resource{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.04em;flex-shrink:0;text-align:right;padding-top:.2rem}
+    @media(max-width:600px){
+      .module-card{flex-direction:column;gap:.75rem}
+      .module-resource{text-align:left}
+    }
+    .module-stack{display:flex;flex-direction:column;gap:1rem;max-width:800px;margin:0 auto}
+
+    /* FILE LIST */
+    .file-row{display:flex;align-items:center;gap:1.5rem;padding:.75rem 0;border-bottom:1px solid var(--border)}
+    .file-row:last-child{border-bottom:none}
+    .file-name{font-family:var(--mono);font-size:.82rem;color:var(--ink);flex-shrink:0;min-width:200px}
+    .file-desc{font-family:var(--sans);font-size:.9rem;color:var(--inklight);line-height:1.5}
+    @media(max-width:600px){
+      .file-row{flex-direction:column;gap:.35rem;align-items:flex-start}
+      .file-name{min-width:unset}
+    }
+
+    /* FOR YOU LIST */
+    .for-you-item{font-family:var(--sans);font-size:1.05rem;color:var(--inklight);line-height:1.78;margin-bottom:1rem;padding-left:1.5rem;position:relative}
+    .for-you-item::before{content:'';position:absolute;left:0;top:.65rem;width:8px;height:8px;border-radius:50%;background:var(--apricot)}
+
+    /* ABOUT BLOCK */
+    .about-block{display:flex;align-items:flex-start;gap:2rem}
+    .about-avatar{width:120px;height:120px;border-radius:50%;background:var(--stone);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:2rem;color:var(--inklight);flex-shrink:0}
+    .about-text{flex:1}
+    .about-text h2{font-size:1.6rem;margin-bottom:.75rem}
+    .about-text p{font-family:var(--sans);font-size:1rem;color:var(--inklight);line-height:1.78;margin-bottom:1rem}
+    .about-text a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+    @media(max-width:600px){
+      .about-block{flex-direction:column;align-items:center;text-align:center}
+    }
+
+    /* CTA */
+    .cta-section{text-align:center;padding:5rem 2rem}
+    .cta-section h2{color:var(--paper);font-style:italic;font-size:clamp(2.4rem,4vw,3.6rem);margin-bottom:1rem}
+    .cta-section p.lead{color:rgba(253,252,249,.7);margin:0 auto 2rem}
+    .cta-section .meta{color:rgba(253,252,249,.45)}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border);padding:2rem;position:relative;z-index:1}
+    .footer-inner{max-width:1320px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .footer-brand{font-family:var(--serif);font-size:1rem;font-weight:400;color:var(--ink);text-decoration:none}
+    .footer-links{display:flex;gap:1.5rem}
+    .footer-links a{font-family:var(--sans);font-size:.8rem;color:var(--inklight);text-decoration:none;transition:color .2s}
+    .footer-links a:hover{color:var(--ink)}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(18px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lily<em>p</em>.ai</a>
+      <a href="/" class="nav-link">Back to site</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="section-paper">
+    <div class="hero">
+      <div class="eyebrow rv">NEW COURSE</div>
+      <h1 class="rv d1">Claude... Actually.</h1>
+      <p class="lead rv d2">You've been using AI. This is the course that shows you what you've been missing.</p>
+      <div class="hero-buttons rv d3">
+        <a href="#gumroad" class="btn-primary">Get the course · $49</a>
+        <a href="#modules" class="btn-secondary">See what's inside</a>
+      </div>
+      <p class="meta rv d4">5 modules · under 2 hours · resources you'll actually keep</p>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF STRIP -->
+  <div class="proof-strip rv">
+    Built for university students and early-career professionals who already use ChatGPT and want to actually use Claude.
+  </div>
+
+  <!-- HONEST PITCH -->
+  <section class="section-paper">
+    <div class="wrap-narrow" style="padding-top:5rem;padding-bottom:5rem">
+      <div class="eyebrow rv">WHAT THIS IS</div>
+      <h2 class="rv d1">Most AI courses teach you features. This one changes how you work.</h2>
+      <p class="body rv d2">You already know Claude exists. You might have even used it once or twice. But there's a gap between opening the chat window and actually having Claude do useful work for you every day.</p>
+      <p class="body rv d3">This course closes that gap. Five modules, each one built around a real task you already do. Emails you put off. Spreadsheets that take too long. Complex projects with no clear starting point. By the end you have a Claude setup that's configured for you specifically.</p>
+      <p class="body rv d4">No theory. No history of AI. No "imagine what's possible." Just the five things that actually change how you work, starting this week.</p>
+    </div>
+  </section>
+
+  <!-- MODULES -->
+  <section class="section-blush" id="modules">
+    <div class="wrap" style="padding-top:5rem;padding-bottom:5rem">
+      <div class="eyebrow rv">THE MODULES</div>
+      <h2 class="rv d1">Five modules. Five things in your resources folder.</h2>
+      <div class="module-stack">
+        <div class="module-card rv d1">
+          <div class="module-num">01</div>
+          <div class="module-body">
+            <div class="module-title">Your Prompts Aren't As Good As You Think</div>
+            <div class="module-desc">Find out exactly what's wrong with how you're prompting and fix it.</div>
+          </div>
+          <div class="module-resource">prompt-auditor.txt</div>
+        </div>
+        <div class="module-card rv d2">
+          <div class="module-num">02</div>
+          <div class="module-body">
+            <div class="module-title">Stop Starting From Scratch</div>
+            <div class="module-desc">Three saved prompts for the tasks you do every week. Ready to paste.</div>
+          </div>
+          <div class="module-resource">saved-prompts.txt</div>
+        </div>
+        <div class="module-card rv d3">
+          <div class="module-num">03</div>
+          <div class="module-body">
+            <div class="module-title">Claude Inside Your Tools</div>
+            <div class="module-desc">Get Claude into Excel. Formulas and formatting that live in the sheet permanently.</div>
+          </div>
+          <div class="module-resource">claude-for-excel-cheatsheet.txt</div>
+        </div>
+        <div class="module-card rv d1">
+          <div class="module-num">04</div>
+          <div class="module-body">
+            <div class="module-title">Give It a Project, Not a Question</div>
+            <div class="module-desc">Hand Claude a complex brief and get a full workplan back in 30 seconds.</div>
+          </div>
+          <div class="module-resource">project-kickoff-prompt.txt</div>
+        </div>
+        <div class="module-card rv d2">
+          <div class="module-num">05</div>
+          <div class="module-body">
+            <div class="module-title">Build Your Claude Setup</div>
+            <div class="module-desc">A questionnaire that builds your personal Claude Project instructions. Set it up once.</div>
+          </div>
+          <div class="module-resource">project-instructions-builder.txt</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOURCES FOLDER -->
+  <section class="section-stone">
+    <div class="wrap-narrow" style="padding-top:5rem;padding-bottom:5rem">
+      <div class="eyebrow rv">WHAT YOU KEEP</div>
+      <h2 class="rv d1">A resources folder, not a certificate.</h2>
+      <p class="body rv d2">Every module drops one file into your resources folder. Five tools you'll open again next week, not five lessons you'll forget. The folder is yours permanently.</p>
+      <div class="rv d3" style="margin-top:2rem">
+        <div class="file-row">
+          <span class="file-name">prompt-auditor.txt</span>
+          <span class="file-desc">Diagnose and fix the prompts you're already writing</span>
+        </div>
+        <div class="file-row">
+          <span class="file-name">saved-prompts.txt</span>
+          <span class="file-desc">Three reusable prompts for weekly recurring tasks</span>
+        </div>
+        <div class="file-row">
+          <span class="file-name">claude-for-excel-cheatsheet.txt</span>
+          <span class="file-desc">Formulas and formatting commands for spreadsheets</span>
+        </div>
+        <div class="file-row">
+          <span class="file-name">project-kickoff-prompt.txt</span>
+          <span class="file-desc">Turn a messy brief into a structured workplan</span>
+        </div>
+        <div class="file-row">
+          <span class="file-name">project-instructions-builder.txt</span>
+          <span class="file-desc">Build your personalized Claude Project setup</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO THIS IS FOR -->
+  <section class="section-paper">
+    <div class="wrap-narrow" style="padding-top:5rem;padding-bottom:5rem">
+      <h2 class="rv">This course is for you if...</h2>
+      <div class="rv d1" style="margin-top:1.5rem">
+        <div class="for-you-item">You use ChatGPT for one-off tasks and feel like you're leaving most of it on the table.</div>
+        <div class="for-you-item">You've heard Claude is different but haven't had a reason to switch yet.</div>
+        <div class="for-you-item">You want to actually use AI at work or in class, not just know it exists.</div>
+      </div>
+      <p class="body rv d2" style="color:var(--muted);margin-top:1.5rem">It is not for people who want to understand how AI works. It's for people who want to use it.</p>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section-blush">
+    <div class="wrap-narrow" style="padding-top:5rem;padding-bottom:5rem">
+      <div class="about-block rv">
+        <div class="about-avatar">LP</div>
+        <div class="about-text">
+          <h2>Made by Lily Papadopoulos</h2>
+          <p>I'm a fifth-year Real Estate co-op student at Guelph, currently interning at a CRE advisory firm in Toronto. I build AI workflows as part of my actual job, and I document everything at lilyp.ai.</p>
+          <p>This course is the thing I wish someone had shown me when I first started using Claude properly. Everything in it is something I use in real work.</p>
+          <a href="/about">Read more at lilyp.ai/about</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section-ink">
+    <div class="cta-section rv">
+      <h2>Claude... Actually.</h2>
+      <p class="lead">Five modules. Under two hours. $49, yours permanently.</p>
+      <a href="#gumroad" class="btn-honey">Get the course</a>
+      <p class="meta">After purchase you'll get an email with your access link.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <a href="/" class="footer-brand">lilyp.ai</a>
+      <div class="footer-links">
+        <a href="/">Back to site</a>
+        <a href="/library">lilyp.ai/library</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+    setTimeout(() => {
+      document.querySelectorAll('.rv').forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('vis');
+      });
+    }, 100);
+  </script>
+
+</body>
+</html>
