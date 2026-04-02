@@ -226,6 +226,24 @@
           Say hi
         </a>
       </div>
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" class="md:hidden flex flex-col gap-[5px] p-1" aria-label="Menu">
+        <span class="block w-5 h-[1.5px] bg-ink transition-transform duration-200" id="bar1"></span>
+        <span class="block w-5 h-[1.5px] bg-ink transition-opacity duration-200" id="bar2"></span>
+        <span class="block w-5 h-[1.5px] bg-ink transition-transform duration-200" id="bar3"></span>
+      </button>
+    </div>
+    <!-- Mobile menu panel -->
+    <div id="mobile-menu" class="md:hidden hidden border-t border-ink/[0.06] bg-paper/95 backdrop-blur-md">
+      <div class="flex flex-col px-8 py-5 gap-4 font-sans text-sm font-medium text-inklight">
+        <a href="/course" class="hover:text-ink transition-colors" style="text-decoration:none">Course</a>
+        <a href="/library" class="hover:text-ink transition-colors" style="text-decoration:none">Library</a>
+        <a href="/builds" class="hover:text-ink transition-colors" style="text-decoration:none">Builds</a>
+        <a href="/about" class="hover:text-ink transition-colors" style="text-decoration:none">About</a>
+        <a href="#help" class="inline-block bg-ink text-paper px-5 py-2 rounded-full text-sm font-semibold text-center hover:bg-honey hover:text-ink transition-colors duration-200 mt-1" style="text-decoration:none;width:fit-content">
+          Say hi
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -933,6 +951,20 @@
 
   <!-- ─── SCRIPTS ─── -->
   <script>
+    // ── Mobile menu ──
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const bar1 = document.getElementById('bar1');
+    const bar2 = document.getElementById('bar2');
+    const bar3 = document.getElementById('bar3');
+    menuBtn.addEventListener('click', () => {
+      const open = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      bar1.style.transform = open ? '' : 'rotate(45deg) translate(2px,2px)';
+      bar2.style.opacity = open ? '' : '0';
+      bar3.style.transform = open ? '' : 'rotate(-45deg) translate(2px,-2px)';
+    });
+
     // ── Scroll reveal ──
     const reveals = document.querySelectorAll('.reveal');
     const revealObserver = new IntersectionObserver((entries) => {
