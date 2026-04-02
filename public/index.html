@@ -218,6 +218,7 @@
     <div class="max-w-[1320px] mx-auto px-8 md:px-12 lg:px-16 py-5 flex justify-between items-center">
       <a href="/" class="font-serif font-semibold text-xl tracking-tight text-ink no-underline" style="text-decoration:none">lilyp.<em style="font-style:italic;color:#ECA824;font-weight:400">ai</em></a>
       <div class="hidden md:flex items-center gap-8 font-sans text-sm font-medium text-inklight">
+        <a href="/course" class="nav-link hover:text-ink transition-colors">Course</a>
         <a href="/library" class="nav-link hover:text-ink transition-colors">Library</a>
         <a href="/builds" class="nav-link hover:text-ink transition-colors">Builds</a>
         <a href="/about" class="nav-link hover:text-ink transition-colors">About</a>
@@ -425,6 +426,12 @@
         </div>
 
         <!-- Input card -->
+        <!-- To activate: create free account at formspree.io, create a new form,
+             copy the form ID, replace REPLACE_WITH_ID_2 in the action URL.
+             All submissions will forward to your connected email. -->
+        <form id="friction-form" action="https://formspree.io/f/xqeglrpn" method="POST">
+          <input type="hidden" name="_subject" value="lilyp.ai — Pain point submission">
+          <input type="hidden" name="_next" value="https://lilyp.ai?submitted=true">
         <div class="input-card bg-white rounded-2xl border border-sand/80 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.06)] flex flex-col h-[460px] overflow-hidden">
 
           <!-- Card top accent -->
@@ -432,7 +439,7 @@
 
           <!-- Textarea area -->
           <div class="flex-grow relative p-7 input-grid">
-            <textarea id="friction-input"
+            <textarea id="friction-input" name="message"
               class="absolute inset-0 w-full h-full p-7 outline-none text-[1.45rem] leading-relaxed font-serif text-ink placeholder-transparent bg-transparent z-10"
               placeholder="Type here..."></textarea>
             <div id="animated-placeholder"
@@ -449,7 +456,7 @@
               </div>
               <span class="text-[12px] font-sans font-medium">Read by a human. No automated jargon.</span>
             </div>
-            <button id="submit-btn"
+            <button id="submit-btn" type="submit"
               class="bg-ink text-paper px-7 py-2.5 rounded-lg text-sm font-semibold font-sans hover:bg-inklight transition-colors duration-200 flex items-center gap-2.5">
               <span>Send it</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,6 +465,7 @@
             </button>
           </div>
         </div>
+        </form>
 
       </div>
     </div>
@@ -1011,18 +1019,21 @@
 
 
     // ── Submit ──
-    document.getElementById('submit-btn').addEventListener('click', () => {
-      if (!textarea.value.trim()) { textarea.focus(); return; }
-      const btn = document.getElementById('submit-btn');
-      btn.innerHTML = '<span>Sent ✓</span>';
-      btn.classList.add('bg-green-700');
-      btn.disabled = true;
-      setTimeout(() => {
-        btn.innerHTML = '<span>Send it</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
-        btn.classList.remove('bg-green-700');
-        btn.disabled = false;
-      }, 2500);
+    // Formspree handles the actual POST. Prevent submit if empty.
+    document.getElementById('friction-form').addEventListener('submit', (e) => {
+      if (!textarea.value.trim()) { e.preventDefault(); textarea.focus(); return; }
     });
+
+    // Success state after Formspree redirect
+    if (new URLSearchParams(window.location.search).get('submitted') === 'true') {
+      const formEl = document.getElementById('friction-form');
+      if (formEl) {
+        formEl.closest('.lg\\:col-span-7').innerHTML =
+          '<div style="display:flex;align-items:center;justify-content:center;height:460px;text-align:center">' +
+          '<p style="font-family:Manrope,sans-serif;font-size:1.15rem;color:#4A4A46;line-height:1.7;max-width:360px">' +
+          'Got it. This is exactly the kind of thing I build for.</p></div>';
+      }
+    }
   </script>
 
 </body>

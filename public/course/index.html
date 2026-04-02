@@ -145,26 +145,27 @@
   <!-- HERO -->
   <section class="section-paper">
     <div class="hero">
-      <div class="eyebrow rv">NEW COURSE</div>
+      <div class="eyebrow rv">COMING SOON</div>
       <h1 class="rv d1">Claude... Actually.</h1>
-      <p class="lead rv d2">You've been using AI. This is the course that shows you what you've been missing.</p>
-      <div class="hero-buttons rv d3">
-        <a href="#gumroad" class="btn-primary">Get the course · $25</a>
-        <a href="#modules" class="btn-secondary">See what's inside</a>
-      </div>
-      <p class="meta rv d4">5 modules · under 2 hours · resources you'll actually keep</p>
-    </div>
-  </section>
+      <p class="lead rv d2" style="max-width:540px">You're not doing it wrong. You just haven't seen what's possible yet. This is where it starts to feel useful.</p>
 
-  <!-- LOOM VIDEO -->
-  <section class="section-paper">
-    <div class="rv" style="max-width:680px;margin:0 auto;padding:2.5rem 2rem 0">
-      <div style="position:relative;padding-bottom:56.25%;border-radius:12px;border:1px solid var(--border);overflow:hidden;background:var(--stone)">
-        <!-- Replace this placeholder div with a Loom iframe when ready -->
-        <!-- e.g. <iframe src="https://www.loom.com/embed/YOUR_ID" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen></iframe> -->
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.5rem">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          <span style="font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">VIDEO COMING SOON</span>
+      <div id="waitlist" class="rv d4" style="margin-top:2.5rem;max-width:440px;width:100%">
+        <p style="font-family:var(--sans);font-size:.95rem;color:var(--inklight);margin-bottom:.75rem">Be the first to know when it drops.</p>
+        <!-- To activate: create free account at formspree.io, create a new form,
+             copy the form ID, replace REPLACE_WITH_ID in the action URL.
+             All submissions will forward to your connected email. -->
+        <form action="https://formspree.io/f/mnjozepb" method="POST" id="waitlistForm" style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <input type="hidden" name="_subject" value="Claude... Actually. — New waitlist signup">
+          <input type="hidden" name="_next" value="https://lilyp.ai/course?joined=true">
+          <input type="email" name="email" required autocomplete="email" placeholder="your@email.com"
+            style="flex:1;min-width:200px;border:2px solid var(--sand);border-radius:10px;padding:14px 16px;font-family:var(--sans);font-size:1rem;color:var(--ink);background:var(--paper);outline:none;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--ink)'" onblur="this.style.borderColor='var(--sand)'">
+          <button type="submit" class="btn-honey" style="white-space:nowrap">I'm in</button>
+        </form>
+        <p style="font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:.75rem">NO SPAM. JUST THE LAUNCH EMAIL.</p>
+        <div id="waitlistSuccess" style="display:none;margin-top:1rem;font-family:var(--sans);font-size:.95rem;color:var(--inklight);display:none">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--honey);margin-right:.5rem;vertical-align:middle"></span>
+          You're on the list. I'll email you the moment it's live.
         </div>
       </div>
     </div>
@@ -299,9 +300,9 @@
   <section class="section-ink">
     <div class="cta-section rv">
       <h2>Claude... Actually.</h2>
-      <p class="lead">Five modules. Under two hours. $25, yours permanently.</p>
-      <a href="#gumroad" class="btn-honey">Get the course</a>
-      <p class="meta">After purchase you'll get an email with your access link.</p>
+      <p class="lead">Five modules. Under two hours. Coming soon.</p>
+      <a href="#top" class="btn-honey" onclick="document.querySelector('#waitlistForm input[type=email]').focus();window.scrollTo({top:0,behavior:'smooth'});return false;">Join the waitlist</a>
+      <p class="meta">Be the first to know when it's live.</p>
     </div>
   </section>
 
@@ -317,6 +318,14 @@
   </footer>
 
   <script>
+    // Waitlist success state
+    if (new URLSearchParams(window.location.search).get('joined') === 'true') {
+      const form = document.getElementById('waitlistForm');
+      if (form) form.style.display = 'none';
+      const msg = document.getElementById('waitlistSuccess');
+      if (msg) msg.style.display = 'block';
+    }
+
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
     }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
