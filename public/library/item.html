@@ -84,6 +84,19 @@
     body.type-opinion .hook-line{border-left-color:var(--honey)}
     body.type-experiment .hook-line{border-left-color:var(--sand)}
 
+    /* PROMPT BLOCK (dark code style with copy button) */
+    .prompt-block{position:relative;background:#1e1e1e;border-radius:12px;overflow:hidden;margin:2rem 0;border:1px solid rgba(255,255,255,.06)}
+    .prompt-bar{display:flex;align-items:center;justify-content:space-between;background:#2a2a2a;padding:.6rem 1rem;border-bottom:1px solid rgba(255,255,255,.07)}
+    .prompt-label{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4)}
+    .copy-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:.3rem .7rem;font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.55);cursor:pointer;transition:background .18s,color .18s,border-color .18s;user-select:none}
+    .copy-btn:hover{background:rgba(255,255,255,.13);color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.2)}
+    .copy-btn.copied{background:rgba(39,201,63,.12);border-color:rgba(39,201,63,.3);color:#27c93f}
+    .copy-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .prompt-text{padding:1.5rem 1.4rem;font-family:var(--mono);font-size:.82rem;line-height:1.75;color:rgba(255,255,255,.82);white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+
+    /* SECTION DIVIDER (--) */
+    .content-divider{height:1px;background:var(--border);margin:2.5rem 0}
+
     /* SOFT CTA */
     .soft-cta{margin-top:3.5rem;background:var(--blush);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
     .soft-cta::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.15;border-radius:50%;pointer-events:none}
@@ -175,7 +188,114 @@
         .replace(/>/g,'&gt;');
     }
 
-    // Convert plain text summary to simple HTML paragraphs
+    // Known ALL CAPS section headers from Draft_Content
+    const SECTION_HEADERS = [
+      'USE THIS WHEN','NOT THE RIGHT FIT','THE PROMPT','THE RULE THAT MATTERS MOST',
+      'HOW TO ADAPT IT','WHAT TO READ NEXT','WHY THIS WORKS','WHAT YOU GET',
+      'HOW TO USE IT','THE SETUP','THE WORKFLOW','THE RESULT','WHAT BROKE',
+      'WHAT I LEARNED','THE TAKEAWAY','THE CONTEXT','THE PROBLEM','THE FIX',
+      'HOW IT WORKS','WHEN TO USE THIS','WHY IT MATTERS','WHAT CHANGED',
+    ];
+
+    function isSectionHeader(line) {
+      const t = line.trim();
+      // Match known headers (with or without trailing colon)
+      const clean = t.replace(/:$/, '');
+      if (SECTION_HEADERS.includes(clean)) return clean;
+      // Fallback: line is ALL CAPS, 2+ words, no lowercase
+      if (/^[A-Z][A-Z\s''\-]{3,}$/.test(clean) && clean.includes(' ')) return clean;
+      return null;
+    }
+
+    function isPromptHeader(line) {
+      const t = line.trim().replace(/:$/, '');
+      return t === 'THE PROMPT';
+    }
+
+    // Convert Draft_Content plain text to styled HTML
+    function contentToHtml(text) {
+      if (!text) return '<p>Coming soon.</p>';
+
+      const blocks = text.split(/\n\n+/);
+      let html = '';
+      let inPrompt = false;
+      let promptLines = [];
+
+      function flushPrompt() {
+        if (promptLines.length === 0) return '';
+        const promptText = promptLines.join('\n').trim();
+        const id = 'prompt-' + Math.random().toString(36).slice(2, 8);
+        const out = `<div class="prompt-block">
+          <div class="prompt-bar">
+            <span class="prompt-label">Prompt · Copy and adapt</span>
+            <button class="copy-btn" onclick="copyPromptBlock(this)">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div class="prompt-text">${escapeHtml(promptText)}</div>
+        </div>`;
+        promptLines = [];
+        inPrompt = false;
+        return out;
+      }
+
+      for (const block of blocks) {
+        const trimmed = block.trim();
+        if (!trimmed) continue;
+
+        // Check if this block is a separator
+        if (/^--+$/.test(trimmed)) {
+          if (inPrompt) html += flushPrompt();
+          html += '<div class="content-divider"></div>';
+          continue;
+        }
+
+        // Check if it's a section header
+        const headerName = isSectionHeader(trimmed);
+        if (headerName) {
+          if (inPrompt) html += flushPrompt();
+          if (isPromptHeader(trimmed)) {
+            inPrompt = true;
+            html += `<h2>${headerName.charAt(0) + headerName.slice(1).toLowerCase()}</h2>`;
+            continue;
+          }
+          // Title-case the header
+          const display = headerName.split(' ').map(w =>
+            w.length <= 2 ? w.toLowerCase() : w.charAt(0) + w.slice(1).toLowerCase()
+          ).join(' ');
+          // Capitalize first letter
+          const final = display.charAt(0).toUpperCase() + display.slice(1);
+          html += `<h2>${escapeHtml(final)}</h2>`;
+          continue;
+        }
+
+        // If we're inside the prompt section, collect lines
+        if (inPrompt) {
+          promptLines.push(trimmed);
+          continue;
+        }
+
+        // Regular paragraph — handle single newlines as line breaks within a block
+        const lines = trimmed.split(/\n/);
+        if (lines.length > 1 && lines.every(l => /^[\-\*·•→]\s/.test(l.trim()) || /^\d+[\.\)]\s/.test(l.trim()))) {
+          // It's a list
+          html += '<ul>' + lines.map(l => {
+            const content = l.trim().replace(/^[\-\*·•→\d+\.\)]+\s*/, '');
+            return `<li>${escapeHtml(content)}</li>`;
+          }).join('') + '</ul>';
+        } else {
+          html += `<p>${escapeHtml(trimmed).replace(/\n/g, '<br>')}</p>`;
+        }
+      }
+
+      // Flush any remaining prompt content
+      if (inPrompt) html += flushPrompt();
+
+      return html;
+    }
+
+    // Convert plain text summary to simple HTML paragraphs (fallback)
     function textToHtml(text) {
       if (!text) return '<p>Coming soon.</p>';
       return text.split(/\n\n+/).map(para => {
@@ -183,6 +303,18 @@
         if (!trimmed) return '';
         return `<p>${escapeHtml(trimmed)}</p>`;
       }).filter(Boolean).join('\n');
+    }
+
+    // Copy prompt block content
+    function copyPromptBlock(btn) {
+      const text = btn.closest('.prompt-block').querySelector('.prompt-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const label = btn.querySelector('span');
+        const prev = label.textContent;
+        btn.classList.add('copied');
+        label.textContent = 'Copied';
+        setTimeout(() => { btn.classList.remove('copied'); label.textContent = prev; }, 2000);
+      });
     }
 
     function buildGetOut(entry) {
@@ -235,7 +367,9 @@
       document.getElementById('entry-title').textContent = entry.title;
       document.getElementById('hook-line').textContent = entry.hook || entry.desc;
       document.getElementById('get-out-text').innerHTML = buildGetOut(entry);
-      document.getElementById('entry-body').innerHTML = textToHtml(entry.desc);
+      document.getElementById('entry-body').innerHTML = entry.content
+        ? contentToHtml(entry.content)
+        : textToHtml(entry.desc);
 
       // Show entry
       document.getElementById('loading').style.display = 'none';
