@@ -19,7 +19,6 @@ const FIELD_NAMES = [
   'Hook',
   'Summary',
   'Pull_Quote',
-  'Draft_Content',
   'Date_Added',
   'Featured on Website',
 ];
@@ -81,7 +80,6 @@ function normalise(record) {
     len:      selectName(f['Length']),
     hook:     f['Hook']                || '',
     desc:     f['Summary']             || '',
-    content:  f['Draft_Content']       || '',
     pull:     f['Pull_Quote']          || '',
     date:     formatDate(f['Date_Added']),
     featured: f['Featured on Website'] || false,
