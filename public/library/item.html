@@ -199,11 +199,19 @@
 
     function isSectionHeader(line) {
       const t = line.trim();
-      // Match known headers (with or without trailing colon)
       const clean = t.replace(/:$/, '');
+      // Match known ALL CAPS headers
       if (SECTION_HEADERS.includes(clean)) return clean;
-      // Fallback: line is ALL CAPS, 2+ words, no lowercase
+      // ALL CAPS line, 2+ words
       if (/^[A-Z][A-Z\s''\-]{3,}$/.test(clean) && clean.includes(' ')) return clean;
+      // "Section N:" style headers (e.g. "Section 1: Who you are")
+      if (/^Section\s+\d+/i.test(t)) return t.replace(/:?\s*$/, '');
+      // Short standalone line that looks like a heading (no period, under 60 chars, starts with capital)
+      if (clean.length < 60 && clean.length > 3 && /^[A-Z]/.test(clean) && !/[.!?]$/.test(clean) && !/[a-z]{3,}\s[a-z]{3,}\s[a-z]{3,}\s[a-z]{3,}\s[a-z]/.test(clean)) {
+        // Only match if it's a single short line (likely a heading, not a sentence)
+        const words = clean.split(/\s+/);
+        if (words.length <= 8 && !clean.includes('. ')) return clean;
+      }
       return null;
     }
 
@@ -260,12 +268,16 @@
             html += `<h2>${headerName.charAt(0) + headerName.slice(1).toLowerCase()}</h2>`;
             continue;
           }
-          // Title-case the header
-          const display = headerName.split(' ').map(w =>
-            w.length <= 2 ? w.toLowerCase() : w.charAt(0) + w.slice(1).toLowerCase()
-          ).join(' ');
-          // Capitalize first letter
-          const final = display.charAt(0).toUpperCase() + display.slice(1);
+          // Title-case only if ALL CAPS, otherwise keep as-is
+          let final;
+          if (/^[A-Z\s''\-]+$/.test(headerName)) {
+            const display = headerName.split(' ').map(w =>
+              w.length <= 2 ? w.toLowerCase() : w.charAt(0) + w.slice(1).toLowerCase()
+            ).join(' ');
+            final = display.charAt(0).toUpperCase() + display.slice(1);
+          } else {
+            final = headerName;
+          }
           html += `<h2>${escapeHtml(final)}</h2>`;
           continue;
         }
@@ -367,9 +379,7 @@
       document.getElementById('entry-title').textContent = entry.title;
       document.getElementById('hook-line').textContent = entry.hook || entry.desc;
       document.getElementById('get-out-text').innerHTML = buildGetOut(entry);
-      document.getElementById('entry-body').innerHTML = entry.content
-        ? contentToHtml(entry.content)
-        : textToHtml(entry.desc);
+      document.getElementById('entry-body').innerHTML = contentToHtml(entry.desc);
 
       // Show entry
       document.getElementById('loading').style.display = 'none';
