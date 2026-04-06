@@ -71,19 +71,6 @@
     .research-source p{font-family:var(--mono);font-size:.7rem;color:var(--muted);line-height:1.6;margin:0}
     .research-source strong{color:var(--inklight);font-weight:600}
 
-    /* STATS BAR */
-    .stats-bar{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:white;margin:2.5rem 0}
-    .stat{flex:1;min-width:140px;padding:1.1rem 1.4rem;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:.35rem}
-    .stat:last-child{border-right:none}
-    .stat-label{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-    .stat-value{font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--ink)}
-    .stat-value em{font-style:normal;color:var(--honey)}
-
-    /* PULL QUOTE */
-    .pull-quote{position:relative;margin:2.5rem 0;padding:2rem 2.5rem;background:var(--stone);border-radius:16px;border-left:4px solid var(--honey)}
-    .pull-quote::before{content:'\201C';position:absolute;top:.6rem;left:1rem;font-family:var(--serif);font-size:3.5rem;color:var(--honey);opacity:.35;line-height:1}
-    .pull-quote p{font-family:var(--serif);font-style:italic;font-size:1.15rem;line-height:1.65;color:var(--ink);margin:0}
-
     /* DIVIDER */
     .entry-divider{height:1px;background:var(--border);margin:2.5rem 0}
 
@@ -176,11 +163,6 @@
     @media(max-width:600px){
       .use-grid{grid-template-columns:1fr}
       .related-grid{grid-template-columns:1fr}
-      .stats-bar{flex-direction:column}
-      .stat{border-right:none;border-bottom:1px solid var(--border)}
-      .stat:last-child{border-bottom:none}
-      .pull-quote{padding:1.5rem 1.8rem}
-      .pull-quote::before{font-size:2.5rem;top:.4rem;left:.6rem}
     }
 
     #entry{display:none}
@@ -217,12 +199,9 @@
           <p id="get-out-text"></p>
         </div>
         <div id="research-source-container"></div>
-        <div id="stats-container"></div>
       </header>
 
       <div class="entry-divider"></div>
-
-      <div id="pull-quote-container"></div>
 
       <div class="entry-body rv d1" id="entry-body"></div>
 
@@ -706,7 +685,7 @@
     }
 
     function render(entry) {
-      document.title = entry.title + ' | lilyp.ai Library';
+      document.title = entry.title + ' \u2014 lilyp.ai Library';
       document.body.classList.add(BODY_CLASS[entry.type] || '');
 
       // Meta row
@@ -722,25 +701,6 @@
       document.getElementById('entry-title').textContent = entry.title;
       document.getElementById('hook-line').textContent = entry.hook || '';
       document.getElementById('get-out-text').innerHTML = buildGetOut(entry);
-
-      // Render stats bar if stat data exists
-      if (entry.stats && entry.stats.length > 0) {
-        var statsHtml = '<div class="stats-bar rv d1">';
-        for (var si = 0; si < entry.stats.length; si++) {
-          statsHtml += '<div class="stat">' +
-            '<span class="stat-label">' + escapeHtml(entry.stats[si].label) + '</span>' +
-            '<span class="stat-value">' + escapeHtml(entry.stats[si].value) + '</span>' +
-          '</div>';
-        }
-        statsHtml += '</div>';
-        document.getElementById('stats-container').innerHTML = statsHtml;
-      }
-
-      // Render pull quote if it exists
-      if (entry.pull) {
-        document.getElementById('pull-quote-container').innerHTML =
-          '<div class="pull-quote rv d2"><p>' + escapeHtml(entry.pull) + '</p></div>';
-      }
 
       // Process content: extract structured sections
       var rawDesc = entry.desc || '';

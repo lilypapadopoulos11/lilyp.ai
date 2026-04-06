@@ -21,14 +21,6 @@ const FIELD_NAMES = [
   'Pull_Quote',
   'Date_Added',
   'Featured on Website',
-  'Stat_1_Value',
-  'Stat_1_Label',
-  'Stat_2_Value',
-  'Stat_2_Label',
-  'Stat_3_Value',
-  'Stat_3_Label',
-  'Stat_4_Value',
-  'Stat_4_Label',
 ];
 
 const CORS = {
@@ -78,13 +70,6 @@ function formatDate(iso) {
 
 function normalise(record) {
   const f = record.fields;
-  // Build stats array from Stat_1 through Stat_4 pairs (only include if both value and label exist)
-  const stats = [];
-  for (let i = 1; i <= 4; i++) {
-    const val = f[`Stat_${i}_Value`];
-    const lbl = f[`Stat_${i}_Label`];
-    if (val && lbl) stats.push({ value: val, label: lbl });
-  }
   return {
     id:       record.id,
     title:    f['Content Title']       || '',
@@ -98,7 +83,6 @@ function normalise(record) {
     pull:     f['Pull_Quote']          || '',
     date:     formatDate(f['Date_Added']),
     featured: f['Featured on Website'] || false,
-    stats:    stats,
   };
 }
 
