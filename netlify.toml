@@ -30,9 +30,44 @@
   to     = "/builds/:slug.html"
   status = 200
 
-# ── Dynamic library item pages ──
-# Static files (the three hand-crafted pages) are served first by Netlify.
-# Any slug that doesn't match a real file falls through to item.html.
+# ── Static library pages (explicit rules take priority over catch-all) ──
+[[redirects]]
+  from   = "/library/the-claude-context-template"
+  to     = "/library/the-claude-context-template.html"
+  status = 200
+
+[[redirects]]
+  from   = "/library/build-your-voice-guidelines"
+  to     = "/library/build-your-voice-guidelines.html"
+  status = 200
+
+[[redirects]]
+  from   = "/library/connect-airtable-to-claude"
+  to     = "/library/connect-airtable-to-claude.html"
+  status = 200
+
+[[redirects]]
+  from   = "/library/relationship-tracker-setup"
+  to     = "/library/relationship-tracker-setup.html"
+  status = 200
+
+[[redirects]]
+  from   = "/library/cre-outbound-engine"
+  to     = "/library/cre-outbound-engine.html"
+  status = 200
+
+[[redirects]]
+  from   = "/library/extract-and-structure-megaprompt"
+  to     = "/library/extract-and-structure-megaprompt.html"
+  status = 200
+
+[[redirects]]
+  from   = "/library/meeting-notes-to-airtable"
+  to     = "/library/meeting-notes-to-airtable.html"
+  status = 200
+
+# ── Dynamic library item pages (catch-all fallback) ──
+# Any slug not matched above falls through to item.html for Airtable-backed pages.
 [[redirects]]
   from   = "/library/:slug"
   to     = "/library/item.html"
