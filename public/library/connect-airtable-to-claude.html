@@ -163,7 +163,7 @@
     <div class="rv needs-block">
       <div class="needs-label">Before you start</div>
       <ul class="needs-list">
-        <li>An Airtable account (free tier works fine — sign up at airtable.com if you don't have one)</li>
+        <li>An Airtable account (free tier works fine; sign up at airtable.com if you don't have one)</li>
         <li>Claude Code installed, or a project you're adding Airtable to</li>
         <li>That's it. No prior experience with APIs or tokens needed.</li>
       </ul>
@@ -193,17 +193,17 @@
             <p>Here's how to get it:</p>
             <p>1. Go to <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener">airtable.com/create/tokens</a> (or click your profile icon in the top right, then "Developer hub," then "Personal access tokens").</p>
             <p>2. Click <strong>"+ Create new token"</strong>.</p>
-            <p>3. Give it a name so you remember what it's for — something like <em>lilyp.ai tracker</em> is fine.</p>
+            <p>3. Give it a name so you remember what it's for. Something like <em>lilyp.ai tracker</em> is fine.</p>
             <p>4. Under <strong>Scopes</strong>, add these four:</p>
             <div class="copy-block">
               <span class="copy-text">data.records:read &nbsp;&nbsp; data.records:write &nbsp;&nbsp; schema.bases:read &nbsp;&nbsp; schema.bases:write</span>
             </div>
-            <p><em>(Scopes just mean "what is this token allowed to do." The record scopes handle reading and writing contacts. The schema scopes let the <code>setup --create</code> command build your Airtable base automatically — without them, you'd have to create all the tables and fields by hand.)</em></p>
-            <p>5. Under <strong>Access</strong>, choose "All current and future bases" — or select specific bases if you prefer.</p>
+            <p><em>(Scopes just mean "what is this token allowed to do." The record scopes handle reading and writing contacts. The schema scopes let the <code>setup --create</code> command build your Airtable base automatically. Without them, you'd have to create all the tables and fields by hand.)</em></p>
+            <p>5. Under <strong>Access</strong>, choose "All current and future bases" (or select specific bases if you prefer).</p>
             <p>6. Click <strong>"Create token"</strong>. Airtable will show you the token once. Copy it now and keep it somewhere safe (a password manager, a notes app). You won't be able to see it again.</p>
             <div class="screenshot-guide">
               <div class="screenshot-label">What it looks like</div>
-              <p>The token starts with "pat" and is a long string of letters and numbers — something like <code>patABCDEFGHIJ.1234567890abcdef...</code>. That whole string is what you'll paste in the next step.</p>
+              <p>The token starts with "pat" and is a long string of letters and numbers. It looks something like <code>patABCDEFGHIJ.1234567890abcdef...</code>. That whole string is what you'll paste in the next step.</p>
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@
         <div class="step-content">
           <div class="step-title">Add your token to the tracker</div>
           <div class="step-body">
-            <p>Open the file called <code>config/secrets.env</code> in the project folder (it's just a plain text file — open it in any text editor or right in Claude Code). Find the line that says <code>AIRTABLE_PAT</code> and paste your token after the equals sign:</p>
+            <p>Open the file called <code>config/secrets.env</code> in the project folder (it's just a plain text file; open it in any text editor or right in Claude Code). Find the line that says <code>AIRTABLE_PAT</code> and paste your token after the equals sign:</p>
             <div class="copy-block">
               <span class="copy-text">AIRTABLE_PAT=patABCDEFGHIJ.your_actual_token_here</span>
               <button class="copy-btn" onclick="navigator.clipboard.writeText('AIRTABLE_PAT=').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
@@ -231,7 +231,7 @@
           <div class="step-title">Get your base ID</div>
           <div class="step-body">
             <p>If you're running the tracker's setup command, it'll create the Airtable base for you automatically and you can skip this. But if you're connecting to a base that already exists, here's how to find its ID.</p>
-            <p>Open your base in Airtable. Look at the URL in your browser — it looks like:</p>
+            <p>Open your base in Airtable. Look at the URL in your browser. It looks like:</p>
             <div class="copy-block">
               <span class="copy-text">https://airtable.com/appXXXXXXXXXXXXXX/...</span>
             </div>
@@ -266,9 +266,9 @@
       <div class="bonus-eyebrow">Bonus / 2 extra minutes</div>
       <div class="bonus-title">Also connect Airtable to Claude.ai chat</div>
       <div class="bonus-body">
-        <p>There's a separate plugin (called an MCP server — basically a one-click connector) that lets you browse, filter, and update your Airtable bases directly in a Claude.ai conversation. No code, no config file. It's genuinely useful if you want to ask questions about your data without writing any queries.</p>
+        <p>There's a separate plugin (called an MCP server, basically a one-click connector) that lets you browse, filter, and update your Airtable bases directly in a Claude.ai conversation. No code, no config file. It's genuinely useful if you want to ask questions about your data without writing any queries.</p>
         <p>To install it: in Claude.ai, go to <strong>Settings → Integrations</strong> and search for Airtable. Click install, sign in with your Airtable account, and it's done. It'll show up in any new conversation as a connected tool.</p>
-        <p>This is separate from the Personal Access Token above — they do different things. The token is for code-based projects. The MCP is for chatting with your data in Claude.ai. Both are worth having.</p>
+        <p>This is separate from the Personal Access Token above. They do different things. The token is for code-based projects. The MCP is for chatting with your data in Claude.ai. Both are worth having.</p>
       </div>
     </div>
 

@@ -158,7 +158,7 @@
     </h1>
 
     <p class="rv d2 hero-lead">
-      I know setup docs are usually the part where things go sideways. This one is different. Every step is written assuming you haven't done this before — because most people haven't, and that's completely fine.
+      I know setup docs are usually the part where things go sideways. This one is different. Every step is written assuming you haven't done this before, because most people haven't, and that's completely fine.
     </p>
 
     <div class="rv d3 guide-meta">
@@ -173,12 +173,12 @@
     <div class="rv needs-block" style="margin-bottom:2rem;">
       <div class="needs-label">What's in this guide</div>
       <ul class="needs-list">
-        <li><a href="#step-1">Step 1 — What you need installed first</a></li>
-        <li><a href="#step-2">Step 2 — Get the project files</a></li>
-        <li><a href="#step-3">Step 3 — Install the Python packages it needs</a></li>
-        <li><a href="#step-4">Step 4 — Add your API keys</a></li>
-        <li><a href="#step-5">Step 5 — Build your Airtable base automatically</a></li>
-        <li><a href="#step-6">Step 6 — Log your first contact</a></li>
+        <li><a href="#step-1">Step 1: What you need installed first</a></li>
+        <li><a href="#step-2">Step 2: Get the project files</a></li>
+        <li><a href="#step-3">Step 3: Install the Python packages it needs</a></li>
+        <li><a href="#step-4">Step 4: Add your API keys</a></li>
+        <li><a href="#step-5">Step 5: Build your Airtable base automatically</a></li>
+        <li><a href="#step-6">Step 6: Log your first contact</a></li>
         <li><a href="#trouble">If something breaks</a></li>
       </ul>
     </div>
@@ -194,8 +194,8 @@
       </div>
       <div class="step-body">
         <p>Three things need to be on your computer before anything else works. Here's what each one is and where to get it.</p>
-        <p><strong>Claude Code</strong> — this is where you'll do everything. It's an app from Anthropic that gives you a code editor, a terminal (the panel where you type commands), and Claude as a built-in assistant. If you don't have it yet, download it from <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a>.</p>
-        <p><strong>Python</strong> — the language the tracker is written in. You probably already have it if you've used Claude Code for anything before. To check, open Claude Code, look for the terminal panel at the bottom of the screen (if it's not open, press <code>Ctrl+`</code> on Windows or <code>Cmd+`</code> on Mac — that's the backtick key, the one to the left of the 1), and type:</p>
+        <p><strong>Claude Code</strong> is where you'll do everything. It's an app from Anthropic that gives you a code editor, a terminal (the panel where you type commands), and Claude as a built-in assistant. If you don't have it yet, download it from <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a>.</p>
+        <p><strong>Python</strong> is the language the tracker is written in. You probably already have it if you've used Claude Code for anything before. To check, open Claude Code, look for the terminal panel at the bottom of the screen (if it's not open, press <code>Ctrl+`</code> on Windows or <code>Cmd+`</code> on Mac (that's the backtick key, the one to the left of the 1)), and type:</p>
         <div class="cmd-block">
           <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
           <div class="cmd-body">
@@ -204,7 +204,7 @@
           </div>
         </div>
         <p>If it shows something like <code>Python 3.11.4</code>, you're good. If it says "not found" or throws an error, go to <a href="https://python.org/downloads" target="_blank" rel="noopener">python.org/downloads</a> and install the latest version.</p>
-        <p><strong>An Airtable account</strong> — free tier works. You'll also need a Personal Access Token (it's a key Airtable generates for you). The companion guide below covers this in about 5 minutes if you haven't done it yet.</p>
+        <p><strong>An Airtable account.</strong> Free tier works. You'll also need a Personal Access Token (it's a key Airtable generates for you). The companion guide below covers this in about 5 minutes if you haven't done it yet.</p>
 
         <a href="/library/connect-airtable-to-claude" class="companion-strip" style="margin-top:1rem">
           <div class="companion-left">
@@ -226,7 +226,7 @@
         <div class="step-time">~2 min</div>
       </div>
       <div class="step-body">
-        <p>You need a copy of the tracker on your computer. The way to do that is called "cloning" — which just means downloading a copy of everything from GitHub onto your machine.</p>
+        <p>You need a copy of the tracker on your computer. The way to do that is called "cloning" (which just means downloading a copy of everything from GitHub onto your machine).</p>
         <p>In the terminal, paste this and press Enter (swap in the actual repo URL when you have it):</p>
         <div class="cmd-block">
           <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
@@ -243,7 +243,7 @@
             <button class="cmd-copy" onclick="navigator.clipboard.writeText('cd relationship-tracker').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
           </div>
         </div>
-        <div class="note"><strong>What <code>cd</code> means:</strong> "change directory" — it's just how you navigate into a folder from the terminal. Think of it as double-clicking a folder, but in text form.</div>
+        <div class="note"><strong>What <code>cd</code> means:</strong> "change directory." It's just how you navigate into a folder from the terminal. Think of it as double-clicking a folder, but in text form.</div>
       </div>
     </div>
 
@@ -265,8 +265,8 @@
             <button class="cmd-copy" onclick="navigator.clipboard.writeText('pip install -r requirements.txt').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
           </div>
         </div>
-        <p>You'll see a bunch of text scroll by — that's normal, it's just downloading things. Wait until it finishes and returns you to a blank line with a cursor.</p>
-        <div class="note"><strong>What pip is:</strong> Python's package manager — basically an app store for Python tools. <code>-r requirements.txt</code> just means "install everything listed in this file."</div>
+        <p>You'll see a bunch of text scroll by. That's normal, it's just downloading things. Wait until it finishes and returns you to a blank line with a cursor.</p>
+        <div class="note"><strong>What pip is:</strong> Python's package manager. Basically an app store for Python tools. <code>-r requirements.txt</code> just means "install everything listed in this file."</div>
       </div>
     </div>
 
@@ -291,9 +291,9 @@
           </div>
         </div>
         <p>Replace each placeholder with the real value. Here's where to find them:</p>
-        <p><strong>ANTHROPIC_API_KEY</strong> — go to <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>, sign in, click "API Keys" in the left sidebar, and create a new key. Copy the whole thing (it starts with <code>sk-ant-</code>).</p>
-        <p><strong>AIRTABLE_PAT</strong> — this is your Airtable Personal Access Token. If you haven't gotten it yet, the companion guide above walks you through it.</p>
-        <p><strong>TRACKER_REMINDER_EMAIL</strong> — the email address where you want reminder emails sent. Just your normal email.</p>
+        <p><strong>ANTHROPIC_API_KEY:</strong> go to <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>, sign in, click "API Keys" in the left sidebar, and create a new key. Copy the whole thing (it starts with <code>sk-ant-</code>).</p>
+        <p><strong>AIRTABLE_PAT:</strong> your Airtable Personal Access Token. If you haven't gotten it yet, the companion guide above walks you through it.</p>
+        <p><strong>TRACKER_REMINDER_EMAIL:</strong> the email address where you want reminder emails sent. Just your normal email.</p>
         <div class="note-honey">This file is listed in <code>.gitignore</code>, which means if you ever push this project to GitHub, your keys won't be included. They stay private on your computer.</div>
       </div>
     </div>
@@ -308,7 +308,7 @@
         <div class="step-time">~2 min</div>
       </div>
       <div class="step-body">
-        <p>This one command creates your entire Airtable base — all three tables (Contacts, Interactions, Events), all the fields, and the Follow-Up Queue view. You don't set anything up by hand.</p>
+        <p>This one command creates your entire Airtable base: all three tables (Contacts, Interactions, Events), all the fields, and the Follow-Up Queue view. You don't set anything up by hand.</p>
         <div class="cmd-block">
           <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
           <div class="cmd-body">
@@ -316,7 +316,7 @@
             <button class="cmd-copy" onclick="navigator.clipboard.writeText('python -m tracker.tracker setup --create').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
           </div>
         </div>
-        <p>When it finishes, open Airtable in your browser — you should see a new base called "Relationship Tracker" with everything already set up.</p>
+        <p>When it finishes, open Airtable in your browser. You should see a new base called "Relationship Tracker" with everything already set up.</p>
         <p>The command also copies the base ID into your <code>secrets.env</code> automatically, so you don't need to find it yourself.</p>
       </div>
     </div>
@@ -331,7 +331,7 @@
         <div class="step-time">~1 min</div>
       </div>
       <div class="step-body">
-        <p>You're set up. Try it with someone real — someone you've actually met recently. Replace the text in quotes with a quick description of them:</p>
+        <p>You're set up. Try it with someone you've actually met recently. Replace the text in quotes with a quick description of them:</p>
         <div class="cmd-block">
           <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
           <div class="cmd-body">
@@ -339,7 +339,7 @@
             <button class="cmd-copy" onclick="navigator.clipboard.writeText(`python -m tracker.tracker add "Met [name] at [event]. They work at [company] as a [role]. We talked about [topic]. Should follow up [when]."`).then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
           </div>
         </div>
-        <p>The more detail you give, the better the record — but even a few sentences is enough. Claude parses it, creates the structured contact record in Airtable, and schedules your follow-up automatically.</p>
+        <p>The more detail you give, the better the record. Even a few sentences is enough. Claude parses it, creates the structured contact record in Airtable, and schedules your follow-up automatically.</p>
         <p>Check your Airtable base and you should see the contact appear within a few seconds.</p>
         <div class="note-honey">You're in. From here, the <a href="/builds/relationship-tracker">full build page</a> has the rest of the commands and what each one does.</div>
       </div>
@@ -362,7 +362,7 @@
         </div>
         <div class="trouble-item">
           <div class="trouble-q">"Module not found" error after running pip install</div>
-          <div class="trouble-a">Make sure you're in the right folder first. Run <code>pwd</code> (print working directory) — it should show the relationship-tracker folder. If not, <code>cd</code> back to it and try the pip install again.</div>
+          <div class="trouble-a">Make sure you're in the right folder first. Run <code>pwd</code> (print working directory). It should show the relationship-tracker folder. If not, <code>cd</code> back to it and try the pip install again.</div>
         </div>
         <div class="trouble-item">
           <div class="trouble-q">Airtable authentication error</div>
@@ -370,7 +370,7 @@
         </div>
         <div class="trouble-item">
           <div class="trouble-q">Claude API error or "Invalid API key"</div>
-          <div class="trouble-a">Same fix — check <code>ANTHROPIC_API_KEY</code> in your secrets.env. The key starts with <code>sk-ant-</code>. If it's expired or you've hit a limit, generate a new one at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</div>
+          <div class="trouble-a">Same fix: check <code>ANTHROPIC_API_KEY</code> in your secrets.env. The key starts with <code>sk-ant-</code>. If it's expired or you've hit a limit, generate a new one at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</div>
         </div>
         <div class="trouble-item">
           <div class="trouble-q">Something else broke and I don't know what</div>

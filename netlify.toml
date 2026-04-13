@@ -23,6 +23,13 @@
   to     = "/.netlify/functions/library"
   status = 200
 
+# ── Build detail pages ──
+# Static .html files are served directly; this catches clean URLs without the extension.
+[[redirects]]
+  from   = "/builds/:slug"
+  to     = "/builds/:slug.html"
+  status = 200
+
 # ── Dynamic library item pages ──
 # Static files (the three hand-crafted pages) are served first by Netlify.
 # Any slug that doesn't match a real file falls through to item.html.
