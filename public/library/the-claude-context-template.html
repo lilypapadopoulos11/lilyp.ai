@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Claude Context Template for Students and Junior Professionals — lilyp.ai Library</title>
+  <!--
+    HOW TO DEPLOY:
+    1. Copy this file to public/library/the-claude-context-template.html in the lilyp.ai repo.
+    2. Copy the hero image to public/images/ and update the src below from the relative path to /images/context-template-hero.jpg
+    3. Push to GitHub — Netlify deploys automatically. No other changes needed.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!--
+    Site fonts: Fraunces + Manrope + Space Mono
+    Visual insert fonts: Playfair Display + Inter (intentional — inserts read as embedded cards)
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── DESIGN TOKENS (canonical site system) ─────────────────── */
+    :root {
+      --paper:    #FDFCF9;
+      --ink:      #121211;
+      --inklight: #4A4A46;
+      --muted:    rgba(18,18,17,0.42);
+      --honey:    #ECA824;
+      --apricot:  #F4AA96;
+      --blush:    #FCE8E3;
+      --stone:    #F0EFEA;
+      --sand:     #E5E3DC;
+      --border:   rgba(18,18,17,0.09);
+      --serif:    'Fraunces', Georgia, serif;
+      --sans:     'Manrope', sans-serif;
+      --mono:     'Space Mono', monospace;
+      --out:      cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --snappy:   cubic-bezier(0.21, 0.83, 0.26, 1);
+      --spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ── RESET ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── DOT GRID TEXTURE ──────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: .026;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @media (max-width: 768px) { body::before { display: none; } }
+
+    /* ── AMBIENT ORBS ──────────────────────────────────────────── */
+    .amb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+    .amb1 { width: 500px; height: 400px; top: -80px; right: -80px; background: var(--blush); opacity: .45; animation: orbDrift1 18s ease-in-out infinite alternate; }
+    .amb2 { width: 350px; height: 280px; bottom: 10%; left: -60px; background: rgba(236,168,36,.12); opacity: 1; animation: orbDrift2 22s ease-in-out infinite alternate; }
+
+    @keyframes orbDrift1 {
+      from { transform: translate(0, 0); }
+      to   { transform: translate(-20px, 30px); }
+    }
+    @keyframes orbDrift2 {
+      from { transform: translate(0, 0); }
+      to   { transform: translate(30px, -20px); }
+    }
+
+    /* ── NAV ───────────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      background: rgba(253,252,249,.9);
+      padding: 1.1rem 0;
+    }
+    .nav-inner {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-weight: 500;
+      text-decoration: none;
+      color: var(--ink);
+      transition: opacity .2s;
+    }
+    .nav-brand:hover { opacity: .75; }
+    .nav-brand em { font-style: italic; color: var(--honey); }
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--ink); }
+    .nav-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── HERO IMAGE ────────────────────────────────────────────── */
+    .hero-img-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 460px;
+      overflow: hidden;
+    }
+    .hero-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 35%;
+      display: block;
+      opacity: 0;
+      transform: scale(1.05);
+      animation: heroReveal 1.4s var(--out) .1s forwards;
+    }
+    @keyframes heroReveal {
+      to { opacity: 1; transform: scale(1); }
+    }
+    /* Fade-to-paper at bottom so hero dissolves into the page */
+    .hero-img-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 140px;
+      background: linear-gradient(to bottom, transparent, var(--paper));
+      pointer-events: none;
+    }
+
+    /* ── PAGE CONTAINER ────────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 3rem 2rem 8rem;
+    }
+
+    /* ── ARTICLE HEADER ────────────────────────────────────────── */
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+    .tag {
+      font-family: var(--mono);
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: .22rem .6rem;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      color: var(--inklight);
+    }
+    .tag-cat  { background: var(--stone); border-color: transparent; }
+    .tag-tmpl { border-color: rgba(236,168,36,.25); color: #9a6c00; background: rgba(236,168,36,.06); }
+    .tag-mini { border-color: rgba(244,170,150,.35); color: #a85040; background: rgba(244,170,150,.08); }
+    .date-txt { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+
+    h1.entry-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -.025em;
+      margin-bottom: 1.2rem;
+    }
+    h1.entry-title em { font-style: italic; }
+
+    .hook-line {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.2rem;
+      font-weight: 300;
+      color: var(--inklight);
+      line-height: 1.55;
+      border-left: 3px solid var(--apricot);
+      padding-left: 1.2rem;
+      margin-bottom: 2rem;
+      animation: accentPulse 5s ease-in-out infinite;
+    }
+    @keyframes accentPulse {
+      0%, 100% { border-left-color: var(--apricot); }
+      50%       { border-left-color: var(--honey); }
+    }
+
+    .get-out {
+      display: flex;
+      align-items: flex-start;
+      gap: .9rem;
+      background: var(--blush);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+    }
+    .get-out svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; stroke: var(--honey); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .get-out p { font-family: var(--sans); font-size: .9rem; color: var(--inklight); line-height: 1.6; margin: 0; }
+    .get-out strong { color: var(--ink); font-weight: 600; }
+
+    /* ── DIVIDER ───────────────────────────────────────────────── */
+    .entry-divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
+
+    /* ── BODY PROSE ────────────────────────────────────────────── */
+    .entry-body { font-size: 1.05rem; line-height: 1.75; color: var(--inklight); }
+    .entry-body h2 {
+      font-family: var(--serif);
+      font-size: 1.55rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin: 2.75rem 0 1rem;
+      letter-spacing: -.015em;
+    }
+    .entry-body p { margin-bottom: 1.25rem; }
+    .entry-body p:last-child { margin-bottom: 0; }
+    .entry-body ul { margin: 0 0 1.25rem; padding-left: 0; list-style: none; }
+    .entry-body ul li { position: relative; padding-left: 1.4rem; margin-bottom: .5rem; font-size: 1rem; }
+    .entry-body ul li::before { content: '→'; position: absolute; left: 0; color: var(--apricot); font-family: var(--sans); }
+    .entry-body strong { color: var(--ink); font-weight: 600; }
+
+    /* ── VISUAL INSERTS (intentional embedded cards) ───────────── */
+    .visual-insert {
+      margin: 2.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: white;
+      transition: border-color .35s var(--out), box-shadow .35s var(--out);
+    }
+    .visual-insert:hover {
+      border-color: rgba(236,168,36,.4);
+      box-shadow: 0 12px 48px -16px rgba(236,168,36,.18);
+    }
+    .vi-label {
+      font-family: var(--mono);
+      font-size: .58rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--muted);
+      padding: .65rem 1.25rem .55rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--stone);
+    }
+
+    /* ── VISUAL 1: COMPARISON CARD  (namespace: vc1) ───────────── */
+    .vc1 {
+      padding: 40px 40px 36px;
+      background: #FCFBF7;
+      font-family: 'Inter', sans-serif;
+      color: #171517;
+    }
+    .vc1-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #171517;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .vc1-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .vc1-card {
+      border-radius: 12px;
+      padding: 24px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .vc1-card.vc1-without { background: #ffffff; border: 1.5px solid #E8E4DC; }
+    .vc1-card.vc1-with    { background: #ffffff; border: 1.5px solid #ECA824; }
+    .vc1-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 3px 11px;
+      border-radius: 100px;
+      display: inline-block;
+      width: fit-content;
+    }
+    .vc1-without .vc1-badge { background: #F0EEEA; color: #7A756D; }
+    .vc1-with    .vc1-badge { background: #FDF5E6; color: #B07D12; }
+    .vc1-prompt {
+      background: #F9F8F4;
+      border-radius: 8px;
+      padding: 11px 13px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #4A4744;
+      border-left: 2.5px solid #E8E4DC;
+    }
+    .vc1-with .vc1-prompt { border-left-color: #ECA824; }
+    .vc1-role {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #A09B94;
+      margin-bottom: 4px;
+    }
+    .vc1-resp { }
+    .vc1-resp-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #A09B94;
+      margin-bottom: 7px;
+    }
+    .vc1-resp-text {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #171517;
+    }
+    .vc1-resp-text.dim { color: #6B6560; }
+    .vc1-resp-text p { margin-bottom: 7px; }
+    .vc1-resp-text p:last-child { margin-bottom: 0; }
+    @media (max-width: 600px) {
+      .vc1-grid { grid-template-columns: 1fr; }
+      .vc1 { padding: 24px 20px; }
+    }
+
+    /* ── VISUAL 2: STRUCTURE CARD  (namespace: vc2) ────────────── */
+    .vc2 {
+      padding: 40px;
+      background: #FCFBF7;
+      font-family: 'Inter', sans-serif;
+      color: #171517;
+      display: flex;
+      justify-content: center;
+    }
+    .vc2-inner {
+      width: 100%;
+      max-width: 500px;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1.5px solid #E8E4DC;
+      padding: 32px 28px 28px;
+    }
+    .vc2-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      font-weight: 600;
+      color: #171517;
+      margin-bottom: 4px;
+    }
+    .vc2-sub {
+      font-size: 12px;
+      color: #9B968F;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .vc2-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #F0EEEA;
+    }
+    .vc2-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .vc2-row:first-of-type { padding-top: 0; }
+    .vc2-num {
+      width: 26px; height: 26px; min-width: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 11px;
+      color: #171517;
+      margin-top: 1px;
+    }
+    .n-gold    { background: #FDF5E6; }
+    .n-pink    { background: #F4DDD6; }
+    .n-apricot { background: #FBEEE5; }
+    .vc2-name { font-weight: 600; font-size: 13px; color: #171517; margin-bottom: 2px; }
+    .vc2-hint { font-size: 11px; color: #9B968F; line-height: 1.45; }
+    @media (max-width: 600px) { .vc2 { padding: 24px 20px; } }
+
+    /* ── VISUAL 3: WORKFLOW STRIP  (namespace: vc3) ────────────── */
+    .vc3 {
+      padding: 36px 40px 32px;
+      background: #FCFBF7;
+      font-family: 'Inter', sans-serif;
+      color: #171517;
+      display: flex;
+      justify-content: center;
+    }
+    .vc3-flow {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 740px;
+    }
+    .vc3-step {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .vc3-circle {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 14px; color: #171517;
+    }
+    .vc3-step:nth-child(1) .vc3-circle { background: #FDF5E6; }
+    .vc3-step:nth-child(3) .vc3-circle { background: #FBEEE5; }
+    .vc3-step:nth-child(5) .vc3-circle { background: #F4DDD6; }
+    .vc3-label { font-weight: 600; font-size: 13px; color: #171517; text-align: center; }
+    .vc3-desc  { font-size: 11px; color: #9B968F; text-align: center; line-height: 1.4; max-width: 150px; }
+    .vc3-arrow {
+      display: flex; align-items: center; justify-content: center;
+      width: 50px; min-width: 50px;
+      padding-bottom: 30px;
+    }
+    .vc3-arrow svg { width: 28px; height: 10px; }
+    @media (max-width: 600px) {
+      .vc3-flow { flex-direction: column; gap: 18px; }
+      .vc3-arrow { width: auto; min-width: auto; padding-bottom: 0; transform: rotate(90deg); }
+      .vc3 { padding: 24px 20px; }
+    }
+
+    /* ── TEMPLATE CODE BLOCKS ──────────────────────────────────── */
+    .template-block {
+      position: relative;
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 1.75rem 0;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .template-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #2a2a2a;
+      padding: .6rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .t-bar-label {
+      font-family: var(--mono);
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.4);
+    }
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 6px;
+      padding: .3rem .7rem;
+      font-family: var(--mono);
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: rgba(255,255,255,.55);
+      cursor: pointer;
+      transition: background .18s, color .18s, border-color .18s;
+      user-select: none;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,.13); color: rgba(255,255,255,.85); border-color: rgba(255,255,255,.2); }
+    .copy-btn.copied { background: rgba(39,201,63,.12); border-color: rgba(39,201,63,.3); color: #27c93f; }
+    .copy-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .template-text {
+      padding: 1.5rem 1.4rem;
+      font-family: var(--mono);
+      font-size: .8rem;
+      line-height: 1.75;
+      color: rgba(255,255,255,.82);
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+    }
+
+    /* ── ADAPT HINTS ───────────────────────────────────────────── */
+    .adapt-list { display: flex; flex-direction: column; gap: .75rem; margin: 1.75rem 0; }
+    .adapt-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .9rem;
+      padding: 1rem 1.2rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: .9rem;
+      color: var(--inklight);
+      line-height: 1.6;
+      transition: border-color .2s var(--out), transform .25s var(--snappy);
+    }
+    .adapt-item:hover {
+      border-color: rgba(236,168,36,.3);
+      transform: translateX(3px);
+    }
+    .adapt-item strong { color: var(--ink); }
+    .adapt-dot {
+      width: 6px; height: 6px; min-width: 6px;
+      border-radius: 50%;
+      background: var(--apricot);
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ── OPTIONS GRID ──────────────────────────────────────────── */
+    .option-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.75rem 0; }
+    .option-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+      transition: border-color .2s, transform .25s var(--snappy), box-shadow .25s;
+    }
+    .option-card:hover {
+      border-color: var(--honey);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -8px rgba(236,168,36,.15);
+    }
+    .option-label {
+      font-family: var(--mono);
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--honey);
+      margin-bottom: .6rem;
+    }
+    .option-title {
+      font-family: var(--sans);
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: .45rem;
+    }
+    .option-body { font-size: .88rem; color: var(--inklight); line-height: 1.6; }
+    @media (max-width: 600px) { .option-pair { grid-template-columns: 1fr; } }
+
+    /* ── AUTHOR BLOCK ──────────────────────────────────────────── */
+    .author-block {
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      margin: 3rem 0 0;
+      padding: 1.4rem 1.5rem;
+      background: var(--stone);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      transition: border-color .3s var(--out);
+    }
+    .author-block:hover { border-color: rgba(236,168,36,.3); }
+    .author-portrait {
+      width: 84px; height: 84px; min-width: 84px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--honey);
+      flex-shrink: 0;
+      animation: portraitRing 5s ease-in-out infinite;
+    }
+    @keyframes portraitRing {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(236,168,36,0); }
+      50%       { box-shadow: 0 0 0 5px rgba(236,168,36,.13); }
+    }
+    .author-portrait img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 8%;
+      display: block;
+      transition: transform .45s var(--out);
+    }
+    .author-block:hover .author-portrait img { transform: scale(1.05); }
+    .author-info { display: flex; flex-direction: column; gap: .3rem; }
+    .author-eyebrow {
+      font-family: var(--mono);
+      font-size: .58rem;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      color: var(--muted);
+    }
+    .author-name {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--ink);
+      letter-spacing: -.01em;
+    }
+    .author-bio {
+      font-family: var(--sans);
+      font-size: .875rem;
+      color: var(--inklight);
+      line-height: 1.55;
+      max-width: 540px;
+    }
+    @media (max-width: 600px) {
+      .author-block { gap: 1rem; }
+      .author-portrait { width: 68px; height: 68px; min-width: 68px; }
+    }
+
+    /* ── SOFT CTA ──────────────────────────────────────────────── */
+    .soft-cta {
+      margin-top: 3.5rem;
+      background: var(--blush);
+      border-radius: 20px;
+      padding: 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: ctaBreath 6s ease-in-out infinite;
+    }
+    @keyframes ctaBreath {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(244,170,150,0); }
+      50%       { box-shadow: 0 0 48px 4px rgba(244,170,150,.14); }
+    }
+    .soft-cta::before {
+      content: '';
+      position: absolute;
+      top: -40%; right: -10%;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, var(--apricot) 0%, transparent 65%);
+      opacity: .15;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .cta-eyebrow {
+      font-family: var(--mono);
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+    .soft-cta h3 {
+      font-family: var(--serif);
+      font-size: 1.7rem;
+      font-weight: 400;
+      letter-spacing: -.02em;
+      margin-bottom: .75rem;
+    }
+    .cta-sub {
+      font-size: .95rem;
+      color: var(--inklight);
+      max-width: 420px;
+      margin: 0 auto 1.75rem;
+      line-height: 1.65;
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--sans);
+      font-size: .9rem;
+      font-weight: 600;
+      padding: .85rem 2rem;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background .2s, box-shadow .2s, transform .2s var(--spring);
+    }
+    .cta-btn:hover {
+      background: var(--inklight);
+      box-shadow: 0 8px 24px -8px rgba(18,18,17,.25);
+      transform: translateY(-1px) scale(1.015);
+    }
+    .cta-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── REVEAL SYSTEM ─────────────────────────────────────────── */
+    .rv { opacity: 0; transform: translateY(16px); transition: opacity .65s var(--out), transform .65s var(--out); }
+    .rv.vis { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: .08s; }
+    .d2 { transition-delay: .16s; }
+    .d3 { transition-delay: .24s; }
+    .d4 { transition-delay: .32s; }
+
+    /* ── MOBILE ────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero-img-wrap { height: 300px; }
+      .page { padding: 2rem 1.25rem 6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <a href="/library" class="nav-back">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO IMAGE -->
+  <!--
+    LOCAL PREVIEW PATH (relative from outputs/site-pages/):
+    /images/lily_desk_overhead_v1.jpg
+
+    BEFORE DEPLOYING: copy image to public/images/context-template-hero.jpg
+    and change src to: /images/context-template-hero.jpg
+  -->
+  <div class="hero-img-wrap">
+    <img
+      src="/images/lily_desk_overhead_v1.jpg"
+      alt="A warm desk scene: laptop open to a chat interface, handwritten notebook with a to-do list, sticky notes, and a ceramic mug of coffee in natural side light."
+      loading="eager"
+    >
+  </div>
+
+  <!-- PAGE -->
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="rv">
+      <div class="meta-row">
+        <span class="tag tag-cat">AI Workflow</span>
+        <span class="tag tag-tmpl">Templates</span>
+        <span class="tag tag-mini">Mini-product</span>
+        <span class="date-txt">Apr 2026</span>
+      </div>
+      <h1 class="entry-title">The Claude Context Template for <em>Students and Junior Professionals</em></h1>
+      <p class="hook-line">Stop re-introducing yourself every session. Write your context once, paste it in, and get outputs that sound like you from the first message.</p>
+      <div class="get-out">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p><strong>What you'll get out of this:</strong> A blank context template to fill in once and reuse across every Claude session, plus a filled-in example showing what good looks like before you write yours.</p>
+      </div>
+    </header>
+
+    <div class="entry-divider"></div>
+
+    <!-- BODY -->
+    <div class="entry-body">
+
+      <div class="rv d1">
+        <p>Every Claude session, I used to spend the first few messages explaining who I was.</p>
+        <p>My role. What I was working on. How I like things structured.</p>
+        <p>It's not a lot of effort each time. But it adds up. And the outputs you get from a Claude that knows nothing about you are noticeably worse than one that has even basic context.</p>
+        <p>So I stopped doing that. I wrote my context once, saved it, and now I paste it in or load it into a Claude Project before I start working. Every session starts like we've already met.</p>
+        <p>This is the template I use, plus a blank version you can fill in yourself.</p>
+      </div>
+
+      <!-- SECTION: WHAT THIS SOLVES -->
+      <h2 class="rv">What this actually solves</h2>
+      <div class="rv d1">
+        <p>When you open a fresh Claude conversation, it has zero context about you. It doesn't know:</p>
+        <ul>
+          <li>what you do</li>
+          <li>what kind of work you're producing</li>
+          <li>who your audience is</li>
+          <li>how you like things structured</li>
+          <li>what tone sounds like you vs. what sounds like a robot</li>
+        </ul>
+        <p>So it guesses. And it guesses generic.</p>
+        <p>You get outputs that are technically fine but feel like they were written for no one in particular. Then you spend three follow-up messages saying "no, more like this" and "actually, I should have mentioned..."</p>
+        <p>A context template skips all of that. You define the important stuff once, and Claude starts from a much better place every time.</p>
+        <p>This isn't complicated. It's just a thing most people don't bother doing, and then they wonder why their outputs feel flat.</p>
+      </div>
+
+      <!-- VISUAL INSERT 3: WORKFLOW STRIP -->
+      <div class="rv d2">
+        <div class="visual-insert">
+          <div class="vi-label">How it works</div>
+          <div class="vc3">
+            <div class="vc3-flow">
+              <div class="vc3-step">
+                <div class="vc3-circle">1</div>
+                <div class="vc3-label">Write it once</div>
+                <div class="vc3-desc">Fill in the seven sections about who you are and how you work</div>
+              </div>
+              <div class="vc3-arrow">
+                <svg viewBox="0 0 28 10" fill="none">
+                  <line x1="0" y1="5" x2="22" y2="5" stroke="#D4CFC8" stroke-width="1.5"/>
+                  <polyline points="18,2 24,5 18,8" stroke="#D4CFC8" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="vc3-step">
+                <div class="vc3-circle">2</div>
+                <div class="vc3-label">Save it</div>
+                <div class="vc3-desc">Keep it in a note, a doc, or a Claude Project</div>
+              </div>
+              <div class="vc3-arrow">
+                <svg viewBox="0 0 28 10" fill="none">
+                  <line x1="0" y1="5" x2="22" y2="5" stroke="#D4CFC8" stroke-width="1.5"/>
+                  <polyline points="18,2 24,5 18,8" stroke="#D4CFC8" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="vc3-step">
+                <div class="vc3-circle">3</div>
+                <div class="vc3-label">Load before each session</div>
+                <div class="vc3-desc">Paste it in or let your Project handle it automatically</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISUAL INSERT 1: COMPARISON CARD -->
+      <div class="rv d2">
+        <div class="visual-insert">
+          <div class="vi-label">The difference context makes</div>
+          <div class="vc1">
+            <div class="vc1-title">Same request. Different starting point.</div>
+            <div class="vc1-grid">
+              <!-- WITHOUT CONTEXT -->
+              <div class="vc1-card vc1-without">
+                <div class="vc1-badge">Without context</div>
+                <div class="vc1-prompt">
+                  <div class="vc1-role">You</div>
+                  Help me draft a follow-up email after a property tour with a client.
+                </div>
+                <div class="vc1-resp">
+                  <div class="vc1-resp-lbl">Claude responds</div>
+                  <div class="vc1-resp-text dim">
+                    <p>Subject: Thank You for the Property Tour</p>
+                    <p>Dear [Client Name],</p>
+                    <p>Thank you for taking the time to tour the property with me today. I hope you found it informative and that the property meets your requirements.</p>
+                    <p>Please do not hesitate to reach out if you have any questions or would like to schedule a follow-up meeting to discuss next steps.</p>
+                    <p>Best regards,<br>[Your Name]</p>
+                  </div>
+                </div>
+              </div>
+              <!-- WITH CONTEXT -->
+              <div class="vc1-card vc1-with">
+                <div class="vc1-badge">With context</div>
+                <div class="vc1-prompt">
+                  <div class="vc1-role">You</div>
+                  Help me draft a follow-up email after a property tour with a client.
+                </div>
+                <div class="vc1-resp">
+                  <div class="vc1-resp-lbl">Claude responds</div>
+                  <div class="vc1-resp-text">
+                    <p>Subject: Following up on 45 Colborne St tour</p>
+                    <p>Hi Sarah,</p>
+                    <p>Good meeting you at the Colborne St space this morning. A few things I want to flag while they're fresh:</p>
+                    <p>The floor plate works well for your headcount, but the HVAC on the third floor is worth a second look before you commit. I'll pull the building condition report and send over the relevant sections by end of day.</p>
+                    <p>I'm also going to run a quick comparison against two other options in the King West corridor that hit similar price-per-square-foot. Should have that to you by Thursday.</p>
+                    <p>Lily</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: THE BLANK TEMPLATE -->
+      <h2 class="rv">The blank template</h2>
+      <div class="rv d1">
+        <p>Copy this. Fill it in. Save it somewhere you can grab it quickly.</p>
+      </div>
+
+      <!-- VISUAL INSERT 2: STRUCTURE CARD -->
+      <div class="rv d2">
+        <div class="visual-insert">
+          <div class="vi-label">Template structure at a glance</div>
+          <div class="vc2">
+            <div class="vc2-inner">
+              <div class="vc2-title">Context template structure</div>
+              <div class="vc2-sub">Seven sections. A few sentences each. Save it once, reuse it everywhere.</div>
+              <div class="vc2-row">
+                <div class="vc2-num n-gold">1</div>
+                <div><div class="vc2-name">Who I am</div><div class="vc2-hint">Name, role, year, what frames your perspective</div></div>
+              </div>
+              <div class="vc2-row">
+                <div class="vc2-num n-apricot">2</div>
+                <div><div class="vc2-name">What I'm working on right now</div><div class="vc2-hint">Active projects, courses, internships, jobs</div></div>
+              </div>
+              <div class="vc2-row">
+                <div class="vc2-num n-pink">3</div>
+                <div><div class="vc2-name">How I'll use Claude most often</div><div class="vc2-hint">Research, writing, analysis, brainstorming, prep</div></div>
+              </div>
+              <div class="vc2-row">
+                <div class="vc2-num n-gold">4</div>
+                <div><div class="vc2-name">My audience</div><div class="vc2-hint">Who reads, reviews, or receives what you make</div></div>
+              </div>
+              <div class="vc2-row">
+                <div class="vc2-num n-apricot">5</div>
+                <div><div class="vc2-name">Tone and style preferences</div><div class="vc2-hint">How you want things to sound, plus what you hate</div></div>
+              </div>
+              <div class="vc2-row">
+                <div class="vc2-num n-pink">6</div>
+                <div><div class="vc2-name">What I don't want</div><div class="vc2-hint">Specific patterns, phrases, formats to avoid</div></div>
+              </div>
+              <div class="vc2-row">
+                <div class="vc2-num n-gold">7</div>
+                <div><div class="vc2-name">Context that helps</div><div class="vc2-hint">Industry, tools, detail level, pet peeves</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLANK TEMPLATE BLOCK -->
+      <div class="rv d3">
+        <div class="template-block">
+          <div class="template-bar">
+            <span class="t-bar-label">Blank template · Copy and fill in</span>
+            <button class="copy-btn" onclick="copyBlock(this)">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div class="template-text"># Context Template
+
+## Who I am
+[Your name, what you study or do, year/level, anything that frames your perspective]
+
+## What I'm working on right now
+[Current projects, jobs, internships, courses — whatever is active]
+
+## How I'll use Claude most often
+[The kinds of tasks you actually bring to Claude — research, writing, analysis,
+brainstorming, prep, etc.]
+
+## My audience (when I'm writing or producing something)
+[Who reads or receives what you make — professors, clients, teammates,
+followers, hiring managers]
+
+## Tone and style preferences
+[How you want things to sound — casual, direct, structured, conversational, etc.
+Include things you hate.]
+
+## What I don't want
+[Specific patterns to avoid — jargon, filler, generic language, certain formats, etc.]
+
+## Context that helps
+[Anything else that makes your outputs better — industry, tools you use,
+level of detail you prefer, pet peeves]</div>
+        </div>
+      </div>
+
+      <div class="rv d1">
+        <p>That's it. Fill in each section with a few sentences. You don't need paragraphs. You need enough that Claude can make meaningfully better guesses about what you want.</p>
+      </div>
+
+      <!-- SECTION: FILLED-IN VERSION -->
+      <h2 class="rv">My filled-in version</h2>
+      <div class="rv d1">
+        <p>Here's what mine actually looks like. I use this (or a version of it) in my Claude Projects and paste it into standalone sessions when I'm doing focused work.</p>
+      </div>
+
+      <div class="rv d2">
+        <div class="template-block">
+          <div class="template-bar">
+            <span class="t-bar-label">Lily's filled-in version · Use as a reference</span>
+            <button class="copy-btn" onclick="copyBlock(this)">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div class="template-text"># Context Template — Lily Papadopoulos
+
+## Who I am
+Lily Papadopoulos. Fourth-year Real Estate co-op student at the University of Guelph.
+Currently interning at a CRE advisory firm in Toronto. Building lilyp.ai — a resource
+site about practical AI workflows for students and early-career professionals.
+
+## What I'm working on right now
+- lilyp.ai content library (articles, prompts, build walkthroughs)
+- LinkedIn content about AI workflows and what I'm building
+- CRE research and analysis at my internship
+- Exploring automation workflows with Claude for real estate tasks
+
+## How I'll use Claude most often
+Writing drafts, structuring ideas, research synthesis, building prompt workflows,
+editing, brainstorming content angles, prepping for meetings, and sometimes just
+thinking through a problem out loud.
+
+## My audience (when I'm writing or producing something)
+Peers, students, early-career professionals. People who are curious about AI but
+aren't sure how it fits into their actual work. They're smart but not technical.
+They don't want to be sold on AI — they want to see what's actually useful.
+
+## Tone and style preferences
+Warm, direct, specific. First person. Short sentences. I want things to sound like
+I wrote them, not like AI helped. Conversational but not sloppy. Confident without
+being loud. I'd rather sound like a person than a publication.
+
+## What I don't want
+- Corporate jargon (leverage, synergize, game-changer, unlock, streamline)
+- Em dashes
+- Rhetorical questions
+- "In today's fast-paced world" energy
+- Overly polished or formal language
+- Generic advice that could apply to anyone
+- Filler paragraphs
+
+## Context that helps
+I work in commercial real estate, so my examples often involve lease analysis,
+comp research, market reports, and client-facing memos. I use Claude (not GPT)
+as my primary AI tool. I care about things being useful and specific more than
+comprehensive. I'd rather ship something small and real than plan something big
+and theoretical.</div>
+        </div>
+      </div>
+
+      <div class="rv d1">
+        <p>You'll notice it's not long. It doesn't need to be. The point is to give Claude enough to stop guessing about the basics so you can focus on the actual task.</p>
+      </div>
+
+      <!-- SECTION: HOW TO ADAPT -->
+      <h2 class="rv">How to adapt this to your own situation</h2>
+      <div class="rv d1">
+        <p>A few things worth thinking about when you fill yours in:</p>
+      </div>
+      <div class="adapt-list rv d2">
+        <div class="adapt-item">
+          <div class="adapt-dot"></div>
+          <div><strong>Be specific about what you don't want.</strong> This is the section that makes the biggest difference. Claude is great at following instructions, but it's even better at avoiding things when you name them explicitly. If you hate bullet-point-only responses, say that. If you never want to see the word "utilize," say that.</div>
+        </div>
+        <div class="adapt-item">
+          <div class="adapt-dot"></div>
+          <div><strong>Update "what I'm working on" regularly.</strong> Swap it out every few weeks, or whenever your projects shift. The rest of the template stays stable. This is the one section that drifts.</div>
+        </div>
+        <div class="adapt-item">
+          <div class="adapt-dot"></div>
+          <div><strong>Don't overthink the tone section.</strong> Two or three sentences about how you like things to sound is enough. If you're not sure, paste in something you've written that felt right and say "match this tone."</div>
+        </div>
+        <div class="adapt-item">
+          <div class="adapt-dot"></div>
+          <div><strong>Skip sections that don't apply.</strong> If you're using Claude mostly for personal work and there's no real audience, leave that blank. The template is a starting point, not a form to complete.</div>
+        </div>
+      </div>
+
+      <!-- SECTION: WHERE TO PUT IT -->
+      <h2 class="rv">Where to put it</h2>
+      <div class="rv d1">
+        <p>Two options:</p>
+      </div>
+      <div class="option-pair rv d2">
+        <div class="option-card">
+          <div class="option-label">Option 1</div>
+          <div class="option-title">Claude Projects</div>
+          <div class="option-body">Paste your context into the project instructions. Every conversation in that project starts with your context already loaded. This is what I do for lilyp.ai work.</div>
+        </div>
+        <div class="option-card">
+          <div class="option-label">Option 2</div>
+          <div class="option-title">Paste it manually</div>
+          <div class="option-body">In a regular Claude conversation, paste your context at the top of the first message with a note like "Here's context about me and how I work. Use this to inform everything in this conversation." Then ask your actual question below it.</div>
+        </div>
+      </div>
+      <div class="rv d3">
+        <p>Option 1 is cleaner. Option 2 works fine if you don't want to set up a project for everything.</p>
+      </div>
+
+      <!-- SECTION: WHERE TO START -->
+      <h2 class="rv">Where to start</h2>
+      <div class="rv d1">
+        <p>Copy the blank template. Set a five-minute timer. Fill it in with whatever comes to mind. Don't edit it. Just get something down.</p>
+        <p>Then open Claude, paste it in, and ask it to do something you'd normally ask it to do. Compare the output to what you'd get without context.</p>
+        <p>That's the whole thing. Five minutes of setup, and every session after that starts better.</p>
+      </div>
+
+    </div><!-- /entry-body -->
+
+    <!-- AUTHOR BLOCK -->
+    <!--
+      Portrait image path (local preview): /images/lily_portrait_warm_v1.png
+      Before deploying: copy to public/images/lily-portrait.jpg and update src.
+    -->
+    <div class="author-block rv d1">
+      <div class="author-portrait">
+        <img
+          src="/images/lily_portrait_warm_v1.png"
+          alt="Lily Papadopoulos"
+          loading="lazy"
+        >
+      </div>
+      <div class="author-info">
+        <div class="author-eyebrow">Written by</div>
+        <div class="author-name">Lily Papadopoulos</div>
+        <div class="author-bio">Fourth-year Real Estate co-op student at the University of Guelph, currently interning at a CRE advisory firm in Toronto. Building lilyp.ai: a library of practical AI workflows for students and early-career professionals.</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="soft-cta rv d2">
+      <p class="cta-eyebrow">Found this useful?</p>
+      <h3>Tell me what's slowing you down.</h3>
+      <p class="cta-sub">If you're copying and pasting the same thing more than twice a week, there's probably a workflow for it. I build these things. Ask me.</p>
+      <a href="/#help" class="cta-btn">
+        Tell me what's broken
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div><!-- /page -->
+
+  <script>
+    /* ── Copy button ─────────────────────────────────────────────── */
+    function copyBlock(btn) {
+      var text = btn.closest('.template-block').querySelector('.template-text').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        var label = btn.querySelector('span');
+        var prev = label.textContent;
+        btn.classList.add('copied');
+        label.textContent = 'Copied';
+        setTimeout(function() { btn.classList.remove('copied'); label.textContent = prev; }, 2200);
+      });
+    }
+
+    /* ── Scroll reveal ───────────────────────────────────────────── */
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.06, rootMargin: '0px 0px -20px 0px' });
+
+    document.querySelectorAll('.rv').forEach(function(el) { obs.observe(el); });
+
+    /* Reveal anything already in viewport on load */
+    setTimeout(function() {
+      document.querySelectorAll('.rv').forEach(function(el) {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('vis');
+      });
+    }, 60);
+  </script>
+
+</body>
+</html>

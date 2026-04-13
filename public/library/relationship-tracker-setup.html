@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relationship Tracker: Plain-English Setup Guide — lilyp.ai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --spring:cubic-bezier(0.34,1.56,0.64,1);--out:cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0;}
+
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;}
+    .amb1{width:400px;height:300px;top:-60px;right:-60px;background:var(--blush);opacity:.35;}
+    .amb2{width:280px;height:220px;bottom:12%;left:-40px;background:rgba(236,168,36,.1);opacity:1;}
+
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0;}
+    .nav-inner{max-width:1320px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;}
+    .nav-brand{font-family:var(--serif);font-size:1.35rem;font-weight:500;text-decoration:none;color:var(--ink);letter-spacing:-.01em;}
+    .nav-brand em{font-style:italic;color:var(--honey);}
+    .nav-links{display:flex;align-items:center;gap:2rem;}
+    .nav-link{font-family:var(--sans);font-size:.85rem;font-weight:500;color:var(--inklight);text-decoration:none;transition:color .2s;position:relative;}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:var(--honey);transition:width .25s;}
+    .nav-link:hover{color:var(--ink);}
+    .nav-link:hover::after,.nav-link.active::after{width:100%;}
+    .nav-cta{background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.85rem;font-weight:600;padding:.5rem 1.25rem;border-radius:999px;text-decoration:none;transition:background .2s;}
+    .nav-cta:hover{background:var(--honey);color:var(--ink);}
+    @media(max-width:600px){.nav-links{display:none;}}
+
+    .page{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:3.5rem 2rem 7rem;}
+
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .55s var(--out),transform .55s var(--out);}
+    .rv.vis{opacity:1;transform:translateY(0);}
+    .d1{transition-delay:.06s}.d2{transition-delay:.12s}.d3{transition-delay:.18s}
+
+    .eyebrow{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
+    .eyebrow::before{content:'';display:block;width:20px;height:1.5px;background:var(--apricot);}
+
+    .hero-title{font-family:var(--serif);font-size:clamp(1.9rem,4vw,2.8rem);font-weight:400;line-height:1.1;letter-spacing:-.02em;margin-bottom:1rem;}
+    .hero-title em{font-style:italic;color:var(--apricot);font-weight:300;}
+    .hero-lead{font-size:1rem;color:var(--inklight);line-height:1.8;max-width:560px;margin-bottom:1.75rem;}
+
+    .guide-meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2.75rem;padding-bottom:1.75rem;border-bottom:1px solid var(--border);align-items:center;}
+    .meta-pill{font-family:var(--mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;padding:.28rem .65rem;border-radius:6px;background:var(--stone);color:var(--inklight);}
+    .meta-time{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-left:auto;}
+
+    /* Progress nav */
+    .progress-nav{display:flex;flex-direction:column;gap:.4rem;margin-bottom:2.75rem;padding:1.25rem 1.5rem;background:var(--stone);border-radius:14px;}
+    .progress-nav-label{font-family:var(--mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.5rem;}
+    .progress-link{font-size:.88rem;color:var(--inklight);text-decoration:none;display:flex;align-items:center;gap:.6rem;padding:.2rem 0;transition:color .2s;}
+    .progress-link:hover{color:var(--ink);}
+    .progress-num{font-family:var(--mono);font-size:.62rem;color:var(--muted);min-width:1.2rem;}
+
+    /* Needs block */
+    .needs-block{background:var(--stone);border-radius:14px;padding:1.5rem 1.75rem;margin-bottom:2.5rem;}
+    .needs-label{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.85rem;}
+    .needs-list{list-style:none;display:flex;flex-direction:column;gap:.55rem;}
+    .needs-list li{font-size:.92rem;color:var(--inklight);display:flex;gap:.65rem;align-items:flex-start;line-height:1.6;}
+    .needs-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--apricot);flex-shrink:0;margin-top:.48rem;}
+    .needs-list a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--honey);}
+
+    /* Steps */
+    .step-section{margin-bottom:3.5rem;}
+    .step-anchor{display:block;position:relative;top:-80px;visibility:hidden;}
+    .step-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+    .step-badge{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.68rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .step-title{font-family:var(--serif);font-size:1.25rem;font-weight:500;color:var(--ink);}
+    .step-time{font-family:var(--mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-left:auto;}
+
+    .step-body{font-size:.95rem;color:var(--inklight);line-height:1.85;}
+    .step-body p+p{margin-top:.8rem;}
+    .step-body code{font-family:var(--mono);font-size:.78rem;background:rgba(18,18,17,.07);padding:.15rem .45rem;border-radius:4px;color:var(--ink);}
+    .step-body a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--honey);}
+    .step-body strong{color:var(--ink);font-weight:600;}
+
+    /* Command blocks */
+    .cmd-block{background:#1a1917;border-radius:12px;margin:.9rem 0;overflow:hidden;}
+    .cmd-bar{background:#111110;padding:.5rem 1rem;display:flex;align-items:center;gap:.4rem;border-bottom:1px solid rgba(255,255,255,.05);}
+    .cmd-dot{width:8px;height:8px;border-radius:50%;}
+    .cmd-dot:nth-child(1){background:#FF5F56}.cmd-dot:nth-child(2){background:#FFBD2E}.cmd-dot:nth-child(3){background:#27C93F}
+    .cmd-label{font-family:var(--mono);font-size:.58rem;color:rgba(255,255,255,.25);margin-left:.4rem;letter-spacing:.06em;}
+    .cmd-body{padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+    .cmd-text{font-family:var(--mono);font-size:.72rem;color:rgba(255,255,255,.78);line-height:1.6;word-break:break-all;}
+    .cmd-copy{font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;padding:.28rem .65rem;border-radius:5px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.09);cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
+    .cmd-copy:hover{background:rgba(236,168,36,.2);color:var(--honey);}
+
+    /* Note/aside blocks */
+    .note{background:var(--blush);border-radius:10px;padding:.9rem 1.1rem;margin:.85rem 0;font-size:.88rem;color:var(--inklight);line-height:1.7;}
+    .note strong{color:var(--ink);}
+    .note-honey{background:rgba(236,168,36,.08);border:1px solid rgba(236,168,36,.2);border-radius:10px;padding:.9rem 1.1rem;margin:.85rem 0;font-size:.88rem;color:var(--inklight);line-height:1.7;}
+
+    /* Troubleshoot */
+    .trouble-block{border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:3rem;}
+    .trouble-header{padding:1.1rem 1.5rem;background:var(--stone);border-bottom:1px solid var(--border);}
+    .trouble-header-label{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);}
+    .trouble-item{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);}
+    .trouble-item:last-child{border-bottom:none;}
+    .trouble-q{font-family:var(--sans);font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:.4rem;}
+    .trouble-a{font-size:.88rem;color:var(--inklight);line-height:1.7;}
+    .trouble-a code{font-family:var(--mono);font-size:.76rem;background:rgba(18,18,17,.07);padding:.1rem .35rem;border-radius:4px;}
+
+    /* Companion links */
+    .companion-strip{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;background:white;border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.4rem;margin:.75rem 0;text-decoration:none;color:inherit;flex-wrap:wrap;transition:border-color .25s,transform .25s var(--out);}
+    .companion-strip:hover{border-color:var(--honey);transform:translateX(3px);}
+    .companion-left{display:flex;flex-direction:column;gap:.2rem;}
+    .companion-label{font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+    .companion-title{font-family:var(--serif);font-size:.95rem;font-weight:500;color:var(--ink);}
+    .companion-arrow{width:32px;height:32px;border-radius:50%;background:var(--stone);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,transform .3s var(--spring);}
+    .companion-strip:hover .companion-arrow{background:var(--honey);transform:translateX(4px);}
+    .companion-arrow svg{width:12px;height:12px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+    .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:2.5rem 0;}
+
+    .back-link{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--sans);font-size:.85rem;font-weight:500;color:var(--inklight);text-decoration:none;margin-bottom:2.5rem;transition:color .2s;}
+    .back-link:hover{color:var(--ink);}
+    .back-link svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;}
+    .back-link:hover svg{transform:translateX(-3px);}
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <div class="nav-links">
+        <a href="/library" class="nav-link active">Library</a>
+        <a href="/builds" class="nav-link">Builds</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="/" class="nav-cta">Say hi</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <a href="/builds/relationship-tracker" class="rv back-link">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Relationship Tracker
+    </a>
+
+    <div class="rv eyebrow">Setup Guide</div>
+
+    <h1 class="rv d1 hero-title">
+      Getting the tracker running.<br>
+      <em>Every step, plain English.</em>
+    </h1>
+
+    <p class="rv d2 hero-lead">
+      I know setup docs are usually the part where things go sideways. This one is different. Every step is written assuming you haven't done this before — because most people haven't, and that's completely fine.
+    </p>
+
+    <div class="rv d3 guide-meta">
+      <span class="meta-pill">Setup</span>
+      <span class="meta-pill">First-time friendly</span>
+      <span class="meta-pill">Claude Code</span>
+      <span class="meta-time">~15 min total</span>
+    </div>
+
+
+    <!-- Quick nav -->
+    <div class="rv needs-block" style="margin-bottom:2rem;">
+      <div class="needs-label">What's in this guide</div>
+      <ul class="needs-list">
+        <li><a href="#step-1">Step 1 — What you need installed first</a></li>
+        <li><a href="#step-2">Step 2 — Get the project files</a></li>
+        <li><a href="#step-3">Step 3 — Install the Python packages it needs</a></li>
+        <li><a href="#step-4">Step 4 — Add your API keys</a></li>
+        <li><a href="#step-5">Step 5 — Build your Airtable base automatically</a></li>
+        <li><a href="#step-6">Step 6 — Log your first contact</a></li>
+        <li><a href="#trouble">If something breaks</a></li>
+      </ul>
+    </div>
+
+
+    <!-- Step 1 -->
+    <div id="step-1" class="rv step-section">
+      <span class="step-anchor"></span>
+      <div class="step-header">
+        <div class="step-badge">1</div>
+        <div class="step-title">What you need installed first</div>
+        <div class="step-time">~2 min</div>
+      </div>
+      <div class="step-body">
+        <p>Three things need to be on your computer before anything else works. Here's what each one is and where to get it.</p>
+        <p><strong>Claude Code</strong> — this is where you'll do everything. It's an app from Anthropic that gives you a code editor, a terminal (the panel where you type commands), and Claude as a built-in assistant. If you don't have it yet, download it from <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a>.</p>
+        <p><strong>Python</strong> — the language the tracker is written in. You probably already have it if you've used Claude Code for anything before. To check, open Claude Code, look for the terminal panel at the bottom of the screen (if it's not open, press <code>Ctrl+`</code> on Windows or <code>Cmd+`</code> on Mac — that's the backtick key, the one to the left of the 1), and type:</p>
+        <div class="cmd-block">
+          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
+          <div class="cmd-body">
+            <span class="cmd-text">python --version</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText('python --version').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+          </div>
+        </div>
+        <p>If it shows something like <code>Python 3.11.4</code>, you're good. If it says "not found" or throws an error, go to <a href="https://python.org/downloads" target="_blank" rel="noopener">python.org/downloads</a> and install the latest version.</p>
+        <p><strong>An Airtable account</strong> — free tier works. You'll also need a Personal Access Token (it's a key Airtable generates for you). The companion guide below covers this in about 5 minutes if you haven't done it yet.</p>
+
+        <a href="/library/connect-airtable-to-claude" class="companion-strip" style="margin-top:1rem">
+          <div class="companion-left">
+            <div class="companion-label">Companion guide</div>
+            <div class="companion-title">Connect Airtable to Claude in 5 minutes</div>
+          </div>
+          <div class="companion-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </a>
+      </div>
+    </div>
+
+
+    <!-- Step 2 -->
+    <div id="step-2" class="rv step-section">
+      <span class="step-anchor"></span>
+      <div class="step-header">
+        <div class="step-badge">2</div>
+        <div class="step-title">Get the project files</div>
+        <div class="step-time">~2 min</div>
+      </div>
+      <div class="step-body">
+        <p>You need a copy of the tracker on your computer. The way to do that is called "cloning" — which just means downloading a copy of everything from GitHub onto your machine.</p>
+        <p>In the terminal, paste this and press Enter (swap in the actual repo URL when you have it):</p>
+        <div class="cmd-block">
+          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
+          <div class="cmd-body">
+            <span class="cmd-text">git clone https://github.com/lilyp-ai/relationship-tracker.git</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText('git clone https://github.com/lilyp-ai/relationship-tracker.git').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+          </div>
+        </div>
+        <p>That creates a folder called <code>relationship-tracker</code> wherever you ran the command. Now move into it:</p>
+        <div class="cmd-block">
+          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
+          <div class="cmd-body">
+            <span class="cmd-text">cd relationship-tracker</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText('cd relationship-tracker').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+          </div>
+        </div>
+        <div class="note"><strong>What <code>cd</code> means:</strong> "change directory" — it's just how you navigate into a folder from the terminal. Think of it as double-clicking a folder, but in text form.</div>
+      </div>
+    </div>
+
+
+    <!-- Step 3 -->
+    <div id="step-3" class="rv step-section">
+      <span class="step-anchor"></span>
+      <div class="step-header">
+        <div class="step-badge">3</div>
+        <div class="step-title">Install what it needs</div>
+        <div class="step-time">~1 min</div>
+      </div>
+      <div class="step-body">
+        <p>The tracker uses a few Python packages (pre-built tools that do things like talk to Airtable and call Claude). This one command installs all of them at once:</p>
+        <div class="cmd-block">
+          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
+          <div class="cmd-body">
+            <span class="cmd-text">pip install -r requirements.txt</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText('pip install -r requirements.txt').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+          </div>
+        </div>
+        <p>You'll see a bunch of text scroll by — that's normal, it's just downloading things. Wait until it finishes and returns you to a blank line with a cursor.</p>
+        <div class="note"><strong>What pip is:</strong> Python's package manager — basically an app store for Python tools. <code>-r requirements.txt</code> just means "install everything listed in this file."</div>
+      </div>
+    </div>
+
+
+    <!-- Step 4 -->
+    <div id="step-4" class="rv step-section">
+      <span class="step-anchor"></span>
+      <div class="step-header">
+        <div class="step-badge">4</div>
+        <div class="step-title">Add your API keys</div>
+        <div class="step-time">~3 min</div>
+      </div>
+      <div class="step-body">
+        <p>The tracker needs two private keys to work: one to talk to Claude (from Anthropic) and one to talk to Airtable. You'll paste both into a plain text file called <code>secrets.env</code>.</p>
+        <p>Open the file <code>config/secrets.env</code> in Claude Code (you can click it in the file browser on the left, or open it from the terminal with <code>open config/secrets.env</code>). It looks like this:</p>
+        <div class="cmd-block">
+          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">secrets.env</span></div>
+          <div class="cmd-body" style="flex-direction:column;align-items:flex-start;gap:.4rem;">
+            <span class="cmd-text">ANTHROPIC_API_KEY=your_key_here</span>
+            <span class="cmd-text">AIRTABLE_PAT=your_token_here</span>
+            <span class="cmd-text">TRACKER_REMINDER_EMAIL=you@youremail.com</span>
+          </div>
+        </div>
+        <p>Replace each placeholder with the real value. Here's where to find them:</p>
+        <p><strong>ANTHROPIC_API_KEY</strong> — go to <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>, sign in, click "API Keys" in the left sidebar, and create a new key. Copy the whole thing (it starts with <code>sk-ant-</code>).</p>
+        <p><strong>AIRTABLE_PAT</strong> — this is your Airtable Personal Access Token. If you haven't gotten it yet, the companion guide above walks you through it.</p>
+        <p><strong>TRACKER_REMINDER_EMAIL</strong> — the email address where you want reminder emails sent. Just your normal email.</p>
+        <div class="note-honey">This file is listed in <code>.gitignore</code>, which means if you ever push this project to GitHub, your keys won't be included. They stay private on your computer.</div>
+      </div>
+    </div>
+
+
+    <!-- Step 5 -->
+    <div id="step-5" class="rv step-section">
+      <span class="step-anchor"></span>
+      <div class="step-header">
+        <div class="step-badge">5</div>
+        <div class="step-title">Build your Airtable base automatically</div>
+        <div class="step-time">~2 min</div>
+      </div>
+      <div class="step-body">
+        <p>This one command creates your entire Airtable base — all three tables (Contacts, Interactions, Events), all the fields, and the Follow-Up Queue view. You don't set anything up by hand.</p>
+        <div class="cmd-block">
+          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
+          <div class="cmd-body">
+            <span class="cmd-text">python -m tracker.tracker setup --create</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText('python -m tracker.tracker setup --create').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+          </div>
+        </div>
+        <p>When it finishes, open Airtable in your browser — you should see a new base called "Relationship Tracker" with everything already set up.</p>
+        <p>The command also copies the base ID into your <code>secrets.env</code> automatically, so you don't need to find it yourself.</p>
+      </div>
+    </div>
+
+
+    <!-- Step 6 -->
+    <div id="step-6" class="rv step-section">
+      <span class="step-anchor"></span>
+      <div class="step-header">
+        <div class="step-badge">6</div>
+        <div class="step-title">Log your first contact</div>
+        <div class="step-time">~1 min</div>
+      </div>
+      <div class="step-body">
+        <p>You're set up. Try it with someone real — someone you've actually met recently. Replace the text in quotes with a quick description of them:</p>
+        <div class="cmd-block">
+          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
+          <div class="cmd-body">
+            <span class="cmd-text">python -m tracker.tracker add "Met [name] at [event]. They work at [company] as a [role]. We talked about [topic]. Should follow up [when]."</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText(`python -m tracker.tracker add "Met [name] at [event]. They work at [company] as a [role]. We talked about [topic]. Should follow up [when]."`).then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+          </div>
+        </div>
+        <p>The more detail you give, the better the record — but even a few sentences is enough. Claude parses it, creates the structured contact record in Airtable, and schedules your follow-up automatically.</p>
+        <p>Check your Airtable base and you should see the contact appear within a few seconds.</p>
+        <div class="note-honey">You're in. From here, the <a href="/builds/relationship-tracker">full build page</a> has the rest of the commands and what each one does.</div>
+      </div>
+    </div>
+
+
+    <div class="divider rv"></div>
+
+
+    <!-- Troubleshooting -->
+    <div id="trouble" class="rv">
+      <div style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1rem;">If something breaks</div>
+      <div class="trouble-block">
+        <div class="trouble-header">
+          <div class="trouble-header-label">Common issues</div>
+        </div>
+        <div class="trouble-item">
+          <div class="trouble-q">"python: command not found" or "python3" works but "python" doesn't</div>
+          <div class="trouble-a">Try <code>python3</code> instead of <code>python</code> everywhere. On some systems they're the same thing installed under a different name. If that works, replace <code>python</code> with <code>python3</code> in all the commands.</div>
+        </div>
+        <div class="trouble-item">
+          <div class="trouble-q">"Module not found" error after running pip install</div>
+          <div class="trouble-a">Make sure you're in the right folder first. Run <code>pwd</code> (print working directory) — it should show the relationship-tracker folder. If not, <code>cd</code> back to it and try the pip install again.</div>
+        </div>
+        <div class="trouble-item">
+          <div class="trouble-q">Airtable authentication error</div>
+          <div class="trouble-a">Your <code>AIRTABLE_PAT</code> is probably wrong or missing. Open <code>config/secrets.env</code>, double-check the token is pasted in full with no spaces around the <code>=</code> sign, and make sure there are no quotes around it.</div>
+        </div>
+        <div class="trouble-item">
+          <div class="trouble-q">Claude API error or "Invalid API key"</div>
+          <div class="trouble-a">Same fix — check <code>ANTHROPIC_API_KEY</code> in your secrets.env. The key starts with <code>sk-ant-</code>. If it's expired or you've hit a limit, generate a new one at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</div>
+        </div>
+        <div class="trouble-item">
+          <div class="trouble-q">Something else broke and I don't know what</div>
+          <div class="trouble-a">Copy the full error message and paste it into a Claude chat (or directly to Claude Code). Describe what step you were on. Claude is genuinely good at reading error messages and telling you exactly what went wrong.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relationship Tracker Build — lilyp.ai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --spring:cubic-bezier(0.34,1.56,0.64,1);--out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);
+    }
+
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body { background:var(--paper); color:var(--ink); font-family:var(--sans); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+    body::before { content:''; position:fixed; inset:0; background-image:radial-gradient(var(--ink) 1px,transparent 1px); background-size:28px 28px; opacity:.026; pointer-events:none; z-index:0; }
+    @media(max-width:768px) { body::before { display:none; } }
+
+    /* Ambient orbs */
+    .amb { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; }
+    .amb1 { width:520px; height:400px; top:-80px; right:-80px; background:var(--blush); opacity:.45; animation:orbDrift1 18s ease-in-out infinite; }
+    .amb2 { width:380px; height:300px; bottom:8%; left:-60px; background:rgba(236,168,36,.12); opacity:1; animation:orbDrift2 22s ease-in-out infinite; }
+    @keyframes orbDrift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-24px,18px)} }
+    @keyframes orbDrift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-16px)} }
+
+    /* Nav */
+    nav { position:sticky; top:0; z-index:50; border-bottom:1px solid var(--border); backdrop-filter:blur(12px); background:rgba(253,252,249,.9); padding:1.1rem 0; }
+    .nav-inner { max-width:1320px; margin:0 auto; padding:0 2rem; display:flex; align-items:center; justify-content:space-between; }
+    .nav-brand { font-family:var(--serif); font-size:1.35rem; font-weight:500; text-decoration:none; color:var(--ink); letter-spacing:-.01em; }
+    .nav-brand em { font-style:italic; color:var(--honey); }
+    .nav-links { display:flex; align-items:center; gap:2rem; }
+    .nav-link { font-family:var(--sans); font-size:.85rem; font-weight:500; color:var(--inklight); text-decoration:none; transition:color .2s; position:relative; }
+    .nav-link::after { content:''; position:absolute; bottom:-2px; left:0; width:0; height:1.5px; background:var(--honey); transition:width .25s; }
+    .nav-link:hover { color:var(--ink); }
+    .nav-link:hover::after { width:100%; }
+    .nav-link.active { color:var(--ink); }
+    .nav-link.active::after { width:100%; }
+    .nav-cta { background:var(--ink); color:var(--paper); font-family:var(--sans); font-size:.85rem; font-weight:600; padding:.5rem 1.25rem; border-radius:999px; text-decoration:none; transition:background .2s,color .2s; }
+    .nav-cta:hover { background:var(--honey); color:var(--ink); }
+    @media(max-width:600px) { .nav-links { display:none; } }
+
+    /* Page */
+    .page { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:4rem 2rem 8rem; }
+
+    /* Scroll reveal */
+    .rv { opacity:0; transform:translateY(20px); transition:opacity .65s var(--out), transform .65s var(--out); }
+    .rv.vis { opacity:1; transform:translateY(0); }
+    .d1{transition-delay:.08s} .d2{transition-delay:.16s} .d3{transition-delay:.24s} .d4{transition-delay:.32s}
+
+    /* Eyebrow */
+    .eyebrow { font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.16em; color:var(--muted); display:flex; align-items:center; gap:.75rem; margin-bottom:1.5rem; }
+    .eyebrow::before { content:''; display:block; width:24px; height:1.5px; background:var(--apricot); }
+
+    /* Hero */
+    .hero-title { font-family:var(--serif); font-size:clamp(2.4rem,5vw,3.6rem); font-weight:400; line-height:1.06; letter-spacing:-.025em; margin-bottom:1.25rem; }
+    .hero-title em { font-style:italic; color:var(--apricot); font-weight:300; }
+    .hero-lead { font-family:var(--serif); font-size:1.15rem; font-weight:300; font-style:italic; color:var(--inklight); line-height:1.72; max-width:600px; margin-bottom:2rem; }
+
+    /* Build meta row */
+    .build-meta { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; margin-bottom:3.5rem; padding-bottom:2rem; border-bottom:1px solid var(--border); }
+    .status-badge { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.12em; padding:.35rem .85rem; border-radius:999px; border:1px solid rgba(236,168,36,.3); background:rgba(236,168,36,.1); color:#9a6e0a; }
+    .tech-pill { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; padding:.3rem .7rem; border-radius:6px; background:var(--stone); color:var(--inklight); }
+    .build-date { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-left:auto; }
+
+    /* Section headers */
+    .section-label { font-family:var(--mono); font-size:.65rem; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-bottom:1.25rem; display:flex; align-items:center; gap:.6rem; }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+    .section-h { font-family:var(--serif); font-size:clamp(1.7rem,3vw,2.2rem); font-weight:400; letter-spacing:-.02em; line-height:1.2; margin-bottom:.9rem; }
+    .section-h em { font-style:italic; color:var(--apricot); }
+    .section-p { font-size:1rem; color:var(--inklight); line-height:1.8; max-width:660px; margin-bottom:1.75rem; }
+    .section-gap { margin-bottom:4.5rem; }
+
+    /* Problem block */
+    .problem-block { background:var(--stone); border-radius:16px; padding:2rem 2.25rem; border:1px solid var(--border); margin-bottom:4.5rem; }
+    .problem-block p { font-family:var(--serif); font-size:1.15rem; font-weight:400; line-height:1.72; color:var(--inklight); }
+    .problem-block p + p { margin-top:1rem; }
+    .problem-block strong { color:var(--ink); font-weight:500; }
+
+    /* Demo blocks */
+    .demo-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:4.5rem; }
+    @media(max-width:700px) { .demo-grid { grid-template-columns:1fr; } }
+
+    .demo-panel { border-radius:16px; overflow:hidden; border:1px solid var(--border); }
+    .demo-panel-label { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.12em; padding:.6rem 1rem; background:var(--stone); color:var(--muted); border-bottom:1px solid var(--border); }
+
+    /* Input panel */
+    .input-panel { background:white; }
+    .input-body { padding:1.5rem; }
+    .input-body p { font-family:var(--serif); font-size:.95rem; font-weight:300; line-height:1.8; color:var(--inklight); font-style:italic; }
+
+    /* Terminal panel */
+    .term-panel { background:#1a1917; }
+    .term-body { padding:1.5rem; }
+    .term-line { font-family:var(--mono); font-size:.72rem; line-height:1.9; }
+    .term-dim { color:rgba(255,255,255,.28); }
+    .term-label { color:rgba(244,170,150,.8); }
+    .term-value { color:rgba(255,255,255,.82); }
+    .term-tag { color:rgba(236,168,36,.85); }
+    .term-success { color:rgba(100,210,120,.9); }
+    .term-muted { color:rgba(255,255,255,.38); }
+    .term-section { color:rgba(255,255,255,.55); display:block; margin-top:.4rem; }
+    .term-indent { padding-left:1.1rem; }
+
+    /* Record card */
+    .record-card { background:white; border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1rem; }
+    .record-card.skeleton { background:var(--stone); border-style:dashed; }
+    .record-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; padding-bottom:.75rem; border-bottom:1px solid var(--border); }
+    .record-avatar { width:40px; height:40px; border-radius:50%; background:var(--blush); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1rem; color:var(--apricot); flex-shrink:0; }
+    .record-avatar.ghost { background:var(--stone); color:var(--muted); border:1.5px dashed var(--sand); }
+    .record-name { font-family:var(--serif); font-size:1.05rem; font-weight:500; margin-bottom:.1rem; }
+    .record-sub { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+    .record-auto-badge { margin-left:auto; font-family:var(--mono); font-size:.55rem; text-transform:uppercase; letter-spacing:.1em; padding:.2rem .55rem; border-radius:999px; background:rgba(236,168,36,.12); color:#9a6e0a; border:1px solid rgba(236,168,36,.2); flex-shrink:0; }
+    .record-fields { display:flex; flex-direction:column; gap:.5rem; }
+    .record-field { display:flex; gap:.75rem; align-items:flex-start; }
+    .record-field-label { font-family:var(--mono); font-size:.58rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); min-width:88px; padding-top:.15rem; flex-shrink:0; }
+    .record-field-value { font-family:var(--sans); font-size:.88rem; color:var(--inklight); line-height:1.5; }
+    .record-tags { display:flex; flex-wrap:wrap; gap:.35rem; }
+    .rtag { font-family:var(--mono); font-size:.58rem; padding:.18rem .55rem; border-radius:999px; background:var(--blush); color:var(--apricot); }
+    .rtag.gold { background:rgba(236,168,36,.1); color:#9a6e0a; }
+    .followup-date { font-family:var(--sans); font-size:.88rem; font-weight:600; color:var(--ink); }
+    .followup-sub { font-family:var(--mono); font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-left:.4rem; }
+
+    /* Skeleton referral note */
+    .referral-note { background:rgba(236,168,36,.07); border:1px solid rgba(236,168,36,.2); border-radius:10px; padding:.75rem 1rem; margin-top:.75rem; font-family:var(--sans); font-size:.82rem; color:var(--inklight); line-height:1.6; }
+    .referral-note strong { color:var(--ink); font-weight:600; }
+
+    /* Callout */
+    .callout { background:var(--blush); border-radius:16px; padding:1.75rem 2rem; border-left:3px solid var(--apricot); margin-bottom:4.5rem; }
+    .callout-label { font-family:var(--mono); font-size:.62rem; text-transform:uppercase; letter-spacing:.14em; color:var(--apricot); margin-bottom:.6rem; }
+    .callout p { font-family:var(--serif); font-size:1.05rem; font-weight:400; line-height:1.72; color:var(--inklight); }
+    .callout p + p { margin-top:.75rem; }
+    .callout strong { color:var(--ink); font-weight:500; }
+
+    /* Query terminal (full width) */
+    .query-wrap { background:#1a1917; border-radius:20px; overflow:hidden; margin-bottom:4.5rem; border:1px solid rgba(255,255,255,.06); }
+    .query-bar { background:#111110; padding:.75rem 1.25rem; display:flex; align-items:center; gap:.5rem; border-bottom:1px solid rgba(255,255,255,.06); }
+    .qbar-dot { width:10px; height:10px; border-radius:50%; }
+    .qbar-dot:nth-child(1){background:#FF5F56} .qbar-dot:nth-child(2){background:#FFBD2E} .qbar-dot:nth-child(3){background:#27C93F}
+    .qbar-title { font-family:var(--mono); font-size:.62rem; color:rgba(255,255,255,.28); margin-left:.5rem; letter-spacing:.06em; }
+    .query-body { padding:1.75rem 2rem; }
+    .q-prompt { font-family:var(--mono); font-size:.72rem; color:rgba(244,170,150,.7); margin-bottom:1.5rem; }
+    .q-prompt span { color:rgba(255,255,255,.5); }
+    .q-heading { font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.14em; color:rgba(255,255,255,.35); margin-bottom:1.25rem; }
+    .q-entry { margin-bottom:1.5rem; padding-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,.06); }
+    .q-entry:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+    .q-entry-header { font-family:var(--mono); font-size:.7rem; margin-bottom:.55rem; }
+    .q-num { color:rgba(236,168,36,.8); }
+    .q-name { color:rgba(255,255,255,.85); font-weight:700; }
+    .q-meta { color:rgba(255,255,255,.38); }
+    .q-status { color:rgba(100,210,120,.75); }
+    .q-body { font-family:var(--sans); font-size:.88rem; color:rgba(255,255,255,.62); line-height:1.75; }
+    .q-chain { margin-top:1.5rem; padding:1rem 1.25rem; background:rgba(255,255,255,.04); border-radius:10px; border:1px solid rgba(255,255,255,.07); }
+    .q-chain-label { font-family:var(--mono); font-size:.62rem; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.3); margin-bottom:.4rem; }
+    .q-chain-path { font-family:var(--mono); font-size:.72rem; color:rgba(236,168,36,.75); }
+    .q-chain-path span { color:rgba(255,255,255,.35); margin:0 .4rem; }
+
+    /* Logic table */
+    .logic-table { width:100%; border-collapse:collapse; margin-bottom:4.5rem; }
+    .logic-table th { font-family:var(--mono); font-size:.62rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); text-align:left; padding:.6rem 1rem; border-bottom:2px solid var(--border); }
+    .logic-table td { font-family:var(--sans); font-size:.9rem; color:var(--inklight); padding:.75rem 1rem; border-bottom:1px solid var(--border); vertical-align:top; }
+    .logic-table tr:last-child td { border-bottom:none; }
+    .logic-table tr:hover td { background:var(--stone); }
+    .strength-badge { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; padding:.22rem .6rem; border-radius:999px; }
+    .s-new { background:var(--blush); color:var(--apricot); }
+    .s-warming { background:rgba(236,168,36,.1); color:#9a6e0a; }
+    .s-strong { background:rgba(39,201,63,.1); color:#1a8a2a; border:1px solid rgba(39,201,63,.2); }
+    .s-dormant { background:var(--stone); color:var(--muted); }
+
+    /* File tree */
+    .file-tree { background:#1a1917; border-radius:16px; padding:1.5rem 1.75rem; margin-bottom:1.75rem; font-family:var(--mono); font-size:.72rem; line-height:2; }
+    .ft-dir { color:rgba(244,170,150,.8); }
+    .ft-file { color:rgba(255,255,255,.65); }
+    .ft-comment { color:rgba(255,255,255,.28); }
+
+    /* Command row */
+    .cmd-list { display:flex; flex-direction:column; gap:.6rem; margin-bottom:4.5rem; }
+    .cmd-item { display:grid; grid-template-columns:auto 1fr; gap:1.25rem; align-items:baseline; padding:.75rem 1rem; background:white; border-radius:10px; border:1px solid var(--border); transition:border-color .2s; }
+    .cmd-item:hover { border-color:var(--honey); }
+    .cmd-code { font-family:var(--mono); font-size:.68rem; color:var(--ink); white-space:nowrap; }
+    .cmd-desc { font-family:var(--sans); font-size:.88rem; color:var(--inklight); }
+
+    /* Setup block */
+    .setup-block { background:var(--stone); border-radius:20px; padding:2.5rem; margin-bottom:4.5rem; }
+    .setup-steps { display:flex; flex-direction:column; gap:1.25rem; margin-top:1.25rem; }
+    .setup-step { display:flex; gap:1rem; align-items:flex-start; }
+    .step-num { width:28px; height:28px; border-radius:50%; background:var(--ink); color:var(--paper); font-family:var(--mono); font-size:.65rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:.1rem; }
+    .step-body { font-size:.95rem; color:var(--inklight); line-height:1.65; }
+    .step-body code { font-family:var(--mono); font-size:.78rem; background:rgba(18,18,17,.07); padding:.15rem .45rem; border-radius:4px; color:var(--ink); }
+    .step-body a { color:var(--ink); text-decoration:underline; text-underline-offset:3px; text-decoration-color:var(--honey); }
+
+    /* Beginner callout */
+    .callout-beginner { background:var(--stone); border-radius:16px; padding:1.75rem 2rem; border-left:3px solid var(--honey); margin-bottom:2rem; }
+    .callout-beginner-label { font-family:var(--mono); font-size:.62rem; text-transform:uppercase; letter-spacing:.14em; color:#9a6e0a; margin-bottom:.6rem; }
+    .callout-beginner p { font-family:var(--serif); font-size:1.05rem; font-weight:400; line-height:1.72; color:var(--inklight); }
+    .callout-beginner p + p { margin-top:.6rem; }
+
+    /* Email mock */
+    .email-mock { background:white; border:1px solid var(--border); border-radius:20px; overflow:hidden; margin-bottom:1.5rem; box-shadow:0 4px 24px rgba(18,18,17,.06); }
+    .email-chrome { background:var(--stone); padding:.75rem 1.25rem; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:.35rem; }
+    .email-field { display:flex; gap:.75rem; align-items:baseline; }
+    .email-field-label { font-family:var(--mono); font-size:.58rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); min-width:52px; }
+    .email-field-value { font-family:var(--sans); font-size:.82rem; color:var(--inklight); }
+    .email-field-value strong { color:var(--ink); font-weight:600; }
+    .email-body { padding:1.75rem 2rem; font-family:var(--mono); font-size:.72rem; line-height:2; color:var(--inklight); }
+    .email-divider { height:1px; background:var(--border); margin:1rem 0; }
+    .email-contact-head { font-family:var(--sans); font-size:.82rem; font-weight:700; color:var(--ink); margin-bottom:.2rem; }
+    .email-contact-meta { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.75rem; }
+    .email-why { font-size:.7rem; color:var(--muted); margin-bottom:.75rem; font-style:italic; }
+    .email-draft-label { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; color:var(--apricot); margin-bottom:.5rem; }
+    .email-draft { background:var(--blush); border-radius:10px; padding:1rem 1.25rem; font-family:var(--sans); font-size:.88rem; color:var(--inklight); line-height:1.75; font-style:italic; }
+    .email-footer { font-family:var(--mono); font-size:.62rem; color:var(--muted); margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border); }
+
+    /* Companion callout */
+    .companion-strip { display:flex; align-items:center; justify-content:space-between; gap:1.5rem; background:white; border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.5rem; margin-top:1.25rem; flex-wrap:wrap; transition:border-color .25s,transform .25s var(--out); }
+    .companion-strip:hover { border-color:var(--honey); transform:translateX(3px); }
+    .companion-strip a { text-decoration:none; color:inherit; display:contents; }
+    .companion-left { display:flex; flex-direction:column; gap:.2rem; }
+    .companion-label { font-family:var(--mono); font-size:.58rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+    .companion-title { font-family:var(--serif); font-size:1rem; font-weight:500; color:var(--ink); }
+    .companion-arrow { width:36px; height:36px; border-radius:50%; background:var(--stone); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .2s,transform .3s var(--spring); }
+    .companion-strip:hover .companion-arrow { background:var(--honey); transform:translateX(4px); }
+    .companion-arrow svg { width:14px; height:14px; stroke:var(--ink); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* CTA */
+    .cta-block { text-align:center; padding:3.5rem 2rem; background:var(--stone); border-radius:24px; }
+    .cta-label { font-family:var(--mono); font-size:.64rem; text-transform:uppercase; letter-spacing:.16em; color:var(--muted); margin-bottom:1rem; }
+    .cta-title { font-family:var(--serif); font-size:clamp(1.7rem,3vw,2.4rem); font-weight:400; letter-spacing:-.02em; line-height:1.2; margin-bottom:.75rem; }
+    .cta-title em { font-style:italic; color:var(--apricot); }
+    .cta-sub { font-family:var(--sans); font-size:.95rem; color:var(--inklight); line-height:1.65; max-width:420px; margin:0 auto 2rem; }
+    .cta-btn { display:inline-flex; align-items:center; gap:.75rem; background:var(--ink); color:var(--paper); font-family:var(--sans); font-size:.88rem; font-weight:600; padding:.85rem 2rem; border-radius:999px; text-decoration:none; transition:background .2s,color .2s,transform .3s var(--spring); }
+    .cta-btn:hover { background:var(--honey); color:var(--ink); transform:translateY(-2px); }
+    .cta-btn svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform .3s var(--spring); }
+    .cta-btn:hover svg { transform:translateX(4px); }
+
+    /* Divider */
+    .divider { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); margin:4.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <div class="nav-links">
+        <a href="/library" class="nav-link">Library</a>
+        <a href="/builds" class="nav-link active">Builds</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="/" class="nav-cta">Say hi</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HERO -->
+    <div class="rv eyebrow">Build / Proof of Work</div>
+
+    <h1 class="rv d1 hero-title">
+      The networking tool I wanted<br>
+      <em>didn't exist,</em><br>
+      so I built it.
+    </h1>
+
+    <p class="rv d2 hero-lead">
+      Contacts log themselves from a voice note. Follow-ups schedule automatically.
+      And when it's time to reach out, your inbox already has a draft written in your voice.
+    </p>
+
+    <div class="rv d3 build-meta">
+      <span class="status-badge">In Progress</span>
+      <span class="tech-pill">Python</span>
+      <span class="tech-pill">Anthropic API</span>
+      <span class="tech-pill">Airtable</span>
+      <span class="tech-pill">pyairtable</span>
+      <span class="tech-pill">click</span>
+      <span class="build-date">April 2026</span>
+    </div>
+
+
+    <!-- PROBLEM -->
+    <div class="rv d4 problem-block">
+      <p>
+        The part of networking that breaks isn't the meeting. It's the 72 hours after: you
+        meant to follow up and didn't, you forgot the colleague they mentioned, a warm contact
+        went cold because nothing reminded you until it felt awkward to reach out.
+      </p>
+      <p>
+        But there's a second, quieter problem. Even when you do keep up with people, your network
+        is stored in scattered notes, faded memory, and LinkedIn connections you couldn't
+        describe without looking them up. You know your network exists. You just can't <strong>use</strong> it.
+        When an opportunity comes up, you scroll and guess. When you need an intro, you try
+        to remember if you know anyone. It shouldn't work this way.
+      </p>
+    </div>
+
+
+    <!-- SECTION 1: The input and output -->
+    <div class="rv section-gap">
+      <div class="section-label">How it works / Step 1</div>
+      <h2 class="section-h">You talk. It structures.</h2>
+      <p class="section-p">
+        After a coffee chat or event, you dump 60 seconds of voice notes, the way you'd tell
+        a friend about someone you just met. The system parses it into a full structured contact
+        record and schedules your follow-up. No forms. No fields to fill.
+      </p>
+
+      <div class="demo-grid">
+        <!-- Input -->
+        <div class="demo-panel input-panel">
+          <div class="demo-panel-label">Input / voice dump</div>
+          <div class="input-body">
+            <p>
+              "Met Priya Nair at the ULI Toronto Young Leaders event Thursday evening. She is an
+              analyst at CBRE doing industrial market research, working on a report about AI
+              adoption in commercial real estate. We talked for about 20 minutes. She asked if
+              she could send me some questions for her research. She mentioned a colleague named
+              David Park on the residential side at Cushman. Should follow up with Priya next
+              week, maybe once the context template article is live."
+            </p>
+          </div>
+        </div>
+
+        <!-- Terminal output -->
+        <div class="demo-panel term-panel">
+          <div class="demo-panel-label" style="background:#111110;color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.07)">Output / terminal</div>
+          <div class="term-body">
+            <div class="term-line term-dim">Parsing contact dump...</div>
+            <div class="term-line" style="margin-top:.5rem"><span class="term-dim">--</span> <span class="term-value" style="font-weight:700">Priya Nair</span> <span class="term-dim">--</span></div>
+            <div class="term-line term-indent"><span class="term-label">Company: </span><span class="term-value">CBRE</span></div>
+            <div class="term-line term-indent"><span class="term-label">Role: </span><span class="term-value">Analyst, Industrial Research</span></div>
+            <div class="term-line term-indent"><span class="term-label">How met: </span><span class="term-value">Event (ULI Toronto)</span></div>
+            <div class="term-line term-indent"><span class="term-label">Tags: </span><span class="term-tag">CRE</span> <span class="term-tag">AI/Tech</span> <span class="term-tag">Potential Collab</span></div>
+            <div class="term-line" style="margin-top:.6rem;margin-bottom:.2rem"><span class="term-dim">Follow-up in </span><span class="term-tag">5 days</span><span class="term-dim"> via LinkedIn</span></div>
+            <div class="term-line term-dim" style="margin-top:.75rem">Also mentioned:</div>
+            <div class="term-line term-indent"><span class="term-success">+</span> <span class="term-value">David Park</span> <span class="term-dim">-- Cushman</span></div>
+            <div class="term-line" style="margin-top:.75rem"><span class="term-success">+</span> <span class="term-value">Contact created: Priya Nair</span></div>
+            <div class="term-line"><span class="term-success">+</span> <span class="term-value">Interaction logged</span></div>
+            <div class="term-line"><span class="term-success">+</span> <span class="term-value">Skeleton created: David Park</span></div>
+            <div class="term-line" style="margin-top:.4rem"><span class="term-dim">Follow-up: </span><span class="term-value">April 16, 2026</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record cards -->
+      <div class="record-card">
+        <div class="record-header">
+          <div class="record-avatar">P</div>
+          <div>
+            <div class="record-name">Priya Nair</div>
+            <div class="record-sub">CBRE &middot; Industrial Research Analyst</div>
+          </div>
+        </div>
+        <div class="record-fields">
+          <div class="record-field">
+            <div class="record-field-label">Tags</div>
+            <div class="record-field-value">
+              <div class="record-tags">
+                <span class="rtag">CRE</span>
+                <span class="rtag">AI/Tech</span>
+                <span class="rtag gold">Potential Collab</span>
+              </div>
+            </div>
+          </div>
+          <div class="record-field">
+            <div class="record-field-label">Notes</div>
+            <div class="record-field-value">Mid-research on AI adoption in CRE at CBRE. Asked to send follow-up research questions. Expressed genuine interest in Claude workflow content.</div>
+          </div>
+          <div class="record-field">
+            <div class="record-field-label">Follow-up</div>
+            <div class="record-field-value">She asked to reach out first. Reciprocate early. Share the context template article as a hook into the CRE + AI angle. <span class="followup-date">April 16</span><span class="followup-sub">5 days</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="record-card skeleton">
+        <div class="record-header">
+          <div class="record-avatar ghost">D</div>
+          <div>
+            <div class="record-name">David Park</div>
+            <div class="record-sub">Cushman &amp; Wakefield &middot; Residential CRE</div>
+          </div>
+          <div class="record-auto-badge">Auto-created</div>
+        </div>
+        <div class="referral-note">
+          <strong>Referred by Priya Nair (CBRE).</strong> Residential CRE at Cushman. Activate after warming Priya. The referral chain is there. Use it with intention.
+        </div>
+      </div>
+    </div>
+
+
+    <!-- CALLOUT: the non-obvious thing -->
+    <div class="rv callout">
+      <div class="callout-label">The part that matters</div>
+      <p>
+        When Priya mentioned David, I never wrote his name down. I would have forgotten him
+        entirely. The system created his skeleton record automatically at the moment of capture,
+        with the referral context pre-filled. That thread is now alive whether or not I remember to act on it.
+      </p>
+      <p>
+        That's what makes this feel different from a spreadsheet. <strong>The referral chain
+        is preserved at the moment of telling, not at the moment of remembering.</strong>
+      </p>
+    </div>
+
+
+    <!-- SECTION 2: The query layer -->
+    <div class="rv section-gap">
+      <div class="section-label">How it works / The deeper layer</div>
+      <h2 class="section-h">Ask your network a <em>question.</em></h2>
+      <p class="section-p">
+        The tracker isn't just a reminder system. It's a context layer Claude can actually reason over.
+        When you've got a specific goal, like an internship search, a career move, or a project that needs collaborators,
+        you just ask a plain question in the terminal (your normal words, not code). It pulls your contact history and surfaces specific, actionable answers.
+      </p>
+
+      <div class="query-wrap">
+        <div class="query-bar">
+          <div class="qbar-dot"></div><div class="qbar-dot"></div><div class="qbar-dot"></div>
+          <div class="qbar-title">tracker / query mode</div>
+        </div>
+        <div class="query-body">
+          <div class="q-prompt">$ <span>python -m tracker.tracker query</span> "Internship applications in 6 months -- who should I start warming now, and what should I say?"</div>
+
+          <div class="q-heading">Network query / April 2026</div>
+
+          <div class="q-entry">
+            <div class="q-entry-header">
+              <span class="q-num">1. </span>
+              <span class="q-name">Priya Nair</span>
+              <span class="q-meta"> /CBRE, Industrial Research /</span>
+              <span class="q-status">New, follow-up due April 16</span>
+            </div>
+            <div class="q-body">She asked to reach out to you. You haven't responded yet. This is your highest-leverage open thread. She's mid-research on AI in CRE, which is exactly your positioning. Send the article. Start the thread. The ask writes itself.</div>
+          </div>
+
+          <div class="q-entry">
+            <div class="q-entry-header">
+              <span class="q-num">2. </span>
+              <span class="q-name">Sarah Chen</span>
+              <span class="q-meta"> /Colliers, VP Data Analytics /</span>
+              <span class="q-status">Warming, last contact 18 days ago</span>
+            </div>
+            <div class="q-body">Knows your work, actively evaluating AI tools for comp analysis. A genuine check-in, something that serves her rather than asks for something, would land well right now. She could be a reference or an intro source within Colliers. Do not wait until you need something.</div>
+          </div>
+
+          <div class="q-entry">
+            <div class="q-entry-header">
+              <span class="q-num">3. </span>
+              <span class="q-name">David Park</span>
+              <span class="q-meta"> /Cushman &amp; Wakefield, Residential /</span>
+              <span class="q-status">New, skeleton (not yet met)</span>
+            </div>
+            <div class="q-body">You haven't met him. The referral from Priya exists but hasn't been activated. Sequence matters here: warm Priya first, then ask for the introduction. Cold-reaching a referred contact before the referrer knows you well undermines both relationships.</div>
+          </div>
+
+          <div class="q-chain">
+            <div class="q-chain-label">Referral path to Cushman &amp; Wakefield</div>
+            <div class="q-chain-path">You <span>&rarr;</span> Priya Nair (CBRE) <span>&rarr;</span> David Park (Cushman)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- SECTION 3: Follow-up logic -->
+    <div class="rv section-gap">
+      <div class="section-label">System design</div>
+      <h2 class="section-h">Follow-up logic that actually makes sense.</h2>
+      <p class="section-p">
+        No AI magic. Flat rule: next follow-up date is last contact plus interval. The interval
+        scales with how warm the relationship is. Checking in with someone you met
+        once should not feel the same as checking in with a strong contact you've been building
+        for a year.
+      </p>
+
+      <table class="logic-table">
+        <thead>
+          <tr>
+            <th>Relationship</th>
+            <th>Default interval</th>
+            <th>Logic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="strength-badge s-new">New</span></td>
+            <td>5 &ndash; 14 days depending on how you met</td>
+            <td style="color:var(--muted)">Event / Conference = 5d &nbsp;&middot;&nbsp; Coffee Chat = 7d &nbsp;&middot;&nbsp; Intro = 10d &nbsp;&middot;&nbsp; Cold outreach = 14d</td>
+          </tr>
+          <tr>
+            <td><span class="strength-badge s-warming">Warming</span></td>
+            <td>21 days</td>
+            <td style="color:var(--muted)">You've had at least one good exchange. Stay present without overdoing it.</td>
+          </tr>
+          <tr>
+            <td><span class="strength-badge s-strong">Strong</span></td>
+            <td>45 days</td>
+            <td style="color:var(--muted)">Real relationship. Doesn't need constant maintenance, but does need some.</td>
+          </tr>
+          <tr>
+            <td><span class="strength-badge s-dormant">Dormant alert</span></td>
+            <td>Flagged at 60 days</td>
+            <td style="color:var(--muted)">Warming or Strong contacts with no interaction in 60 days surface in the weekly digest. You decide whether to re-engage.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="section-p" style="margin-top:-.75rem">
+        Relationship strength is always your call, not the system's. It tracks
+        recency and logs interactions. It won't label a contact "Strong" because you emailed
+        them twice. That's yours to decide.
+      </p>
+    </div>
+
+
+    <div class="divider rv"></div>
+
+
+    <!-- SECTION 4: What's in the build -->
+    <div class="rv section-gap">
+      <div class="section-label">The build</div>
+      <h2 class="section-h">What's actually in here.</h2>
+
+      <div class="file-tree">
+        <div><span class="ft-dir">tracker/</span></div>
+        <div class="term-indent"><span class="ft-file">tracker.py</span>     <span class="ft-comment">&nbsp;&nbsp;&nbsp;-- CLI: add, event, digest, status, done, snooze, query, setup</span></div>
+        <div class="term-indent"><span class="ft-file">parser.py</span>      <span class="ft-comment">&nbsp;&nbsp;&nbsp;-- Claude parsing logic, ContactRecord dataclass</span></div>
+        <div class="term-indent"><span class="ft-file">airtable_sync.py</span><span class="ft-comment">&nbsp;-- all Airtable reads and writes</span></div>
+        <div class="term-indent"><span class="ft-file">followup.py</span>    <span class="ft-comment">&nbsp;&nbsp;&nbsp;-- interval logic, digest generation</span></div>
+        <div class="term-indent"><span class="ft-file">config.py</span>      <span class="ft-comment">&nbsp;&nbsp;&nbsp;-- field names, table names, interval defaults</span></div>
+        <div class="term-indent"><span class="ft-dir">prompts/</span></div>
+        <div style="padding-left:2.2rem"><span class="ft-file">tracker_parse.md</span>  <span class="ft-comment">&nbsp;-- the Claude parsing prompt</span></div>
+      </div>
+
+      <p class="section-p" style="margin-bottom:1rem">Each of these is a command you type into your terminal (or the terminal panel inside Claude Code) and press Enter. The code in the left column is what you type. The description on the right is what happens.</p>
+
+      <div class="cmd-list">
+        <div class="cmd-item">
+          <code class="cmd-code">add "..."</code>
+          <span class="cmd-desc">Talk about someone you just met. It parses the details, creates the Airtable record, and schedules your follow-up.</span>
+        </div>
+        <div class="cmd-item">
+          <code class="cmd-code">query "..."</code>
+          <span class="cmd-desc">Ask a plain question about your network and get a specific, reasoned answer back.</span>
+        </div>
+        <div class="cmd-item">
+          <code class="cmd-code">digest</code>
+          <span class="cmd-desc">Print today's follow-up queue: who's due, why, and dormant contacts that need attention.</span>
+        </div>
+        <div class="cmd-item">
+          <code class="cmd-code">event "Name"</code>
+          <span class="cmd-desc">Create an event, then log every person you met there in one session. All linked automatically.</span>
+        </div>
+        <div class="cmd-item">
+          <code class="cmd-code">done "Name" --notes "..."</code>
+          <span class="cmd-desc">Mark a follow-up complete. Add a note about what you sent. The next follow-up schedules itself.</span>
+        </div>
+        <div class="cmd-item">
+          <code class="cmd-code">send-reminders</code>
+          <span class="cmd-desc">Find everyone due today, draft a message for each person using Claude, and send the whole thing to your inbox.</span>
+        </div>
+        <div class="cmd-item">
+          <code class="cmd-code">voice-setup</code>
+          <span class="cmd-desc">Walk through nine questions about how you actually write. Claude turns your answers into a voice profile. Every future draft uses it.</span>
+        </div>
+        <div class="cmd-item">
+          <code class="cmd-code">setup --create</code>
+          <span class="cmd-desc">Build the full Airtable base and all its tables automatically. Nothing to set up by hand.</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- SECTION 5: Setup -->
+    <div id="setup" class="rv section-gap">
+      <div class="section-label">Getting it running</div>
+      <h2 class="section-h">From zero to first contact in 15 minutes.</h2>
+
+      <div class="callout-beginner rv">
+        <div class="callout-beginner-label">New to Claude Code or using a terminal for the first time?</div>
+        <p>There's a plain-English setup guide that walks through every single step: what to install, what to paste, what each command does, and what to do if something breaks.</p>
+        <p>You don't need to know Python. The guide handles it. <a href="/library/relationship-tracker-setup" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--honey);font-weight:600;">Open the setup guide.</a></p>
+      </div>
+
+      <div class="setup-block">
+        <div class="setup-steps">
+          <div class="setup-step">
+            <div class="step-num">1</div>
+            <div class="step-body">Connect Airtable to Claude. This means installing a small plugin called an MCP server (don't let the name scare you — it's literally just a connector that lets Claude talk to Airtable). You'll also need a Personal Access Token from Airtable, which is just a password your account generates for you. The companion guide below walks you through both in about five minutes.</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">2</div>
+            <div class="step-body">Open the file <code>config/secrets.env</code> in any text editor (eek, I know — but it's genuinely just a plain text file, like a notepad. You're pasting two values in and saving). One is your Anthropic API key from console.anthropic.com, the other is your Airtable token from step one. The companion guide shows you exactly where to find both.</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">3</div>
+            <div class="step-body">Open the terminal in Claude Code (it's the panel at the bottom of the screen — if you can't see it, press Ctrl+` to open it), paste this in, and press Enter: <code>python -m tracker.tracker setup --create</code>. That's the whole step. It builds your full Airtable base automatically. You don't configure anything by hand.</div>
+          </div>
+          <div class="setup-step">
+            <div class="step-num">4</div>
+            <div class="step-body">Log your first contact. Back in that same terminal, paste this and replace the text in quotes with a description of someone you recently met: <code>python -m tracker.tracker add "Met [name] at [event]..."</code>. You'll see the parsed record appear right there.</div>
+          </div>
+        </div>
+
+        <a href="/library/connect-airtable-to-claude" class="companion-strip">
+          <div class="companion-left">
+            <div class="companion-label">Companion guide</div>
+            <div class="companion-title">Connect Airtable to Claude in 5 minutes</div>
+          </div>
+          <div class="companion-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+      </div>
+    </div>
+
+
+    <!-- Email reminder section -->
+    <div class="section-gap">
+      <div class="rv section-label">The part that closes the loop</div>
+      <h2 class="rv d1 section-h">On the day you're due to reach out,<br><em>your inbox already has a draft.</em></h2>
+      <p class="rv d2 section-p">The tracker knows when each follow-up is due. Set it to run every morning, or just trigger it manually when you want it, and it finds everyone due that day, drafts a suggested message for each person using Claude, and sends everything to your inbox in one email. No switching between apps, no blanking on what to say. Each draft is specific to that person and what you actually talked about.</p>
+
+      <div class="rv d2 email-mock">
+        <div class="email-chrome">
+          <div class="email-field"><span class="email-field-label">From</span><span class="email-field-value">lilyp.ai Relationship Tracker</span></div>
+          <div class="email-field"><span class="email-field-label">To</span><span class="email-field-value">lily@lilyp.ai</span></div>
+          <div class="email-field"><span class="email-field-label">Subject</span><span class="email-field-value"><strong>Follow-up queue: 2 contacts due today</strong></span></div>
+        </div>
+        <div class="email-body">
+          <div style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:1rem">FOLLOW-UP QUEUE / April 12, 2026</div>
+
+          <div class="email-contact-head">1. MARCUS OSEI</div>
+          <div class="email-contact-meta">Colliers / Industrial Research Analyst &nbsp;|&nbsp; Relationship: Warming &nbsp;|&nbsp; Channel: LinkedIn</div>
+          <div class="email-why">Why today: Met at PropTech Vancouver, talked about AI comp tools in industrial. Due for first real follow-up.</div>
+          <div class="email-draft-label">Suggested message</div>
+          <div class="email-draft">
+            Still thinking about the comp tool conversation from PropTech Vancouver. I ended up building something similar for my own workflow and it's been useful in ways I didn't expect. Would love to hear how the industrial research side has been going since then, if you're up for a quick chat.
+          </div>
+
+          <div class="email-divider"></div>
+
+          <div class="email-contact-head">2. PRIYA NAMBIAR</div>
+          <div class="email-contact-meta">CBRE / Research Director &nbsp;|&nbsp; Relationship: New &nbsp;|&nbsp; Channel: Email</div>
+          <div class="email-why">Why today: Coffee chat two weeks ago about content strategy. She mentioned possibly sharing her team's workflow doc.</div>
+          <div class="email-draft-label">Suggested message</div>
+          <div class="email-draft">
+            Wanted to follow up on our conversation about the research team's workflow. I've been thinking about the point you made on attribution and ended up writing something about it for lilyp.ai. No pressure at all on the workflow doc, but I thought you might find this one relevant.
+          </div>
+
+          <div class="email-footer">
+            Mark done: &nbsp;<code>python -m tracker.tracker done "Marcus Osei" --notes "..."</code><br>
+            Snooze: &nbsp;<code>python -m tracker.tracker snooze "Priya Nambiar" --days 7</code>
+          </div>
+        </div>
+      </div>
+
+      <p class="rv d3 section-p" style="margin-bottom:1.25rem">The drafts get better when the tracker knows how you actually write. Run <code style="font-family:var(--mono);font-size:.82rem;background:rgba(18,18,17,.07);padding:.1rem .4rem;border-radius:4px">voice-setup</code> in your terminal and it'll walk you through nine questions: how you open a message, what phrases make you wince, how formal you actually are. Claude turns your answers into a voice profile. Save it once. Every future draft sounds like you, not like a generic follow-up.</p>
+
+      <a href="/library/build-your-voice-guidelines" class="rv d3 companion-strip">
+        <div class="companion-left">
+          <div class="companion-label">Companion guide</div>
+          <div class="companion-title">Build your voice guidelines: the nine questions</div>
+        </div>
+        <div class="companion-arrow">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
+    </div>
+
+    <!-- CTA -->
+    <div class="rv cta-block">
+      <div class="cta-label">Get the build</div>
+      <h2 class="cta-title">Take the whole thing.<br><em>It's yours to run.</em></h2>
+      <p class="cta-sub">The full module, the parsing prompt, the Airtable schema, and the setup command. Clone it, adapt it, make it yours.</p>
+      <a href="https://github.com" class="cta-btn">
+        View on GitHub
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- DEPENDENCY NOTE (remove before publishing):
+    Two companion guides are linked on this page but do not yet exist:
+    - /library/connect-airtable-to-claude  (Step 1 of setup + companion strip)
+    - /library/build-your-voice-guidelines (email section companion strip)
+    This page is not fully packaged until both are live or in production.
+  -->
+
+  <script>
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  </script>
+
+</body>
+</html>
