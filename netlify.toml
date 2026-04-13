@@ -24,7 +24,12 @@
   status = 200
 
 # ── Build detail pages ──
-# Static .html files are served directly; this catches clean URLs without the extension.
+[[redirects]]
+  from   = "/builds/relationship-tracker"
+  to     = "/builds/relationship-tracker.html"
+  status = 200
+
+# Catch-all for future build pages
 [[redirects]]
   from   = "/builds/:slug"
   to     = "/builds/:slug.html"
