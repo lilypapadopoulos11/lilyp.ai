@@ -44,11 +44,27 @@
     .eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:2rem;display:flex;align-items:center;gap:.75rem}
     .eyebrow::before{content:'';display:block;width:24px;height:1.5px;background:var(--apricot)}
 
-    /* HERO */
-    .about-hero{margin-bottom:3.5rem}
-    .about-hero h1{font-family:var(--serif);font-size:clamp(2.6rem,5vw,3.8rem);font-weight:400;line-height:1.05;letter-spacing:-.025em;margin-bottom:1.5rem}
-    .about-hero h1 em{font-style:italic;color:var(--apricot)}
-    .about-hero .lead{font-family:var(--serif);font-size:1.2rem;font-weight:300;font-style:italic;color:var(--inklight);line-height:1.7;max-width:540px}
+    /* HERO SPLIT */
+    .hero-split{display:grid;grid-template-columns:1fr 390px;gap:4.5rem;align-items:center;margin-bottom:3.5rem}
+    .hero-text h1{font-family:var(--serif);font-size:clamp(2.6rem,5vw,3.8rem);font-weight:400;line-height:1.05;letter-spacing:-.025em;margin-bottom:1.5rem}
+    .hero-text h1 em{font-style:italic;color:var(--apricot)}
+    .hero-text .lead{font-family:var(--serif);font-size:1.2rem;font-weight:300;font-style:italic;color:var(--inklight);line-height:1.7;max-width:480px}
+
+    /* PORTRAIT */
+    .portrait-wrap{position:relative;padding:1.5rem 1.75rem 2rem 0.5rem}
+    .portrait-glow{
+      position:absolute;width:120%;height:120%;top:5%;left:5%;
+      background:radial-gradient(circle at 30% 30%,rgba(244,221,214,0.8),rgba(241,154,100,0.4),transparent 70%);
+      filter:blur(40px);opacity:0.7;pointer-events:none;z-index:0;
+    }
+    .portrait-img{position:relative;z-index:1;width:100%;display:block;border-radius:16px;box-shadow:0 6px 24px -8px rgba(18,18,17,.10),0 2px 6px -2px rgba(18,18,17,.05)}
+    .dot-accent{position:absolute;top:4px;right:4px;z-index:2;pointer-events:none;opacity:0.45}
+    .portrait-note{position:absolute;bottom:2px;left:0.5rem;font-family:var(--serif);font-style:italic;font-size:.78rem;font-weight:300;color:var(--inklight);opacity:.48;transform:rotate(-1.2deg);pointer-events:none;white-space:nowrap}
+
+    @media(max-width:900px){
+      .hero-split{grid-template-columns:1fr;gap:2.75rem}
+      .portrait-wrap{max-width:360px;padding:1rem 1rem 1.75rem 0.5rem;margin:0 auto}
+    }
 
     /* DIVIDER */
     .divider{height:1px;background:var(--border);margin:3rem 0}
@@ -159,12 +175,37 @@
 
   <div class="page">
 
-    <div class="eyebrow rv">About</div>
+    <div class="hero-split">
+      <div class="hero-text">
+        <div class="eyebrow rv">About</div>
+        <div class="rv d1">
+          <h1>Hi, I'm Lily.<br>I'm interested in<br>the parts of work<br>that are still <em>way harder</em><br>than they need to be.</h1>
+          <p class="lead">I'm a fifth-year Real Estate student at Guelph, interning in Toronto and building practical AI workflows in public. I'm trying to make AI feel like something you can actually use, not just something you know you should understand by now.</p>
+        </div>
+      </div>
 
-    <!-- HERO -->
-    <div class="about-hero rv d1">
-      <h1>Hi, I'm Lily.<br>I'm interested in<br>the parts of work<br>that are still <em>way harder</em><br>than they need to be.</h1>
-      <p class="lead">I'm a fifth-year Real Estate student at Guelph, interning in Toronto and building practical AI workflows in public. I'm trying to make AI feel like something you can actually use, not just something you know you should understand by now.</p>
+      <div class="portrait-wrap rv d1">
+        <div class="portrait-glow" aria-hidden="true"></div>
+        <img
+          src="/images/lily_portrait_warm_v1.png"
+          alt="Lily at her desk"
+          class="portrait-img"
+          width="600"
+          loading="eager"
+        >
+        <div class="dot-accent" aria-hidden="true">
+          <svg width="72" height="62" viewBox="0 0 72 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g fill="#F4AA96">
+              <circle cx="4"  cy="4"  r="2"/><circle cx="16" cy="4"  r="2"/><circle cx="28" cy="4"  r="2"/><circle cx="40" cy="4"  r="2"/><circle cx="52" cy="4"  r="2"/><circle cx="64" cy="4"  r="2"/>
+              <circle cx="4"  cy="16" r="2"/><circle cx="16" cy="16" r="2"/><circle cx="28" cy="16" r="2"/><circle cx="40" cy="16" r="2"/><circle cx="52" cy="16" r="2"/><circle cx="64" cy="16" r="2"/>
+              <circle cx="4"  cy="28" r="2"/><circle cx="16" cy="28" r="2"/><circle cx="28" cy="28" r="2"/><circle cx="40" cy="28" r="2"/><circle cx="52" cy="28" r="2"/><circle cx="64" cy="28" r="2"/>
+              <circle cx="4"  cy="40" r="2"/><circle cx="16" cy="40" r="2"/><circle cx="28" cy="40" r="2"/><circle cx="40" cy="40" r="2"/><circle cx="52" cy="40" r="2"/><circle cx="64" cy="40" r="2"/>
+              <circle cx="4"  cy="52" r="2"/><circle cx="16" cy="52" r="2"/><circle cx="28" cy="52" r="2"/><circle cx="40" cy="52" r="2"/><circle cx="52" cy="52" r="2"/><circle cx="64" cy="52" r="2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="portrait-note" aria-hidden="true">Toronto, building in public</div>
+      </div>
     </div>
 
     <div class="divider rv d2"></div>
