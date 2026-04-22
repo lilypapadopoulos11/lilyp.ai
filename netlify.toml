@@ -57,11 +57,6 @@
   status = 200
 
 [[redirects]]
-  from   = "/library/cre-outbound-engine"
-  to     = "/library/cre-outbound-engine.html"
-  status = 200
-
-[[redirects]]
   from   = "/library/extract-and-structure-megaprompt"
   to     = "/library/extract-and-structure-megaprompt.html"
   status = 200

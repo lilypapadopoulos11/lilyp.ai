@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The CRE Outbound Engine — lilyp.ai Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+    .amb1{width:500px;height:400px;top:-80px;right:-80px;background:var(--blush);opacity:.4}
+    .amb2{width:350px;height:280px;bottom:10%;left:-60px;background:rgba(236,168,36,.12);opacity:1}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:820px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.25rem;font-weight:500;text-decoration:none;color:var(--ink)}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .2s}
+    .nav-back:hover{color:var(--ink)}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:4rem 2rem 8rem}
+
+    /* TAGS */
+    .meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+    .tag{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.22rem .6rem;border-radius:5px;border:1px solid var(--border);color:var(--inklight)}
+    .tag-cat{background:var(--stone);border-color:transparent}
+    .tag-td{border-color:var(--border);background:var(--stone)}
+    .date-txt{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+
+    /* HEADER */
+    h1.entry-title{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.2rem);font-weight:400;line-height:1.1;letter-spacing:-.025em;margin-bottom:1.2rem}
+    .hook-line{font-family:var(--serif);font-style:italic;font-size:1.25rem;font-weight:300;color:var(--inklight);line-height:1.5;border-left:3px solid var(--apricot);padding-left:1.2rem;margin-bottom:2rem}
+    .get-out{display:flex;align-items:flex-start;gap:.9rem;background:var(--blush);border-radius:12px;padding:1.2rem 1.4rem}
+    .get-out svg{width:18px;height:18px;flex-shrink:0;margin-top:2px;stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .get-out p{font-family:var(--sans);font-size:.9rem;color:var(--inklight);line-height:1.6}
+    .get-out strong{color:var(--ink);font-weight:600}
+
+    /* STATS BAR */
+    .stats-bar{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:white;margin:2.5rem 0}
+    .stat{flex:1;min-width:130px;padding:1.1rem 1.4rem;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:.35rem}
+    .stat:last-child{border-right:none}
+    .stat-label{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .stat-value{font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--ink)}
+    .stat-value em{font-style:normal;color:var(--honey)}
+
+    /* DIVIDER */
+    .entry-divider{height:1px;background:var(--border);margin:2.5rem 0}
+
+    /* ══ PIPELINE DIAGRAM ══ */
+    .pipeline-wrap{
+      background:white;border:1px solid var(--border);
+      border-radius:16px;padding:2rem 1.5rem;
+      margin:2rem 0;overflow-x:auto;
+    }
+    .pipeline-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:1.5rem}
+    .pipeline{
+      display:flex;align-items:center;gap:0;
+      min-width:580px;
+    }
+    .pipe-node{
+      display:flex;flex-direction:column;align-items:center;gap:.5rem;flex:1;
+    }
+    .pipe-box{
+      width:100%;max-width:110px;
+      background:var(--stone);border:1px solid var(--border);
+      border-radius:10px;padding:.7rem .6rem;
+      text-align:center;position:relative;
+    }
+    .pipe-box-title{font-family:var(--sans);font-size:.72rem;font-weight:700;color:var(--ink);margin-bottom:.2rem}
+    .pipe-box-sub{font-family:var(--mono);font-size:.58rem;color:var(--muted);line-height:1.3}
+    .pipe-status{
+      font-family:var(--mono);font-size:.55rem;text-transform:uppercase;letter-spacing:.06em;
+      padding:.15rem .4rem;border-radius:3px;
+      margin-top:.3rem;display:inline-block;
+    }
+    .ps-live{background:rgba(39,201,63,.12);color:#1a8a2a;border:1px solid rgba(39,201,63,.25)}
+    .ps-partial{background:rgba(236,168,36,.12);color:#9a6c00;border:1px solid rgba(236,168,36,.25)}
+
+    /* Arrow between nodes */
+    .pipe-arrow{
+      display:flex;align-items:center;flex-shrink:0;
+      padding:0 .3rem;margin-bottom:1.4rem;
+    }
+    .pipe-arrow svg{width:16px;height:16px;stroke:var(--sand);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* BODY */
+    .entry-body{font-size:1.05rem;line-height:1.75;color:var(--inklight)}
+    .entry-body h2{font-family:var(--serif);font-size:1.6rem;font-weight:400;color:var(--ink);margin:2.5rem 0 1rem;letter-spacing:-.015em}
+    .entry-body h3{font-family:var(--sans);font-size:.85rem;font-weight:700;color:var(--ink);margin:1.75rem 0 .6rem;text-transform:uppercase;letter-spacing:.06em}
+    .entry-body p{margin-bottom:1.25rem}
+    .entry-body p:last-child{margin-bottom:0}
+    .entry-body ul{margin:0 0 1.25rem;padding-left:0;list-style:none}
+    .entry-body ul li{position:relative;padding-left:1.4rem;margin-bottom:.5rem;font-size:1rem}
+    .entry-body ul li::before{content:'→';position:absolute;left:0;color:var(--apricot)}
+    .entry-body strong{color:var(--ink);font-weight:600}
+
+    /* NUMBERS CALLOUT (real outputs) */
+    .output-nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:1rem;margin:1.75rem 0}
+    .num-card{background:white;border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.4rem}
+    .num-big{font-family:var(--serif);font-size:2.4rem;font-weight:400;color:var(--ink);line-height:1;margin-bottom:.35rem}
+    .num-big em{font-style:normal;color:var(--honey)}
+    .num-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);line-height:1.4}
+
+    /* STATUS GRID — working / partial / missing */
+    .status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.75rem 0}
+    .sg-col{}
+    .sg-head{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+    .sg-head::before{content:'';display:block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .sg-working .sg-head{color:#1a8a2a}.sg-working .sg-head::before{background:#27c93f}
+    .sg-partial  .sg-head{color:#9a6c00}.sg-partial  .sg-head::before{background:var(--honey)}
+    .sg-missing  .sg-head{color:#a85040}.sg-missing  .sg-head::before{background:var(--apricot)}
+    .sg-list{list-style:none;padding:0;margin:0}
+    .sg-list li{font-size:.84rem;color:var(--inklight);line-height:1.5;padding:.3rem 0;border-bottom:1px solid rgba(18,18,17,.06)}
+    .sg-list li:last-child{border-bottom:none}
+
+    /* HONEST SECTION */
+    .honest-block{
+      border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:2rem 0;
+    }
+    .honest-head{
+      background:var(--ink);color:var(--paper);
+      padding:1rem 1.5rem;
+      display:flex;align-items:center;gap:.75rem;
+    }
+    .honest-head svg{width:16px;height:16px;stroke:var(--apricot);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .honest-head span{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.7)}
+    .honest-body{padding:1.4rem 1.5rem;background:white}
+    .honest-body p{font-size:.93rem;color:var(--inklight);line-height:1.7;margin-bottom:1rem}
+    .honest-body p:last-child{margin-bottom:0}
+    .honest-body strong{color:var(--ink)}
+
+    /* CALLOUT */
+    .callout{background:var(--stone);border-radius:12px;padding:1.25rem 1.4rem;margin:1.5rem 0;display:flex;gap:.9rem;align-items:flex-start}
+    .callout svg{width:16px;height:16px;flex-shrink:0;margin-top:3px;stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .callout p{font-size:.9rem;color:var(--inklight);line-height:1.6;margin:0}
+    .callout strong{color:var(--ink)}
+
+    /* RARITY PANEL */
+    .rarity-panel{
+      background:linear-gradient(135deg,rgba(236,168,36,.06) 0%,rgba(244,170,150,.08) 100%);
+      border:1px solid rgba(236,168,36,.2);
+      border-radius:14px;padding:1.75rem;margin:2rem 0;
+    }
+    .rarity-label{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--honey);margin-bottom:.9rem}
+    .rarity-panel p{font-size:.95rem;color:var(--inklight);line-height:1.7;margin-bottom:.9rem}
+    .rarity-panel p:last-child{margin-bottom:0}
+    .rarity-panel strong{color:var(--ink)}
+
+    /* RELATED */
+    .related-section{margin-top:4rem;padding-top:2.5rem;border-top:1px solid var(--border)}
+    .related-label{font-family:var(--mono);font-size:.67rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.5rem}
+    .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+    .rel-card{display:block;text-decoration:none;color:var(--ink);background:white;border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.4rem;transition:transform .25s var(--snappy),box-shadow .25s,border-color .25s}
+    .rel-card:hover{transform:translateY(-3px);box-shadow:4px 4px 0 var(--honey);border-color:var(--ink)}
+    .rel-role{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem}
+    .rel-title{font-family:var(--serif);font-size:1rem;line-height:1.3;transition:color .2s}
+    .rel-card:hover .rel-title{color:var(--honey)}
+
+    /* CTA */
+    .soft-cta{margin-top:3.5rem;background:var(--blush);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+    .soft-cta::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.15;border-radius:50%;pointer-events:none}
+    .soft-cta p.cta-eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.75rem}
+    .soft-cta h3{font-family:var(--serif);font-size:1.7rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+    .soft-cta p.cta-sub{font-size:.95rem;color:var(--inklight);max-width:420px;margin:0 auto 1.75rem;line-height:1.65}
+    .cta-btn{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.9rem;font-weight:600;padding:.85rem 2rem;border-radius:999px;text-decoration:none;transition:background .2s,box-shadow .2s}
+    .cta-btn:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
+    .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}
+
+    @media(max-width:700px){
+      .status-grid{grid-template-columns:1fr}
+      .stats-bar{flex-direction:column}
+      .stat{border-right:none;border-bottom:1px solid var(--border)}
+      .stat:last-child{border-bottom:none}
+      .pipeline{min-width:500px}
+    }
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <a href="/library" class="nav-back">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="rv">
+      <div class="meta-row">
+        <span class="tag tag-cat">Systems</span>
+        <span class="tag tag-td">Teardown</span>
+        <span class="tag">Deep dive</span>
+        <span class="date-txt">Mar 2026</span>
+      </div>
+      <h1 class="entry-title">The CRE Outbound Engine</h1>
+      <p class="hook-line">A full pipeline teardown: raw contact lists → AI research → personalized sequences → HubSpot → LinkedIn. What I built, what broke, and what I'd rebuild first.</p>
+      <div class="get-out">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p><strong>What you'll get out of this:</strong> An honest account of building a real outbound prospecting system at a CRE advisory firm — the architecture, the real outputs, the failure modes, and the one insight about where manual friction actually lives in outbound campaigns.</p>
+      </div>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-bar rv d1">
+      <div class="stat">
+        <span class="stat-label">Built at</span>
+        <span class="stat-value">CRE Advisory <em>Internship</em></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Contacts processed</span>
+        <span class="stat-value"><em>402</em> across 3 campaigns</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Sequences written</span>
+        <span class="stat-value"><em>100+</em> personalized</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Status</span>
+        <span class="stat-value">Operational <em>w/ caveats</em></span>
+      </div>
+    </div>
+
+    <div class="entry-divider"></div>
+
+    <!-- PIPELINE DIAGRAM -->
+    <div class="pipeline-wrap rv d1">
+      <div class="pipeline-label">System architecture</div>
+      <div class="pipeline">
+
+        <div class="pipe-node">
+          <div class="pipe-box">
+            <div class="pipe-box-title">Raw List</div>
+            <div class="pipe-box-sub">WIZA export / marketing data</div>
+            <span class="pipe-status ps-live">Live</span>
+          </div>
+        </div>
+
+        <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+        <div class="pipe-node">
+          <div class="pipe-box">
+            <div class="pipe-box-title">Filter + Clean</div>
+            <div class="pipe-box-sub">Dupes, geography, bad emails</div>
+            <span class="pipe-status ps-live">Live</span>
+          </div>
+        </div>
+
+        <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+        <div class="pipe-node">
+          <div class="pipe-box">
+            <div class="pipe-box-title">AI Research</div>
+            <div class="pipe-box-sub">News triggers, confidence score</div>
+            <span class="pipe-status ps-live">Live</span>
+          </div>
+        </div>
+
+        <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+        <div class="pipe-node">
+          <div class="pipe-box">
+            <div class="pipe-box-title">Sequences</div>
+            <div class="pipe-box-sub">5-touch, personalized or segment</div>
+            <span class="pipe-status ps-live">Live</span>
+          </div>
+        </div>
+
+        <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+        <div class="pipe-node">
+          <div class="pipe-box">
+            <div class="pipe-box-title">HubSpot</div>
+            <div class="pipe-box-sub">MCP push, preflight check</div>
+            <span class="pipe-status ps-live">Live</span>
+          </div>
+        </div>
+
+        <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+        <div class="pipe-node">
+          <div class="pipe-box">
+            <div class="pipe-box-title">LinkedIn</div>
+            <div class="pipe-box-sub">Selenium bot, local run</div>
+            <span class="pipe-status ps-partial">Partial</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="entry-body">
+
+      <!-- THE PROBLEM -->
+      <div class="rv d2">
+        <h2>The problem it was solving</h2>
+        <p>Outbound prospecting in CRE advisory is almost entirely manual and inconsistent. Research quality depends on who's doing it and how much time they have. Personalizing cold outreach for 40 or 100 contacts is practically impossible at that scale without either cutting corners on quality or spending days on prep work.</p>
+        <p>Most teams default to generic sequences or semi-personalized templates that feel thin. The compounding problem: even when there's a strong contact list, the friction between "we have this list" and "sequences are live and LinkedIn is running" is significant enough that campaigns get delayed, partially executed, or abandoned.</p>
+
+        <div class="callout">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <p><strong>The key insight:</strong> the highest-friction points in outbound prospecting aren't sending emails — they're the research, the personalization, and the CRM setup that has to happen before anything goes out. That's where the system targets.</p>
+        </div>
+      </div>
+
+      <!-- REAL NUMBERS -->
+      <div class="rv d2">
+        <h2>Real outputs</h2>
+        <p>Not projections. These are the actual numbers from three live campaigns — Ottawa Tech Execs, DC Webinar, York Industrial.</p>
+        <div class="output-nums">
+          <div class="num-card">
+            <div class="num-big"><em>402</em></div>
+            <div class="num-label">Contacts ingested, filtered, and tracked</div>
+          </div>
+          <div class="num-card">
+            <div class="num-big"><em>91</em></div>
+            <div class="num-label">HubSpot records with fully loaded personalized sequences</div>
+          </div>
+          <div class="num-card">
+            <div class="num-big"><em>172</em></div>
+            <div class="num-label">Contacts enrolled in active sequences</div>
+          </div>
+          <div class="num-card">
+            <div class="num-big"><em>100<em style="font-size:1.4rem">+</em></em></div>
+            <div class="num-label">Personalized 5-touch sequences generated</div>
+          </div>
+          <div class="num-card">
+            <div class="num-big"><em>39</em></div>
+            <div class="num-label">LinkedIn connection requests sent via automation</div>
+          </div>
+          <div class="num-card">
+            <div class="num-big"><em>0</em></div>
+            <div class="num-label">Manual LinkedIn clicks</div>
+          </div>
+        </div>
+        <p>Writing a credible, personalized 5-touch sequence for a single contact would take 20–40 minutes if done well. The system generates them in batch. 100+ sequences that would have taken days to write manually.</p>
+      </div>
+
+      <!-- WHAT'S WORKING / PARTIAL / MISSING -->
+      <div class="rv d3">
+        <h2>What's actually working</h2>
+        <div class="status-grid">
+          <div class="sg-col sg-working">
+            <div class="sg-head">Working</div>
+            <ul class="sg-list">
+              <li>Raw list ingestion and filtering</li>
+              <li>AI research + confidence scoring</li>
+              <li>Personalized sequence generation</li>
+              <li>HubSpot contact creation via MCP</li>
+              <li>Preflight check (active seq, 60-day, bounce)</li>
+              <li>Selenium LinkedIn bot + result write-back</li>
+              <li>A/B personalized vs. market-segment routing</li>
+            </ul>
+          </div>
+          <div class="sg-col sg-partial">
+            <div class="sg-head">Partially working</div>
+            <ul class="sg-list">
+              <li>Pipeline tracker sync with HubSpot</li>
+              <li>Overnight batch automation</li>
+              <li>LinkedIn bot (needs local execution)</li>
+            </ul>
+          </div>
+          <div class="sg-col sg-missing">
+            <div class="sg-head">Doesn't exist yet</div>
+            <ul class="sg-list">
+              <li>Automated validation before HubSpot push</li>
+              <li>Full pipeline-to-HubSpot status sync</li>
+              <li>Autonomous end-to-end run without human at enrollment step</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- HONEST EVAL -->
+      <div class="rv d3">
+        <h2>The honest evaluation</h2>
+        <div class="honest-block">
+          <div class="honest-head">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Brutal honesty section</span>
+          </div>
+          <div class="honest-body">
+            <p>The core pipeline works and is producing real outputs. Sequences are live, contacts are enrolled, LinkedIn is running. That's not a prototype — that's an operational system.</p>
+            <p>The qualifications are real though. The pipeline tracker is <strong>partially out of sync with HubSpot</strong> — enrollment status, LinkedIn connection status, and some field states aren't written back automatically. It requires periodic manual reconciliation.</p>
+            <p>The LinkedIn bot has to run locally, which means it can't be fully scheduled or run unattended. Research and sequence generation still require batched sessions — not fully continuous.</p>
+            <p>There was a <strong>field mapping bug</strong> — LinkedIn content pushed into email_body_3 — that required manual diagnosis and a corrective HubSpot push. The pipeline doesn't have a validation layer that catches that class of error before it gets to HubSpot. It should.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KEY DECISIONS -->
+      <div class="rv d3">
+        <h2>Decisions worth explaining</h2>
+
+        <h3>Why Selenium instead of Claude for LinkedIn</h3>
+        <p>Claude's computer use capability can handle browser automation, but it burns API credits on every action and is slower. A local Selenium script with randomized delays sends connection requests in the background for zero Claude API cost. The results log back to the tracker automatically. For this specific task — clicking through a predictable UI — Selenium is the right tool.</p>
+
+        <h3>The preflight check</h3>
+        <p>Before any contact gets enrolled, the system checks three things: are they already in an active sequence, have we contacted them in the last 60 days, and did a previous email bounce? This kind of hygiene is usually an afterthought in manual campaigns. It causes real relationship damage when it breaks — the system makes it structural rather than optional.</p>
+
+        <h3>A/B track routing</h3>
+        <p>Not every contact gets a fully personalized sequence. If the AI research comes back with low confidence — no news triggers, thin LinkedIn presence — the contact gets routed to a market-segment track instead. Honest about what the system can and can't do, rather than generating low-quality personalization and calling it done.</p>
+      </div>
+
+      <!-- RARITY FACTOR -->
+      <div class="rarity-panel rv d4">
+        <div class="rarity-label">The real point</div>
+        <p>Most people at an early stage in a brokerage or advisory role are learning the tools their firm already uses. They're not building the tools.</p>
+        <p>What's unusual here isn't that the system is finished — it isn't. It's that the <strong>problem decomposition is real</strong> and the execution is grounded. The preflight check logic, the field mapping architecture, the decision to use Selenium instead of burning Claude credits — these reflect genuine operational thinking, not a surface-level AI experiment.</p>
+        <p>Building something that surfaces a bug, diagnoses the root cause (column index off-by-one in a tracker push), and fixes it across three live HubSpot contacts in a single session is a different category of work than building a demo.</p>
+      </div>
+
+      <!-- WHAT I'D REBUILD FIRST -->
+      <div class="rv d4">
+        <h2>What I'd rebuild first</h2>
+        <ul>
+          <li><strong>Validation layer before HubSpot push</strong> — the field mapping bug would have been caught instantly with a schema check before any data moves. This is the most important missing piece.</li>
+          <li><strong>Tracker sync</strong> — the pipeline-master.csv being out of sync with HubSpot means I can't trust the tracker as a source of truth. A proper write-back step after each enrollment would fix this.</li>
+          <li><strong>Move LinkedIn off local execution</strong> — the Selenium script being tied to a local browser is the biggest operational constraint. Worth exploring a hosted option once the core pipeline is stable.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- RELATED -->
+    <div class="related-section rv d4">
+      <div class="related-label">What to read next</div>
+      <div class="related-grid">
+        <a href="/library/meeting-notes-to-airtable" class="rel-card">
+          <div class="rel-role">Next logical step · Workflow</div>
+          <div class="rel-title">Meeting notes → action items → Airtable</div>
+        </a>
+        <a href="/library/failing-to-automate-the-comp-pack" class="rel-card">
+          <div class="rel-role">Same category · Experiment</div>
+          <div class="rel-title">Failing to automate the comp pack</div>
+        </a>
+        <a href="/library/why-ai-productivity-advice-misses" class="rel-card">
+          <div class="rel-role">Adjacent idea · Opinion</div>
+          <div class="rel-title">Why most AI productivity advice doesn't apply to you</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="soft-cta rv d5">
+      <p class="cta-eyebrow">Thinking about building something similar?</p>
+      <h3>Tell me what you're trying to automate.</h3>
+      <p class="cta-sub">Whether you're starting from scratch or trying to fix something that's half-working, I'm happy to think through it with you.</p>
+      <a href="/#help" class="cta-btn">
+        Tell me what's broken
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
