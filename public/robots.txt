@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /course/login
+Disallow: /course/dashboard
+Disallow: /thanks
+
+Sitemap: https://lilyp.ai/sitemap.xml

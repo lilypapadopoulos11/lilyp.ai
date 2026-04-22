@@ -23,6 +23,12 @@
   to     = "/.netlify/functions/library"
   status = 200
 
+# ── Thank you page ──
+[[redirects]]
+  from   = "/thanks"
+  to     = "/thanks.html"
+  status = 200
+
 # ── Build detail pages ──
 [[redirects]]
   from   = "/builds/relationship-tracker"
