@@ -90,12 +90,14 @@
     /* BODY CONTENT */
     .entry-body{font-size:1.05rem;line-height:1.75;color:var(--inklight)}
     .entry-body h2{font-family:var(--serif);font-size:1.6rem;font-weight:400;color:var(--ink);margin:2.5rem 0 1rem;letter-spacing:-.015em}
+    .entry-body h3{font-family:var(--serif);font-size:1.25rem;font-weight:400;color:var(--ink);margin:2rem 0 .75rem;letter-spacing:-.01em}
     .entry-body p{margin-bottom:1.25rem}
     .entry-body p:last-child{margin-bottom:0}
     .entry-body ul{margin:0 0 1.25rem 0;padding-left:0;list-style:none}
     .entry-body ul li{position:relative;padding-left:1.4rem;margin-bottom:.5rem;font-size:1rem}
     .entry-body ul li::before{content:'\2192';position:absolute;left:0;color:var(--apricot);font-family:var(--sans)}
     .entry-body strong{color:var(--ink);font-weight:600}
+    .entry-body code.inline-code{font-family:var(--mono);font-size:.85em;background:var(--stone);padding:.1em .4em;border-radius:4px;color:var(--ink)}
 
     /* TYPE ACCENT COLORS */
     body.type-workflow .hook-line{border-left-color:var(--honey)}
@@ -400,7 +402,43 @@
 
     function renderList(block) {
       const items = parseListItems(block);
-      return '<ul>' + items.map(item => '<li>' + escapeHtml(item) + '</li>').join('') + '</ul>';
+      return '<ul>' + items.map(item => '<li>' + applyInlineMarkdown(escapeHtml(item)) + '</li>').join('') + '</ul>';
+    }
+
+    /* ── Inline markdown: **bold**, `code` ───────────────────────── */
+    function applyInlineMarkdown(text) {
+      return text
+        .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+    }
+
+    /* ── Markdown heading detector ───────────────────────────────── */
+    function isMarkdownHeader(block) {
+      return /^#{1,3} .+/.test(block.split('\n')[0]);
+    }
+
+    /* ── Fenced code block detector ──────────────────────────────── */
+    function isCodeBlock(block) {
+      const lines = block.split('\n');
+      return lines[0].startsWith('```') && lines[lines.length - 1].trim() === '```';
+    }
+
+    /* ── Fenced code block renderer ──────────────────────────────── */
+    function renderCodeBlock(block) {
+      const lines = block.split('\n');
+      const langRaw = lines[0].replace(/^```/, '').trim();
+      const label = langRaw ? langRaw.charAt(0).toUpperCase() + langRaw.slice(1) : 'Code';
+      const content = lines.slice(1, -1).join('\n');
+      return '<div class="prompt-block">' +
+        '<div class="prompt-bar">' +
+          '<span class="prompt-label">' + escapeHtml(label) + '</span>' +
+          '<button class="copy-btn" onclick="copyPromptBlock(this)">' +
+            '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>' +
+            '<span>Copy</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="prompt-text">' + escapeHtml(content) + '</div>' +
+      '</div>';
     }
 
     /* ── Pre-processing: extract structured sections from raw text ─ */
@@ -578,7 +616,7 @@
             if (isDivider(next)) {
               // Flush description so far
               if (stepDescParts.length > 0) {
-                html += '<div class="step-desc">' + stepDescParts.map(p => escapeHtml(p)).join('<br><br>') + '</div>';
+                html += '<div class="step-desc">' + stepDescParts.map(p => applyInlineMarkdown(escapeHtml(p))).join('<br><br>') + '</div>';
                 stepDescParts = [];
               }
               // Find prompt content
@@ -606,7 +644,7 @@
 
           // Flush remaining step description
           if (stepDescParts.length > 0) {
-            html += '<div class="step-desc">' + stepDescParts.map(p => escapeHtml(p)).join('<br><br>') + '</div>';
+            html += '<div class="step-desc">' + stepDescParts.map(p => applyInlineMarkdown(escapeHtml(p))).join('<br><br>') + '</div>';
           }
 
           html += '</div>'; // close .step
@@ -632,6 +670,25 @@
           continue;
         }
 
+        /* ── Markdown ## / ### header ────────────────────────────── */
+        if (isMarkdownHeader(block)) {
+          const firstLine = block.split('\n')[0];
+          const match = firstLine.match(/^(#{1,3}) (.+)/);
+          if (match) {
+            const tag = match[1].length <= 2 ? 'h2' : 'h3';
+            html += '<' + tag + '>' + applyInlineMarkdown(escapeHtml(match[2])) + '</' + tag + '>';
+          }
+          i++;
+          continue;
+        }
+
+        /* ── Fenced code block ───────────────────────────────────── */
+        if (isCodeBlock(block)) {
+          html += renderCodeBlock(block);
+          i++;
+          continue;
+        }
+
         /* ── Section header ─────────────────────────────────────── */
         const headerName = isSectionHeader(block);
         if (headerName) {
@@ -648,7 +705,7 @@
         }
 
         /* ── Regular paragraph ──────────────────────────────────── */
-        html += '<p>' + escapeHtml(block).replace(/\n/g, '<br>') + '</p>';
+        html += '<p>' + applyInlineMarkdown(escapeHtml(block)).replace(/\n/g, '<br>') + '</p>';
         i++;
       }
 
@@ -725,85 +782,4 @@
 
       // Render stats bar if stat data exists
       if (entry.stats && entry.stats.length > 0) {
-        var statsHtml = '<div class="stats-bar rv d1">';
-        for (var si = 0; si < entry.stats.length; si++) {
-          statsHtml += '<div class="stat">' +
-            '<span class="stat-label">' + escapeHtml(entry.stats[si].label) + '</span>' +
-            '<span class="stat-value">' + escapeHtml(entry.stats[si].value) + '</span>' +
-          '</div>';
-        }
-        statsHtml += '</div>';
-        document.getElementById('stats-container').innerHTML = statsHtml;
-      }
-
-      // Render pull quote if it exists
-      if (entry.pull) {
-        document.getElementById('pull-quote-container').innerHTML =
-          '<div class="pull-quote rv d2"><p>' + escapeHtml(entry.pull) + '</p></div>';
-      }
-
-      // Process content: extract structured sections
-      var rawDesc = entry.desc || '';
-
-      // 1. Extract research source
-      var rs = extractResearchSource(rawDesc);
-      rawDesc = rs.body;
-
-      // 2. Strip leading --- divider if research source was extracted
-      rawDesc = rawDesc.replace(/^-{3,}\s*\n*/, '').trim();
-
-      // 3. Extract "What to read next" links
-      var rn = extractReadNext(rawDesc);
-      rawDesc = rn.body;
-
-      // 4. Strip trailing CTA line
-      rawDesc = stripTrailingCta(rawDesc);
-
-      // Render research source
-      if (rs.source) {
-        document.getElementById('research-source-container').innerHTML =
-          '<div class="research-source">' +
-            '<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>' +
-            '<p><strong>Research source:</strong> ' + escapeHtml(rs.source) + '</p>' +
-          '</div>';
-      }
-
-      // If no hook was provided, use first paragraph of body as hook
-      if (!entry.hook && rawDesc) {
-        var firstPara = rawDesc.split(/\n\n/)[0];
-        if (firstPara && firstPara.length < 300) {
-          document.getElementById('hook-line').textContent = firstPara;
-          rawDesc = rawDesc.substring(firstPara.length).trim();
-        }
-      }
-
-      // Render body
-      document.getElementById('entry-body').innerHTML = contentToHtml(rawDesc);
-
-      // Render related links
-      if (rn.links.length > 0) {
-        document.getElementById('related-container').innerHTML = renderReadNext(rn.links);
-      }
-
-      // Show entry
-      document.getElementById('loading').style.display = 'none';
-      var entryEl = document.getElementById('entry');
-      entryEl.style.display = 'block';
-
-      // Trigger reveals
-      var obs = new IntersectionObserver(function(es) {
-        es.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('vis'); });
-      }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
-      document.querySelectorAll('.rv').forEach(function(el) { obs.observe(el); });
-
-      setTimeout(function() {
-        document.querySelectorAll('.rv').forEach(function(el) {
-          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('vis');
-        });
-      }, 50);
-    }
-
-    loadEntry();
-  </script>
-</body>
-</html>
+        var statsHtml = '<div class="stats-bar rv 
