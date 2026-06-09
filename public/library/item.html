@@ -782,4 +782,85 @@
 
       // Render stats bar if stat data exists
       if (entry.stats && entry.stats.length > 0) {
-        var statsHtml = '<div class="stats-bar rv 
+        var statsHtml = '<div class="stats-bar rv d1">';
+        for (var si = 0; si < entry.stats.length; si++) {
+          statsHtml += '<div class="stat">' +
+            '<span class="stat-label">' + escapeHtml(entry.stats[si].label) + '</span>' +
+            '<span class="stat-value">' + escapeHtml(entry.stats[si].value) + '</span>' +
+          '</div>';
+        }
+        statsHtml += '</div>';
+        document.getElementById('stats-container').innerHTML = statsHtml;
+      }
+
+      // Render pull quote if it exists
+      if (entry.pull) {
+        document.getElementById('pull-quote-container').innerHTML =
+          '<div class="pull-quote rv d2"><p>' + escapeHtml(entry.pull) + '</p></div>';
+      }
+
+      // Process content: extract structured sections
+      var rawDesc = entry.desc || '';
+
+      // 1. Extract research source
+      var rs = extractResearchSource(rawDesc);
+      rawDesc = rs.body;
+
+      // 2. Strip leading --- divider if research source was extracted
+      rawDesc = rawDesc.replace(/^-{3,}\s*\n*/, '').trim();
+
+      // 3. Extract "What to read next" links
+      var rn = extractReadNext(rawDesc);
+      rawDesc = rn.body;
+
+      // 4. Strip trailing CTA line
+      rawDesc = stripTrailingCta(rawDesc);
+
+      // Render research source
+      if (rs.source) {
+        document.getElementById('research-source-container').innerHTML =
+          '<div class="research-source">' +
+            '<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>' +
+            '<p><strong>Research source:</strong> ' + escapeHtml(rs.source) + '</p>' +
+          '</div>';
+      }
+
+      // If no hook was provided, use first paragraph of body as hook
+      if (!entry.hook && rawDesc) {
+        var firstPara = rawDesc.split(/\n\n/)[0];
+        if (firstPara && firstPara.length < 300) {
+          document.getElementById('hook-line').textContent = firstPara;
+          rawDesc = rawDesc.substring(firstPara.length).trim();
+        }
+      }
+
+      // Render body
+      document.getElementById('entry-body').innerHTML = contentToHtml(rawDesc);
+
+      // Render related links
+      if (rn.links.length > 0) {
+        document.getElementById('related-container').innerHTML = renderReadNext(rn.links);
+      }
+
+      // Show entry
+      document.getElementById('loading').style.display = 'none';
+      var entryEl = document.getElementById('entry');
+      entryEl.style.display = 'block';
+
+      // Trigger reveals
+      var obs = new IntersectionObserver(function(es) {
+        es.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('vis'); });
+      }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+      document.querySelectorAll('.rv').forEach(function(el) { obs.observe(el); });
+
+      setTimeout(function() {
+        document.querySelectorAll('.rv').forEach(function(el) {
+          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('vis');
+        });
+      }, 50);
+    }
+
+    loadEntry();
+  </script>
+</body>
+</html>
