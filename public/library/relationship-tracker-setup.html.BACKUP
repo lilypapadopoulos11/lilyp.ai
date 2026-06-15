@@ -165,7 +165,7 @@
       <span class="meta-pill">Setup</span>
       <span class="meta-pill">First-time friendly</span>
       <span class="meta-pill">Claude Code</span>
-      <span class="meta-time">15-45 min, depending on what breaks</span>
+      <span class="meta-time">~15 min total</span>
     </div>
 
 
@@ -177,7 +177,7 @@
         <li><a href="#step-2">Step 2: Get the project files</a></li>
         <li><a href="#step-3">Step 3: Install the Python packages it needs</a></li>
         <li><a href="#step-4">Step 4: Add your API keys</a></li>
-        <li><a href="#step-5">Step 5: Set up your Airtable base</a></li>
+        <li><a href="#step-5">Step 5: Build your Airtable base automatically</a></li>
         <li><a href="#step-6">Step 6: Log your first contact</a></li>
         <li><a href="#trouble">If something breaks</a></li>
       </ul>
@@ -206,8 +206,6 @@
         <p>If it shows something like <code>Python 3.11.4</code>, you're good. If it says "not found" or throws an error, go to <a href="https://python.org/downloads" target="_blank" rel="noopener">python.org/downloads</a> and install the latest version.</p>
         <p><strong>An Airtable account.</strong> Free tier works. You'll also need a Personal Access Token (it's a key Airtable generates for you). The companion guide below covers this in about 5 minutes if you haven't done it yet.</p>
 
-        <div class="note"><strong>Scopes your token needs:</strong> <code>data.records:read</code>, <code>data.records:write</code>, <code>schema.bases:read</code>, <code>schema.bases:write</code>, and <code>workspacesAndBases:read</code> (only needed for the automatic <code>setup --create</code> path in Step 5; the manual path doesn't need it).</div>
-
         <a href="/library/connect-airtable-to-claude" class="companion-strip" style="margin-top:1rem">
           <div class="companion-left">
             <div class="companion-label">Companion guide</div>
@@ -233,16 +231,16 @@
         <div class="cmd-block">
           <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
           <div class="cmd-body">
-            <span class="cmd-text">git clone https://github.com/lilypapadopoulos11/lilyp.ai-relationship-tracker.git</span>
-            <button class="cmd-copy" onclick="navigator.clipboard.writeText('git clone https://github.com/lilypapadopoulos11/lilyp.ai-relationship-tracker.git').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+            <span class="cmd-text">git clone https://github.com/lilyp-ai/relationship-tracker.git</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText('git clone https://github.com/lilyp-ai/relationship-tracker.git').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
           </div>
         </div>
-        <p>That creates a folder called <code>lilyp.ai-relationship-tracker</code> wherever you ran the command. Now move into it:</p>
+        <p>That creates a folder called <code>relationship-tracker</code> wherever you ran the command. Now move into it:</p>
         <div class="cmd-block">
           <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
           <div class="cmd-body">
-            <span class="cmd-text">cd lilyp.ai-relationship-tracker</span>
-            <button class="cmd-copy" onclick="navigator.clipboard.writeText('cd lilyp.ai-relationship-tracker').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+            <span class="cmd-text">cd relationship-tracker</span>
+            <button class="cmd-copy" onclick="navigator.clipboard.writeText('cd relationship-tracker').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
           </div>
         </div>
         <div class="note"><strong>What <code>cd</code> means:</strong> "change directory." It's just how you navigate into a folder from the terminal. Think of it as double-clicking a folder, but in text form.</div>
@@ -289,15 +287,14 @@
           <div class="cmd-body" style="flex-direction:column;align-items:flex-start;gap:.4rem;">
             <span class="cmd-text">ANTHROPIC_API_KEY=your_key_here</span>
             <span class="cmd-text">AIRTABLE_PAT=your_token_here</span>
-            <span class="cmd-text">TRACKER_BASE_ID=</span>
+            <span class="cmd-text">TRACKER_REMINDER_EMAIL=you@youremail.com</span>
           </div>
         </div>
         <p>Replace each placeholder with the real value. Here's where to find them:</p>
         <p><strong>ANTHROPIC_API_KEY:</strong> go to <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>, sign in, click "API Keys" in the left sidebar, and create a new key. Copy the whole thing (it starts with <code>sk-ant-</code>).</p>
-        <div class="note-honey"><strong>Before you move on:</strong> a brand new key has no usage credit attached. Go to <a href="https://console.anthropic.com/billing" target="_blank" rel="noopener">console.anthropic.com/billing</a> and add a few dollars of credit. The key itself will work either way, but every command that calls Claude fails until there's credit on the account.</div>
-        <p><strong>AIRTABLE_PAT:</strong> your Airtable Personal Access Token. If you haven't gotten it yet, the companion guide above walks you through it, including the scopes you need.</p>
-        <p><strong>TRACKER_BASE_ID:</strong> leave this one blank for now. Step 5 covers how it gets filled in, either automatically or by hand depending which path you take.</p>
-        <div class="note">This file is listed in <code>.gitignore</code>, which means if you ever push this project to GitHub, your keys won't be included. They stay private on your computer.</div>
+        <p><strong>AIRTABLE_PAT:</strong> your Airtable Personal Access Token. If you haven't gotten it yet, the companion guide above walks you through it.</p>
+        <p><strong>TRACKER_REMINDER_EMAIL:</strong> the email address where you want reminder emails sent. Just your normal email.</p>
+        <div class="note-honey">This file is listed in <code>.gitignore</code>, which means if you ever push this project to GitHub, your keys won't be included. They stay private on your computer.</div>
       </div>
     </div>
 
@@ -307,14 +304,11 @@
       <span class="step-anchor"></span>
       <div class="step-header">
         <div class="step-badge">5</div>
-        <div class="step-title">Set up your Airtable base</div>
-        <div class="step-time">~2-10 min</div>
+        <div class="step-title">Build your Airtable base automatically</div>
+        <div class="step-time">~2 min</div>
       </div>
       <div class="step-body">
-        <p>There are two ways to do this step, and both end up in the same place: a base with Contacts, Interactions, and Events tables, ready to go. Try Option A first. If it errors out, Option B takes a few extra minutes and worked more reliably when I tested this.</p>
-
-        <p><strong>Option A: automatic</strong></p>
-        <p>This one command creates your entire Airtable base: all three tables, all the fields, and the Follow-Up Queue view. You don't set anything up by hand, and it writes the base ID into <code>secrets.env</code> for you.</p>
+        <p>This one command creates your entire Airtable base: all three tables (Contacts, Interactions, Events), all the fields, and the Follow-Up Queue view. You don't set anything up by hand.</p>
         <div class="cmd-block">
           <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">terminal</span></div>
           <div class="cmd-body">
@@ -323,22 +317,7 @@
           </div>
         </div>
         <p>When it finishes, open Airtable in your browser. You should see a new base called "Relationship Tracker" with everything already set up.</p>
-        <div class="note">If this throws a 403 or a scope error, your token is missing <code>workspacesAndBases:read</code>. See <a href="#trouble">If something breaks</a> below, or just move on to Option B.</div>
-
-        <p><strong>Option B: manual</strong></p>
-        <p>Create the base yourself, then have Claude build the tables inside it.</p>
-        <p>1. Go to <a href="https://airtable.com" target="_blank" rel="noopener">airtable.com</a> and create a new base. Name it whatever you want, "Relationship Tracker" is fine.</p>
-        <p>2. Open the base and copy its URL from your browser's address bar.</p>
-        <p>3. In Claude Code, paste the URL and ask Claude to set up the Contacts, Interactions, and Events tables using <code>config.py</code> as the spec. Something like: "Here's my Airtable base: [paste URL]. Set up the tables and fields from config.py."</p>
-        <p>4. Claude can pull the base ID from that URL. Add it to <code>secrets.env</code>:</p>
-        <div class="cmd-block">
-          <div class="cmd-bar"><div class="cmd-dot"></div><div class="cmd-dot"></div><div class="cmd-dot"></div><span class="cmd-label">secrets.env</span></div>
-          <div class="cmd-body">
-            <span class="cmd-text">TRACKER_BASE_ID=appXXXXXXXXXXXXXX</span>
-            <button class="cmd-copy" onclick="navigator.clipboard.writeText('TRACKER_BASE_ID=').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
-          </div>
-        </div>
-        <div class="note-honey">Either path is fine. When you're done, open Airtable. You should see a base with Contacts, Interactions, and Events tables, ready for your first contact.</div>
+        <p>The command also copies the base ID into your <code>secrets.env</code> automatically, so you don't need to find it yourself.</p>
       </div>
     </div>
 
@@ -383,27 +362,15 @@
         </div>
         <div class="trouble-item">
           <div class="trouble-q">"Module not found" error after running pip install</div>
-          <div class="trouble-a">Make sure you're in the right folder first. Run <code>pwd</code> (print working directory). It should show the lilyp.ai-relationship-tracker folder. If not, <code>cd</code> back to it and try the pip install again.</div>
-        </div>
-        <div class="trouble-item">
-          <div class="trouble-q">SSL certificate verify failed</div>
-          <div class="trouble-a">This can happen even on a normal home Wi-Fi connection, so don't assume it's your network. Python is failing to verify the security certificate for Airtable's or Anthropic's servers. Run <code>pip install pip-system-certs</code>, then try the command again.</div>
+          <div class="trouble-a">Make sure you're in the right folder first. Run <code>pwd</code> (print working directory). It should show the relationship-tracker folder. If not, <code>cd</code> back to it and try the pip install again.</div>
         </div>
         <div class="trouble-item">
           <div class="trouble-q">Airtable authentication error</div>
           <div class="trouble-a">Your <code>AIRTABLE_PAT</code> is probably wrong or missing. Open <code>config/secrets.env</code>, double-check the token is pasted in full with no spaces around the <code>=</code> sign, and make sure there are no quotes around it.</div>
         </div>
         <div class="trouble-item">
-          <div class="trouble-q">Airtable error 403, or "setup --create" fails right away</div>
-          <div class="trouble-a">Your token is missing the <code>workspacesAndBases:read</code> scope, which the automatic setup needs to create a new base in your workspace. Go back to <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener">airtable.com/create/tokens</a>, edit the token, and add that scope. Or skip it entirely: Option B in Step 5 builds the base manually and doesn't need it.</div>
-        </div>
-        <div class="trouble-item">
           <div class="trouble-q">Claude API error or "Invalid API key"</div>
           <div class="trouble-a">Same fix: check <code>ANTHROPIC_API_KEY</code> in your secrets.env. The key starts with <code>sk-ant-</code>. If it's expired or you've hit a limit, generate a new one at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</div>
-        </div>
-        <div class="trouble-item">
-          <div class="trouble-q">API key is correct and brand new, but every command still fails</div>
-          <div class="trouble-a">A new Anthropic key has no usage credit attached until you add some. Go to <a href="https://console.anthropic.com/billing" target="_blank" rel="noopener">console.anthropic.com/billing</a>, add a few dollars, and try again.</div>
         </div>
         <div class="trouble-item">
           <div class="trouble-q">Something else broke and I don't know what</div>

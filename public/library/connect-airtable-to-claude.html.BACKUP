@@ -194,11 +194,11 @@
             <p>1. Go to <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener">airtable.com/create/tokens</a> (or click your profile icon in the top right, then "Developer hub," then "Personal access tokens").</p>
             <p>2. Click <strong>"+ Create new token"</strong>.</p>
             <p>3. Give it a name so you remember what it's for. Something like <em>lilyp.ai tracker</em> is fine.</p>
-            <p>4. Under <strong>Scopes</strong>, add these:</p>
+            <p>4. Under <strong>Scopes</strong>, add these four:</p>
             <div class="copy-block">
-              <span class="copy-text">data.records:read &nbsp;&nbsp; data.records:write &nbsp;&nbsp; schema.bases:read &nbsp;&nbsp; schema.bases:write &nbsp;&nbsp; workspacesAndBases:read</span>
+              <span class="copy-text">data.records:read &nbsp;&nbsp; data.records:write &nbsp;&nbsp; schema.bases:read &nbsp;&nbsp; schema.bases:write</span>
             </div>
-            <p><em>(Scopes just mean "what is this token allowed to do." The record scopes handle reading and writing contacts. The schema scopes let Claude read and create tables and fields in your base. <code>workspacesAndBases:read</code> is only needed if you use the <code>setup --create</code> command. That's what lets it find your workspace and create a new base in it. If you create the base yourself and have Claude build the tables inside it, you can skip that last scope.)</em></p>
+            <p><em>(Scopes just mean "what is this token allowed to do." The record scopes handle reading and writing contacts. The schema scopes let the <code>setup --create</code> command build your Airtable base automatically. Without them, you'd have to create all the tables and fields by hand.)</em></p>
             <p>5. Under <strong>Access</strong>, choose "All current and future bases" (or select specific bases if you prefer).</p>
             <p>6. Click <strong>"Create token"</strong>. Airtable will show you the token once. Copy it now and keep it somewhere safe (a password manager, a notes app). You won't be able to see it again.</p>
             <div class="screenshot-guide">

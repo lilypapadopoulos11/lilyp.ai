@@ -65,7 +65,7 @@
 
     /* Build meta row */
     .build-meta { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; margin-bottom:3.5rem; padding-bottom:2rem; border-bottom:1px solid var(--border); }
-    .status-badge { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.12em; padding:.35rem .85rem; border-radius:999px; border:1px solid rgba(39,201,63,.2); background:rgba(39,201,63,.1); color:#1a8a2a; }
+    .status-badge { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.12em; padding:.35rem .85rem; border-radius:999px; border:1px solid rgba(236,168,36,.3); background:rgba(236,168,36,.1); color:#9a6e0a; }
     .tech-pill { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; padding:.3rem .7rem; border-radius:6px; background:var(--stone); color:var(--inklight); }
     .build-date { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-left:auto; }
 
@@ -89,12 +89,6 @@
 
     .demo-panel { border-radius:16px; overflow:hidden; border:1px solid var(--border); }
     .demo-panel-label { font-family:var(--mono); font-size:.6rem; text-transform:uppercase; letter-spacing:.12em; padding:.6rem 1rem; background:var(--stone); color:var(--muted); border-bottom:1px solid var(--border); }
-    .demo-panel img { display:block; width:100%; }
-
-    /* Bubble note */
-    .bubble-note { display:flex; align-items:flex-start; gap:.85rem; margin:1.5rem 0 2.5rem; padding:1.1rem 1.4rem; border-radius:20px; background:radial-gradient(circle at 18% 18%, rgba(236,168,36,.22), var(--blush) 70%); border:1px solid rgba(236,168,36,.3); box-shadow:0 6px 28px rgba(236,168,36,.18); font-family:var(--serif); font-style:italic; font-size:.92rem; line-height:1.7; color:var(--inklight); }
-    .bubble-note p { margin:0; }
-    .bubble-note svg { flex-shrink:0; width:18px; height:18px; fill:var(--honey); margin-top:.25rem; }
 
     /* Input panel */
     .input-panel { background:white; }
@@ -282,7 +276,7 @@
     </p>
 
     <div class="rv d3 build-meta">
-      <span class="status-badge">Live</span>
+      <span class="status-badge">In Progress</span>
       <span class="tech-pill">Python</span>
       <span class="tech-pill">Anthropic API</span>
       <span class="tech-pill">Airtable</span>
@@ -319,12 +313,6 @@
         record and schedules your follow-up. No forms. No fields to fill.
       </p>
 
-      <div class="rv bubble-note">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></svg>
-        <p>Quick note: Priya, David, and their employers are all made up. If you're a real Priya or David in CRE reading this, hi, you're not in this, I promise. I wanted something that felt true to life, not a transcript of a real conversation.</p>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/></svg>
-      </div>
-
       <div class="demo-grid">
         <!-- Input -->
         <div class="demo-panel input-panel">
@@ -332,10 +320,10 @@
           <div class="input-body">
             <p>
               "Met Priya Nair at the ULI Toronto Young Leaders event Thursday evening. She is an
-              analyst at Halford Group doing industrial market research, working on a report about AI
+              analyst at CBRE doing industrial market research, working on a report about AI
               adoption in commercial real estate. We talked for about 20 minutes. She asked if
               she could send me some questions for her research. She mentioned a colleague named
-              David Park on the residential side at Whitmore. Should follow up with Priya next
+              David Park on the residential side at Cushman. Should follow up with Priya next
               week, maybe once the context template article is live."
             </p>
           </div>
@@ -347,13 +335,13 @@
           <div class="term-body">
             <div class="term-line term-dim">Parsing contact dump...</div>
             <div class="term-line" style="margin-top:.5rem"><span class="term-dim">--</span> <span class="term-value" style="font-weight:700">Priya Nair</span> <span class="term-dim">--</span></div>
-            <div class="term-line term-indent"><span class="term-label">Company: </span><span class="term-value">Halford Group</span></div>
+            <div class="term-line term-indent"><span class="term-label">Company: </span><span class="term-value">CBRE</span></div>
             <div class="term-line term-indent"><span class="term-label">Role: </span><span class="term-value">Analyst, Industrial Research</span></div>
             <div class="term-line term-indent"><span class="term-label">How met: </span><span class="term-value">Event (ULI Toronto)</span></div>
             <div class="term-line term-indent"><span class="term-label">Tags: </span><span class="term-tag">CRE</span> <span class="term-tag">AI/Tech</span> <span class="term-tag">Potential Collab</span></div>
             <div class="term-line" style="margin-top:.6rem;margin-bottom:.2rem"><span class="term-dim">Follow-up in </span><span class="term-tag">5 days</span><span class="term-dim"> via LinkedIn</span></div>
             <div class="term-line term-dim" style="margin-top:.75rem">Also mentioned:</div>
-            <div class="term-line term-indent"><span class="term-success">+</span> <span class="term-value">David Park</span> <span class="term-dim">-- Whitmore</span></div>
+            <div class="term-line term-indent"><span class="term-success">+</span> <span class="term-value">David Park</span> <span class="term-dim">-- Cushman</span></div>
             <div class="term-line" style="margin-top:.75rem"><span class="term-success">+</span> <span class="term-value">Contact created: Priya Nair</span></div>
             <div class="term-line"><span class="term-success">+</span> <span class="term-value">Interaction logged</span></div>
             <div class="term-line"><span class="term-success">+</span> <span class="term-value">Skeleton created: David Park</span></div>
@@ -368,7 +356,7 @@
           <div class="record-avatar">P</div>
           <div>
             <div class="record-name">Priya Nair</div>
-            <div class="record-sub">Halford Group &middot; Industrial Research Analyst</div>
+            <div class="record-sub">CBRE &middot; Industrial Research Analyst</div>
           </div>
         </div>
         <div class="record-fields">
@@ -384,7 +372,7 @@
           </div>
           <div class="record-field">
             <div class="record-field-label">Notes</div>
-            <div class="record-field-value">Mid-research on AI adoption in CRE at Halford Group. Asked to send follow-up research questions. Expressed genuine interest in Claude workflow content.</div>
+            <div class="record-field-value">Mid-research on AI adoption in CRE at CBRE. Asked to send follow-up research questions. Expressed genuine interest in Claude workflow content.</div>
           </div>
           <div class="record-field">
             <div class="record-field-label">Follow-up</div>
@@ -398,12 +386,12 @@
           <div class="record-avatar ghost">D</div>
           <div>
             <div class="record-name">David Park</div>
-            <div class="record-sub">Whitmore &amp; Reyes &middot; Residential CRE</div>
+            <div class="record-sub">Cushman &amp; Wakefield &middot; Residential CRE</div>
           </div>
           <div class="record-auto-badge">Auto-created</div>
         </div>
         <div class="referral-note">
-          <strong>Referred by Priya Nair (Halford Group).</strong> Residential CRE at Whitmore. Activate after warming Priya. The referral chain is there. Use it with intention.
+          <strong>Referred by Priya Nair (CBRE).</strong> Residential CRE at Cushman. Activate after warming Priya. The referral chain is there. Use it with intention.
         </div>
       </div>
     </div>
@@ -448,7 +436,7 @@
             <div class="q-entry-header">
               <span class="q-num">1. </span>
               <span class="q-name">Priya Nair</span>
-              <span class="q-meta"> /Halford Group, Industrial Research /</span>
+              <span class="q-meta"> /CBRE, Industrial Research /</span>
               <span class="q-status">New, follow-up due April 16</span>
             </div>
             <div class="q-body">She asked to reach out to you. You haven't responded yet. This is your highest-leverage open thread. She's mid-research on AI in CRE, which is exactly your positioning. Send the article. Start the thread. The ask writes itself.</div>
@@ -458,25 +446,25 @@
             <div class="q-entry-header">
               <span class="q-num">2. </span>
               <span class="q-name">Sarah Chen</span>
-              <span class="q-meta"> /Ashgrove Partners, VP Data Analytics /</span>
+              <span class="q-meta"> /Colliers, VP Data Analytics /</span>
               <span class="q-status">Warming, last contact 18 days ago</span>
             </div>
-            <div class="q-body">Knows your work, actively evaluating AI tools for comp analysis. A genuine check-in, something that serves her rather than asks for something, would land well right now. She could be a reference or an intro source within Ashgrove Partners. Do not wait until you need something.</div>
+            <div class="q-body">Knows your work, actively evaluating AI tools for comp analysis. A genuine check-in, something that serves her rather than asks for something, would land well right now. She could be a reference or an intro source within Colliers. Do not wait until you need something.</div>
           </div>
 
           <div class="q-entry">
             <div class="q-entry-header">
               <span class="q-num">3. </span>
               <span class="q-name">David Park</span>
-              <span class="q-meta"> /Whitmore &amp; Reyes, Residential /</span>
+              <span class="q-meta"> /Cushman &amp; Wakefield, Residential /</span>
               <span class="q-status">New, skeleton (not yet met)</span>
             </div>
             <div class="q-body">You haven't met him. The referral from Priya exists but hasn't been activated. Sequence matters here: warm Priya first, then ask for the introduction. Cold-reaching a referred contact before the referrer knows you well undermines both relationships.</div>
           </div>
 
           <div class="q-chain">
-            <div class="q-chain-label">Referral path to Whitmore &amp; Reyes</div>
-            <div class="q-chain-path">You <span>&rarr;</span> Priya Nair (Halford Group) <span>&rarr;</span> David Park (Whitmore)</div>
+            <div class="q-chain-label">Referral path to Cushman &amp; Wakefield</div>
+            <div class="q-chain-path">You <span>&rarr;</span> Priya Nair (CBRE) <span>&rarr;</span> David Park (Cushman)</div>
           </div>
         </div>
       </div>
@@ -595,7 +583,7 @@
     <!-- SECTION 5: Setup -->
     <div id="setup" class="rv section-gap">
       <div class="section-label">Getting it running</div>
-      <h2 class="section-h">From zero to first contact in one sitting.</h2>
+      <h2 class="section-h">From zero to first contact in 15 minutes.</h2>
 
       <div class="callout-beginner rv">
         <div class="callout-beginner-label">New to Claude Code or using a terminal for the first time?</div>
@@ -607,7 +595,7 @@
         <div class="setup-steps">
           <div class="setup-step">
             <div class="step-num">1</div>
-            <div class="step-body">Get the code from GitHub and open the folder in Claude Code (the button at the bottom of this page links to the repo). Airtable connects through a Personal Access Token, a password your Airtable account generates for you, pasted into a plain text file called <code>secrets.env</code>. No extra plugins to install. The companion guide below walks you through getting that token in about five minutes.</div>
+            <div class="step-body">Connect Airtable to Claude. This means installing a small plugin called an MCP server (don't let the name scare you — it's literally just a connector that lets Claude talk to Airtable). You'll also need a Personal Access Token from Airtable, which is just a password your account generates for you. The companion guide below walks you through both in about five minutes.</div>
           </div>
           <div class="setup-step">
             <div class="step-num">2</div>
@@ -652,7 +640,7 @@
           <div style="font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:1rem">FOLLOW-UP QUEUE / April 12, 2026</div>
 
           <div class="email-contact-head">1. MARCUS OSEI</div>
-          <div class="email-contact-meta">Ashgrove Partners / Industrial Research Analyst &nbsp;|&nbsp; Relationship: Warming &nbsp;|&nbsp; Channel: LinkedIn</div>
+          <div class="email-contact-meta">Colliers / Industrial Research Analyst &nbsp;|&nbsp; Relationship: Warming &nbsp;|&nbsp; Channel: LinkedIn</div>
           <div class="email-why">Why today: Met at PropTech Vancouver, talked about AI comp tools in industrial. Due for first real follow-up.</div>
           <div class="email-draft-label">Suggested message</div>
           <div class="email-draft">
@@ -662,7 +650,7 @@
           <div class="email-divider"></div>
 
           <div class="email-contact-head">2. PRIYA NAMBIAR</div>
-          <div class="email-contact-meta">Halford Group / Research Director &nbsp;|&nbsp; Relationship: New &nbsp;|&nbsp; Channel: Email</div>
+          <div class="email-contact-meta">CBRE / Research Director &nbsp;|&nbsp; Relationship: New &nbsp;|&nbsp; Channel: Email</div>
           <div class="email-why">Why today: Coffee chat two weeks ago about content strategy. She mentioned possibly sharing her team's workflow doc.</div>
           <div class="email-draft-label">Suggested message</div>
           <div class="email-draft">
@@ -689,47 +677,25 @@
       </a>
     </div>
 
-
-    <!-- SECTION: In practice -->
-    <div class="rv section-gap">
-      <div class="section-label">In practice</div>
-      <h2 class="section-h">What it looked like when I actually ran it.</h2>
-      <p class="section-p">
-        This build sat finished for months before I ran the setup myself, start to finish, the way a stranger landing on this page would. A few things broke along the way (the setup guide covers what, and the fixes). It still worked. Here's what that run actually looked like.
-      </p>
-
-      <div class="demo-grid">
-        <div class="demo-panel">
-          <div class="demo-panel-label">The repo / public on GitHub</div>
-          <img src="/images/builds/relationship-tracker/02-github-repo-page.png" alt="The relationship tracker repository page on GitHub">
-        </div>
-        <div class="demo-panel">
-          <div class="demo-panel-label">Terminal / first contact created</div>
-          <img src="/images/builds/relationship-tracker/11-claude-code-contact-created-success.png" alt="Claude Code terminal showing a contact successfully created">
-        </div>
-        <div class="demo-panel">
-          <div class="demo-panel-label">Airtable / the record lands</div>
-          <img src="/images/builds/relationship-tracker/14-airtable-contacts-table-first-record.png" alt="Airtable Contacts table showing the first real contact record">
-        </div>
-        <div class="demo-panel">
-          <div class="demo-panel-label">Terminal / everything else it can do</div>
-          <img src="/images/builds/relationship-tracker/13-claude-code-help-all-commands.png" alt="Claude Code terminal showing the full list of tracker commands">
-        </div>
-      </div>
-    </div>
-
     <!-- CTA -->
     <div class="rv cta-block">
       <div class="cta-label">Get the build</div>
       <h2 class="cta-title">Take the whole thing.<br><em>It's yours to run.</em></h2>
       <p class="cta-sub">The full module, the parsing prompt, the Airtable schema, and the setup command. Clone it, adapt it, make it yours.</p>
-      <a href="https://github.com/lilypapadopoulos11/lilyp.ai-relationship-tracker" class="cta-btn">
+      <a href="https://github.com/lilypapadopoulos11/relationship-tracker" class="cta-btn">
         View on GitHub
         <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
 
   </div>
+
+  <!-- DEPENDENCY NOTE (remove before publishing):
+    Two companion guides are linked on this page but do not yet exist:
+    - /library/connect-airtable-to-claude  (Step 1 of setup + companion strip)
+    - /library/build-your-voice-guidelines (email section companion strip)
+    This page is not fully packaged until both are live or in production.
+  -->
 
   <script>
     const io = new IntersectionObserver(entries => {
