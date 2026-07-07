@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building lilyp.ai with Claude Code as a non-developer — lilyp.ai Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+    .amb1{width:500px;height:400px;top:-80px;right:-80px;background:var(--blush);opacity:.4}
+    .amb2{width:350px;height:280px;bottom:10%;left:-60px;background:rgba(236,168,36,.12);opacity:1}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:780px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.25rem;font-weight:500;text-decoration:none;color:var(--ink)}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .2s}
+    .nav-back:hover{color:var(--ink)}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:4rem 2rem 8rem}
+
+    /* META */
+    .meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+    .tag{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.22rem .6rem;border-radius:5px;border:1px solid var(--border);color:var(--inklight)}
+    .tag-cat{background:var(--stone);border-color:transparent}
+    .tag-bip{border-color:rgba(236,168,36,.35);color:#9a6c00;background:rgba(236,168,36,.08)}
+    .date-txt{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+
+    /* HEADER */
+    h1.entry-title{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.2rem);font-weight:400;line-height:1.1;letter-spacing:-.025em;margin-bottom:1.2rem}
+    .hook-line{font-family:var(--serif);font-style:italic;font-size:1.2rem;font-weight:300;color:var(--inklight);line-height:1.55;border-left:3px solid var(--apricot);padding-left:1.2rem;margin-bottom:2rem}
+
+    /* STATS BAR */
+    .stats-bar{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:white;margin:2.5rem 0}
+    .stat{flex:1;min-width:140px;padding:1.1rem 1.4rem;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:.35rem}
+    .stat:last-child{border-right:none}
+    .stat-label{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .stat-value{font-family:var(--sans);font-size:.95rem;font-weight:600;color:var(--ink)}
+    .stat-value em{font-style:normal;color:var(--honey)}
+
+    /* DIVIDER */
+    .entry-divider{height:1px;background:var(--border);margin:2.5rem 0}
+
+    /* BODY TEXT */
+    .entry-body{font-size:1.05rem;line-height:1.78;color:var(--inklight)}
+    .entry-body h2{font-family:var(--serif);font-size:1.7rem;font-weight:400;color:var(--ink);margin:3.25rem 0 1.1rem;letter-spacing:-.015em}
+    .entry-body p{margin-bottom:1.25rem}
+    .entry-body p:last-child{margin-bottom:0}
+    .entry-body strong{color:var(--ink);font-weight:600}
+    .entry-body em{font-style:italic}
+
+    /* PULL QUOTE */
+    .pull{font-family:var(--serif);font-size:1.2rem;font-style:italic;font-weight:300;color:var(--ink);border-left:3px solid var(--honey);padding-left:1.2rem;margin:1.75rem 0;line-height:1.5}
+
+    /* INLINE CODE */
+    .ic{font-family:var(--mono);font-size:.83em;background:var(--stone);padding:.1em .45em;border-radius:4px;color:var(--ink)}
+
+    /* CODE BLOCK */
+    .code-block{background:#1a1a18;border-radius:12px;padding:1.25rem 1.5rem;margin:1.75rem 0;overflow-x:auto}
+    .code-block pre{font-family:var(--mono);font-size:.8rem;line-height:1.7;color:rgba(255,255,255,.78);white-space:pre;margin:0}
+    .code-block pre .kw{color:var(--apricot)}
+    .code-block pre .str{color:rgba(252,232,227,.75)}
+    .code-block pre .cmt{color:rgba(255,255,255,.35);font-style:italic}
+
+    /* CALLOUT */
+    .callout{background:var(--stone);border-radius:12px;padding:1.3rem 1.5rem;margin:2rem 0;display:flex;gap:.9rem;align-items:flex-start}
+    .callout svg{width:16px;height:16px;flex-shrink:0;margin-top:4px;stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .callout p{font-size:.97rem;color:var(--inklight);line-height:1.65;margin:0;font-family:var(--sans)}
+
+    /* LESSON BLOCK */
+    .lesson{background:rgba(236,168,36,.07);border:1px solid rgba(236,168,36,.22);border-radius:14px;padding:1.4rem 1.6rem;margin:2.25rem 0}
+    .lesson-label{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:#9a6c00;margin-bottom:.75rem}
+    .lesson p{font-size:.95rem;color:var(--inklight);line-height:1.65;margin:0}
+
+    /* ARTICLE FIGURES */
+    .art-figure{margin:3rem 0}
+    .art-figure figcaption{font-family:var(--mono);font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-top:.9rem;text-align:center;line-height:1.5}
+
+    /* Standard figure: full-width with rounded border shadow */
+    .art-figure .fig-img{
+      display:block;width:100%;height:auto;
+      border-radius:16px;
+      border:1px solid var(--border);
+      box-shadow:0 6px 36px -10px rgba(18,18,17,.14);
+    }
+
+    /* Before/after: wrap with overlay for filler bars */
+    .art-figure .fig-ba-wrap{
+      position:relative;
+      display:block;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid var(--border);
+      box-shadow:0 6px 36px -10px rgba(18,18,17,.14);
+      line-height:0;
+    }
+    .art-figure .fig-ba-wrap img{
+      display:block;width:100%;height:auto;
+    }
+    /* Soft warm gradient over filler bars area (left half, middle band) */
+    .art-figure .fig-ba-wrap::after{
+      content:'';
+      position:absolute;
+      left:0;top:28%;
+      width:44%;height:22%;
+      background:linear-gradient(
+        to bottom,
+        rgba(253,252,249,0) 0%,
+        rgba(253,252,249,0.52) 35%,
+        rgba(253,252,249,0.52) 65%,
+        rgba(253,252,249,0) 100%
+      );
+      pointer-events:none;
+    }
+
+    /* Inset figure: slightly narrower, centered */
+    .art-figure.inset .fig-img{
+      max-width:620px;
+      margin:0 auto;
+      display:block;
+    }
+
+    /* RELATED */
+    .related-section{margin-top:4.5rem;padding-top:2.5rem;border-top:1px solid var(--border)}
+    .related-label{font-family:var(--mono);font-size:.67rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:1.5rem}
+    .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+    .rel-card{display:block;text-decoration:none;color:var(--ink);background:white;border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.4rem;transition:transform .25s var(--snappy),box-shadow .25s,border-color .25s}
+    .rel-card:hover{transform:translateY(-3px);box-shadow:4px 4px 0 var(--honey);border-color:var(--ink)}
+    .rel-role{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem}
+    .rel-title{font-family:var(--serif);font-size:1rem;line-height:1.3;transition:color .2s}
+    .rel-card:hover .rel-title{color:var(--honey)}
+
+    /* SOFT CTA */
+    .soft-cta{margin-top:3.5rem;background:var(--blush);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+    .soft-cta::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.15;border-radius:50%;pointer-events:none}
+    .soft-cta p.cta-eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.75rem}
+    .soft-cta h3{font-family:var(--serif);font-size:1.7rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+    .soft-cta p.cta-sub{font-size:.95rem;color:var(--inklight);max-width:400px;margin:0 auto 1.75rem;line-height:1.65}
+    .cta-btn{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.9rem;font-weight:600;padding:.85rem 2rem;border-radius:999px;text-decoration:none;transition:background .2s,box-shadow .2s}
+    .cta-btn:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
+    .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+    @media(max-width:600px){
+      .stats-bar{flex-direction:column}
+      .stat{border-right:none;border-bottom:1px solid var(--border)}
+      .stat:last-child{border-bottom:none}
+      .art-figure.inset .fig-img{max-width:100%}
+      .entry-body h2{font-size:1.5rem}
+      .pull{font-size:1.08rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <a href="/library" class="nav-back">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="rv">
+      <div class="meta-row">
+        <span class="tag tag-cat">Building in Public</span>
+        <span class="tag tag-bip">Build Story</span>
+        <span class="tag">8 min read</span>
+        <span class="date-txt">Apr 2026</span>
+      </div>
+      <h1 class="entry-title">Building lilyp.ai with Claude Code as a non-developer</h1>
+      <p class="hook-line">What it actually looked like to go from a single HTML page to a 15-page site with a live Airtable connection, when you don't know how to code.</p>
+    </header>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar rv d1">
+      <div class="stat">
+        <span class="stat-label">Time span</span>
+        <span class="stat-value"><em>37</em> days active</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Saved versions</span>
+        <span class="stat-value">30 commits</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Pages built</span>
+        <span class="stat-value">15 pages</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Tools</span>
+        <span class="stat-value">Claude Code, Netlify, <em>Airtable</em></span>
+      </div>
+    </div>
+
+    <div class="entry-divider rv d2"></div>
+
+    <div class="entry-body">
+
+      <!-- INTRO -->
+      <div class="rv">
+        <p>The first version of lilyp.ai was one HTML page about meeting notes.</p>
+        <p>The headline was:</p>
+        <p class="pull">"Stop spending 2 hours on meeting write-ups."</p>
+        <p>No navigation. No library. No about page. Just a simple tool idea and a form to capture emails.</p>
+        <p>I uploaded it to GitHub through the website. Four separate uploads. Not even a proper batch upload, because I didn't know enough to know that was slightly ridiculous yet.</p>
+        <p>By April 22, the site had 15 pages, 4 backend functions, and a live Airtable connection.</p>
+        <p>What happened in between wasn't me suddenly becoming a developer.</p>
+        <p>It was me learning how to direct a build.</p>
+      </div>
+
+      <!-- BEFORE / AFTER IMAGE -->
+      <figure class="art-figure rv d1">
+        <div class="fig-ba-wrap">
+          <img src="/images/builds/lilyp-ai/before-after-site-system.png"
+               alt="Before: a single webpage with an email capture form and placeholder content. After: a full site system with Home, Library, Builds, and About pages, dynamic articles powered by Airtable."
+               loading="lazy">
+        </div>
+        <figcaption>From one static page to a small living site system.</figcaption>
+      </figure>
+
+      <!-- TIMELINE IMAGE -->
+      <figure class="art-figure rv d2">
+        <img class="fig-img"
+             src="/images/builds/lilyp-ai/build-timeline.png"
+             alt="A timeline showing 6 milestones across 37 days: March 16 single HTML page launched, March 19 visual direction coming together, March 23 hero copy changed, April 3 first Claude Code co-authored version, April 6 major parser and template update, April 22 15 pages and Airtable connected."
+             loading="lazy">
+        <figcaption>The rough build arc from March 16 to April 22.</figcaption>
+      </figure>
+
+      <!-- DESIGN CAME BEFORE CODE -->
+      <div class="rv">
+        <h2>Design came before code</h2>
+        <p>Before I knew how the site should work, I knew how I didn't want it to feel.</p>
+        <p>Not cold. Not SaaS-y. Not like an AI tool page with a glowing robot in the corner. Not like I was pretending to be a startup.</p>
+        <p>I wanted it to feel warm, clean, useful, and a little more human than most AI things online.</p>
+        <p>So before Claude Code became part of the build, I spent time on the visual direction. I used Variant, a tool that generates design mockups in webpage format so you can explore visual directions without writing any code. I saved references, tested layouts, and got annoyingly specific about the feel.</p>
+        <p>At the time, I think part of me wondered if I was procrastinating on the "real" build.</p>
+        <p>I wasn't.</p>
+        <p>The visual direction became a constraint. Once I knew what the site should feel like, Claude had something to build toward.</p>
+      </div>
+
+      <div class="lesson rv">
+        <div class="lesson-label">What I learned</div>
+        <p>AI is much more useful when you have taste, opinions, and a direction. It can help you make things real, but it can't decide what feels like you.</p>
+      </div>
+
+      <!-- COPY SHIFT -->
+      <div class="rv">
+        <h2>The copy shift that made the site feel more like mine</h2>
+        <p>Through V1 to V4, the hero was:</p>
+        <p class="pull">"I find broken systems. I build things to fix them."</p>
+        <p>In March, I changed it to:</p>
+        <p class="pull">"A lot of work is still way harder than it needs to be."</p>
+        <p>It might sound like a small copy change, but it changed the posture of the whole site.</p>
+        <p>The old line was more about proving I was capable. "I find. I build." It sort of sounded like something you'd put on a resume to sound harder than you are.</p>
+        <p>The new line started with something I actually believed.</p>
+        <p>A lot of work is still clunky, manual, repetitive, and weirdly harder than it needs to be. I didn't need someone to buy into me first for that to feel true.</p>
+        <p>That felt like a better place to build from.</p>
+      </div>
+
+      <!-- WHAT CLAUDE CODE BUILT -->
+      <div class="rv">
+        <h2>What Claude Code built</h2>
+        <p>The site launched on March 16 with no backend. No live data. No dynamic content. Just static pages that were already written.</p>
+        <p>On April 3, the version history started showing something new:</p>
+      </div>
+
+      <div class="code-block rv">
+        <pre><span class="cmt">// version history, April 3 onward</span>
+<span class="kw">Co-Authored-By:</span> <span class="str">Claude Opus 4.6</span></pre>
+      </div>
+
+      <div class="rv">
+        <p>That's when Claude Code started doing real work on the site.</p>
+        <p>The first co-authored version was the content parser. Basically, the site needed a way to take raw article text from Airtable and turn it into something that looked readable on the page. Before that, dynamic articles were just rendering like a wall of text.</p>
+        <p>One session changed that.</p>
+        <p>Section headers, numbered steps, dividers, prompt blocks, and callouts all started getting their own visual treatment.</p>
+      </div>
+
+      <!-- CONTENT SYSTEM IMAGE -->
+      <figure class="art-figure rv">
+        <img class="fig-img"
+             src="/images/builds/lilyp-ai/content-system-flow.png"
+             alt="A diagram showing how content flows through the site: Airtable as the source, through a content parser, into article templates, and out to the Library page."
+             loading="lazy">
+        <figcaption>The piece that made the site feel less like a page and more like a system.</figcaption>
+      </figure>
+
+      <div class="rv">
+        <p>A few days later, Claude changed 1,772 lines in one session.</p>
+        <p>That session added stats bars, pull quote callouts, and multiple content templates that behaved differently depending on the article type. It also created backup files and a revert guide, because by that point a bad change would be hard to undo manually.</p>
+        <p>The backup files are relevant because, obviously, they caused a problem.</p>
+      </div>
+
+      <!-- WHAT BROKE -->
+      <div class="rv">
+        <h2>What broke</h2>
+        <p>One of the backup files lived in the folder where Netlify looks for backend functions.</p>
+        <p>Netlify is the platform hosting the site. It saw that backup file and tried to deploy it like it was a real function.</p>
+        <p>The site broke on the next publish.</p>
+        <p>The fix was one line. Finding the issue wasn't one line.</p>
+        <p>There was also a field called <span class="ic">Draft_Content</span> that the parser expected to read from Airtable. The live Airtable base didn't have that field. So every dynamic article was returning a 404.</p>
+        <p>Another one-line fix. Another publish.</p>
+        <p>Then there was the git lock problem.</p>
+        <p>I was using a Linux environment, which is basically a separate operating system developers often use for coding. In my case, it was running inside my Windows computer, so the site files were being handled across two worlds at once: Linux for coding, Windows for file access and credentials.</p>
+        <p>That setup is useful, but it also meant temporary lock files started causing issues because of how Windows handles file access. A workaround attempt removed almost every file in the site's version history.</p>
+        <p>Recovery meant writing the last stable version reference directly into a config file:</p>
+      </div>
+
+      <div class="code-block rv">
+        <pre><span class="kw">echo</span> <span class="str">"30de9ae3a73efa19e8b76f89b5511f832a2a1bbd"</span> &gt; .git/refs/heads/main</pre>
+      </div>
+
+      <div class="rv">
+        <p>Every update also had to be published from Windows Terminal, not Linux, because Linux couldn't reach my Windows login credentials.</p>
+        <p>I didn't expect to learn that sentence this year.</p>
+      </div>
+
+      <!-- WHAT BUILDING WITHOUT KNOWING HOW FEELS LIKE -->
+      <div class="rv">
+        <h2>What building without knowing how actually feels like</h2>
+        <p>The process was not:</p>
+        <p><em>Know what to build, build it.</em></p>
+        <p>It was:</p>
+      </div>
+
+      <div class="callout rv">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.35"/></svg>
+        <p>Know what you want, describe it, watch something get built, break it, figure out why, fix it, save a new version.</p>
+      </div>
+
+      <!-- LOOP DIAGRAM -->
+      <figure class="art-figure inset rv">
+        <img class="fig-img"
+             src="/images/builds/lilyp-ai/non-developer-build-loop.png"
+             alt="A circular diagram illustrating the non-developer's loop: Know what you want, Describe it, Watch it get built, Break it, Figure out why, Fix it, Save a new version, then repeat."
+             loading="lazy">
+        <figcaption>The actual loop, at least for me.</figcaption>
+      </figure>
+
+      <div class="rv">
+        <p>At this point, my development process was basically: ask Claude, trust Claude, regret trusting Claude a little too quickly, then ask Claude why the site had suddenly gone sideways.</p>
+        <p>That sounds chaotic, and it was.</p>
+        <p>But it also worked, because every mistake forced me to understand one more piece of the system.</p>
+        <p>I learned what a redirect file does because URLs kept sending visitors to the wrong pages.</p>
+        <p>I learned that backend functions can't have backup files sitting beside them because the hosting platform might try to run everything it finds.</p>
+        <p>I learned that Airtable field names matter exactly. Not approximately. Exactly.</p>
+        <p>I learned that "it's just one line" is both comforting and incredibly annoying, because the hard part is usually figuring out which line.</p>
+        <p>You don't learn the whole system evenly.</p>
+        <p>You learn the parts that break.</p>
+      </div>
+
+      <!-- THE PART I DIDN'T EXPECT -->
+      <div class="rv">
+        <h2>The part I didn't expect</h2>
+        <p>The most useful thing I brought to the build wasn't technical knowledge.</p>
+        <p>It was knowing what I wanted the thing to feel like.</p>
+        <p>Claude could write the code. Claude could explain errors. Claude could suggest file structures, fix bugs, and turn rough ideas into working pages.</p>
+        <p>But I still had to decide when something felt too generic, too stiff, too founder-y, too much like a product page, or too far away from what I was actually trying to build.</p>
+        <p>That was the part I didn't fully understand at first.</p>
+        <p>Working with AI didn't remove judgment from the process. It made judgment more important.</p>
+        <p>Because suddenly, a lot more was possible. Which meant I had to get much clearer about what was actually worth building.</p>
+      </div>
+
+      <!-- WHERE IT IS NOW -->
+      <div class="rv">
+        <h2>Where it is now</h2>
+        <p>By April 22, lilyp.ai had 15 pages, 4 backend functions, and a live Airtable connection where publishing a new article could happen through a checkbox.</p>
+        <p>There were 30 saved versions across 37 days of active development.</p>
+        <p>From April 3 onward, Claude is in the version history.</p>
+        <p>Not as the sole author. Co-authored.</p>
+        <p>That distinction matters to me.</p>
+        <p>I didn't build lilyp.ai by becoming a developer overnight. I built it by getting better at directing the work, catching what felt wrong, asking better questions, and staying with the parts that broke long enough to understand them.</p>
+        <p>The site still isn't finished.</p>
+        <p>That's kind of the point.</p>
+        <p>It's a living home base for the things I'm building, learning, testing, and trying to make easier.</p>
+        <p>And honestly, that feels much more interesting than a finished portfolio ever would.</p>
+      </div>
+
+    </div><!-- /.entry-body -->
+
+    <!-- RELATED -->
+    <div class="related-section rv">
+      <p class="related-label">What to read next</p>
+      <div class="related-grid">
+        <a href="/builds/relationship-tracker" class="rel-card">
+          <p class="rel-role">Build</p>
+          <p class="rel-title">The Relationship Tracker</p>
+        </a>
+        <a href="/library" class="rel-card">
+          <p class="rel-role">Explore</p>
+          <p class="rel-title">Browse the full library</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- SOFT CTA -->
+    <div class="soft-cta rv">
+      <p class="cta-eyebrow">Stay in the loop</p>
+      <h3>Tell me what's slowing you down.</h3>
+      <p class="cta-sub">I write about practical AI, real workflows, and things I'm figuring out in public. No generic advice.</p>
+      <a href="/#connect" class="cta-btn">
+        Say hi
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div><!-- /.page -->
+
+  <script>
+    const rv = document.querySelectorAll('.rv');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.07 });
+    rv.forEach(el => io.observe(el));
+  </script>
+
+</body>
+</html>
