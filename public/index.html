@@ -748,8 +748,14 @@
         <!-- Right: status items -->
         <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-          <div class="reveal reveal-delay-1 bg-white rounded-2xl border border-sand/80 p-6">
-            <div class="flex items-center gap-2 mb-4">
+          <div class="reveal reveal-delay-1 bg-white rounded-2xl border border-sand/80 p-6 flex flex-col">
+            <!-- Icon -->
+            <div class="w-10 h-10 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center mb-5 flex-shrink-0">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+            </div>
+            <div class="flex items-center gap-2 mb-3">
               <span class="relative flex h-2 w-2">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
@@ -757,29 +763,23 @@
               <span class="font-mono text-[10px] uppercase tracking-widest text-green-600">Live</span>
             </div>
             <div class="font-serif text-lg mb-2">Building lilyp.ai</div>
-            <p class="font-sans text-sm text-inklight leading-relaxed mb-4">Designing and building this site in public using Claude Code. The whole thing is an experiment in itself.</p>
-            <a href="/library/building-lilyp-ai-with-claude-code" class="font-mono text-[11px] text-inklight/50 hover:text-inklight transition-colors" style="text-decoration:none">Read the article →</a>
+            <p class="font-sans text-sm text-inklight leading-relaxed mb-5 flex-1">Designing and building this site in public using Claude Code. The whole thing is an experiment in itself.</p>
+            <a href="/library/building-lilyp-ai-with-claude-code" class="font-mono text-[11px] text-inklight/50 hover:text-inklight transition-colors mt-auto" style="text-decoration:none">Read the article →</a>
           </div>
 
-          <div class="reveal reveal-delay-2 bg-white rounded-2xl border border-sand/80 p-6">
-            <div class="flex items-center gap-2 mb-4">
-              <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-honey opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-honey"></span>
-              </span>
-              <span class="font-mono text-[10px] uppercase tracking-widest text-honey">In Progress</span>
+          <div class="reveal reveal-delay-2 bg-white rounded-2xl border border-sand/80 p-6 flex flex-col">
+            <!-- Icon -->
+            <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center mb-5 flex-shrink-0">
+              <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
             </div>
-            <div class="font-serif text-lg mb-2">Meeting Notes Pipeline Demo</div>
-            <p class="font-sans text-sm text-inklight leading-relaxed">Recording a full walkthrough: meeting transcript → Claude → structured action items → Airtable, live.</p>
-          </div>
-
-          <div class="reveal reveal-delay-3 bg-white rounded-2xl border border-sand/80 p-6">
-            <div class="flex items-center gap-2 mb-4">
+            <div class="flex items-center gap-2 mb-3">
               <span class="w-2 h-2 rounded-full bg-sand flex-shrink-0"></span>
               <span class="font-mono text-[10px] uppercase tracking-widest text-inklight/50">Coming Soon</span>
             </div>
             <div class="font-serif text-lg mb-2">Semester Structuring Tool</div>
-            <p class="font-sans text-sm text-inklight leading-relaxed">Upload your course syllabi. Get back a full semester map: heavy weeks flagged, assignment clusters identified, reading schedule built, exam windows blocked. For anyone who's hit week 10 and realised week 12 is going to be a problem.</p>
+            <p class="font-sans text-sm text-inklight leading-relaxed flex-1">Upload your course syllabi. Get back a full semester map: heavy weeks flagged, assignment clusters identified, reading schedule built, exam windows blocked. For anyone who's hit week 10 and realised week 12 is going to be a problem.</p>
           </div>
 
 

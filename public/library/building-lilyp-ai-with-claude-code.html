@@ -156,6 +156,20 @@
     .cta-btn:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
     .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
+    /* ANNOTATED SCREENSHOT */
+    .annot-wrap{margin:2.5rem 0 3rem;position:relative}
+    .annot-wrap .fig-img{display:block;width:100%;height:auto;border-radius:16px;border:1px solid var(--border);box-shadow:0 6px 36px -10px rgba(18,18,17,.14)}
+    .annot-body{display:flex;align-items:flex-start;gap:0;margin-top:0;padding-left:2rem;padding-top:0.5rem}
+    .annot-arrow-wrap{flex-shrink:0;width:64px;margin-top:-4px}
+    .annot-arrow-wrap svg{overflow:visible}
+    .annot-arrow-path{fill:none;stroke:var(--honey);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+      stroke-dasharray:120;stroke-dashoffset:120;
+      animation:draw-arrow 0.9s 0.4s var(--out) forwards}
+    .annot-arrowhead{fill:var(--honey);opacity:0;animation:fade-head 0.15s 1.2s ease forwards}
+    @keyframes draw-arrow{to{stroke-dashoffset:0}}
+    @keyframes fade-head{to{opacity:1}}
+    .annot-text{font-family:var(--sans);font-size:.93rem;line-height:1.72;color:var(--inklight);padding-top:8px;max-width:540px}
+
     /* REVEAL */
     .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
     .rv.vis{opacity:1;transform:translateY(0)}
@@ -274,6 +288,24 @@
       <!-- COPY SHIFT -->
       <div class="rv">
         <h2>The copy shift that made the site feel more like mine</h2>
+
+        <!-- ANNOTATED OLD SITE SCREENSHOT -->
+        <div class="annot-wrap">
+          <img class="fig-img"
+               src="/images/builds/lilyp-ai/site-v2-old.png"
+               alt="V2 of lilyp.ai: cream background, terracotta italic type, hero reads I find broken systems. I build things to fix them. I document what I learn."
+               loading="lazy">
+          <div class="annot-body">
+            <div class="annot-arrow-wrap">
+              <svg width="64" height="56" viewBox="0 0 64 56">
+                <path class="annot-arrow-path" d="M 52 52 C 44 40, 28 20, 14 6"/>
+                <polygon class="annot-arrowhead" points="14,6 10,16 20,12"/>
+              </svg>
+            </div>
+            <p class="annot-text">This is what the site looked like through V1 to V4. I'll be honest: it was ugly. The cream and terracotta thing wasn't doing it. It was rigid and bland, and the hero copy wasn't great either. It sounded like someone who wanted to seem harder than they were. Not like someone actually trying to build something that felt like theirs. I wanted a home base that felt like mine, and that wasn't it.</p>
+          </div>
+        </div>
+
         <p>Through V1 to V4, the hero was:</p>
         <p class="pull">"I find broken systems. I build things to fix them."</p>
         <p>In March, I changed it to:</p>
