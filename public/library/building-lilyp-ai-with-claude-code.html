@@ -158,17 +158,7 @@
     .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
     /* ANNOTATED FIGURE */
-    .annot-outer{position:relative;overflow:visible;margin:1.75rem 0 2.5rem}
-    .annot-left-bleed{position:absolute;left:-170px;top:-2px;width:158px;pointer-events:none;display:flex;flex-direction:column;align-items:flex-end}
-    .annot-label-bleed{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.13em;color:var(--honey);line-height:1.6;text-align:right;margin-bottom:6px}
-    .annot-label-bleed::after{content:'';display:block;width:48px;height:1.5px;background:var(--honey);border-radius:1px;margin-top:6px;margin-left:auto;opacity:.5}
-    .big-arrow-svg{display:block;width:148px;height:298px;overflow:visible}
-    .big-arrow-path{stroke:#ECA824;stroke-width:8.5;stroke-linecap:round;stroke-linejoin:round;fill:none;stroke-dasharray:460;stroke-dashoffset:460}
-    .big-arrow-head{stroke:#ECA824;stroke-width:7;stroke-linecap:round;fill:none;opacity:0}
-    .rv.vis .big-arrow-path{animation:draw-big 1.25s .2s ease-out forwards}
-    .rv.vis .big-arrow-head{animation:fade-in-el .2s 1.4s ease forwards}
-    @keyframes draw-big{to{stroke-dashoffset:0}}
-    @keyframes fade-in-el{to{opacity:1}}
+    .annot-outer{margin:1.75rem 0 2.5rem}
     .annot-figure-img{display:block;width:100%;height:auto;border-radius:16px;border:1px solid var(--border);box-shadow:0 6px 36px -10px rgba(18,18,17,.14)}
     .annot-caption-card{background:var(--blush);border-radius:14px;padding:1.4rem 1.6rem;margin-top:.85rem;font-size:.92rem;line-height:1.78;color:var(--inklight);position:relative}
     .annot-caption-dot{position:absolute;top:-7px;left:1.4rem;width:13px;height:13px;background:var(--honey);border-radius:50%;border:2.5px solid var(--paper)}
@@ -180,17 +170,8 @@
     /* GRADIENT SECTION DIVIDER */
     .grad-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(18,18,17,.08),transparent);margin:2.75rem 0}
 
-    /* BRIDGE TEXT (mobile fallback) */
-    .bridge-line{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.13em;color:var(--honey);margin:1.25rem 0 1rem;display:none}
-
-    @media(prefers-reduced-motion:reduce){
-      .big-arrow-path{stroke-dashoffset:0!important;animation:none!important}
-      .big-arrow-head{opacity:1!important;animation:none!important}
-    }
-    @media(max-width:980px){
-      .annot-left-bleed{display:none}
-      .bridge-line{display:block}
-    }
+    /* BRIDGE TEXT */
+    .bridge-line{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.13em;color:var(--honey);margin:1.25rem 0 1rem}
 
     /* REVEAL */
     .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
@@ -299,37 +280,15 @@
 
         <!-- ANNOTATED OLD SITE SCREENSHOT -->
         <div class="annot-outer rv">
-
-          <!-- Left-bleed: label + big brushstroke arrow (desktop only) -->
-          <div class="annot-left-bleed" aria-hidden="true">
-            <span class="annot-label-bleed">In other words,<br>not like this.</span>
-            <svg class="big-arrow-svg" viewBox="0 0 148 298" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- sweeping arc: starts top-right, curves out left, swings back to bottom-right -->
-              <path class="big-arrow-path"
-                    d="M 132 14 C 90 55, 8 95, 6 168 C 4 235, 78 262, 118 284"/>
-              <!-- slim custom arrowhead at endpoint -->
-              <g class="big-arrow-head">
-                <line x1="104" y1="275" x2="118" y2="284" stroke="#ECA824" stroke-width="7" stroke-linecap="round"/>
-                <line x1="118" y1="284" x2="124" y2="269" stroke="#ECA824" stroke-width="7" stroke-linecap="round"/>
-              </g>
-            </svg>
-          </div>
-
-          <!-- Mobile fallback label -->
           <p class="bridge-line">In other words, not like this.</p>
-
-          <!-- Screenshot -->
           <img class="annot-figure-img"
                src="/images/builds/lilyp-ai/site-v2-old.png"
                alt="V2 through V4 of lilyp.ai: cream background with large terracotta italic type reading I find broken systems, I build things to fix them, I document what I learn. A placeholder photo sits to the right."
                loading="lazy">
-
-          <!-- Blush caption card -->
           <div class="annot-caption-card">
             <div class="annot-caption-dot" aria-hidden="true"></div>
             This is what the site looked like through V1 to V4. I'll be honest: it was ugly. The cream and terracotta thing wasn't doing it. It was rigid and bland, and the hero copy wasn't great either. It sounded like someone who wanted to seem harder than they were. Not like someone actually trying to build something that felt like theirs. I wanted a home base that felt like mine, and that wasn't it.
           </div>
-
         </div>
 
         <div class="grad-divider"></div>
