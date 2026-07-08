@@ -158,38 +158,38 @@
     .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
     /* ANNOTATED FIGURE */
-    .annotated-figure{margin:2rem 0 2.5rem;position:relative}
-    .figure-media{position:relative;line-height:0;overflow:visible}
-    .figure-media img{display:block;width:100%;height:auto;border-radius:16px;border:1px solid var(--border);box-shadow:0 6px 36px -10px rgba(18,18,17,.14)}
-    .annot-svg-wrap{position:absolute;bottom:-6px;left:44px;width:72px;height:96px;overflow:visible;pointer-events:none}
-    .annot-dot{opacity:0}
-    .draw-path{stroke-dasharray:130;stroke-dashoffset:130}
-    .annot-head{opacity:0}
-    .rv.vis .annot-dot{animation:fade-in-el 0.2s 0.12s ease forwards}
-    .rv.vis .draw-path{animation:draw-line 0.85s 0.2s var(--out) forwards}
-    .rv.vis .annot-head{animation:fade-in-el 0.2s 1s ease forwards}
-    @keyframes draw-line{to{stroke-dashoffset:0}}
+    .annot-outer{position:relative;overflow:visible;margin:1.75rem 0 2.5rem}
+    .annot-left-bleed{position:absolute;left:-170px;top:-2px;width:158px;pointer-events:none;display:flex;flex-direction:column;align-items:flex-end}
+    .annot-label-bleed{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.13em;color:var(--honey);line-height:1.6;text-align:right;margin-bottom:6px}
+    .annot-label-bleed::after{content:'';display:block;width:48px;height:1.5px;background:var(--honey);border-radius:1px;margin-top:6px;margin-left:auto;opacity:.5}
+    .big-arrow-svg{display:block;width:148px;height:298px;overflow:visible}
+    .big-arrow-path{stroke:#ECA824;stroke-width:8.5;stroke-linecap:round;stroke-linejoin:round;fill:none;stroke-dasharray:460;stroke-dashoffset:460}
+    .big-arrow-head{stroke:#ECA824;stroke-width:7;stroke-linecap:round;fill:none;opacity:0}
+    .rv.vis .big-arrow-path{animation:draw-big 1.25s .2s ease-out forwards}
+    .rv.vis .big-arrow-head{animation:fade-in-el .2s 1.4s ease forwards}
+    @keyframes draw-big{to{stroke-dashoffset:0}}
     @keyframes fade-in-el{to{opacity:1}}
-    @media(prefers-reduced-motion:reduce){
-      .draw-path{stroke-dashoffset:0!important;animation:none!important}
-      .annot-dot,.annot-head{opacity:1!important;animation:none!important}
-    }
-    figcaption.figure-caption{margin-top:1.4rem;padding-left:2.2rem;font-family:var(--sans);font-size:.92rem;line-height:1.78;color:var(--inklight);position:relative}
-    figcaption.figure-caption::before{content:'';position:absolute;left:0;top:5px;bottom:5px;width:2px;background:linear-gradient(to bottom,var(--honey),transparent);border-radius:2px}
+    .annot-figure-img{display:block;width:100%;height:auto;border-radius:16px;border:1px solid var(--border);box-shadow:0 6px 36px -10px rgba(18,18,17,.14)}
+    .annot-caption-card{background:var(--blush);border-radius:14px;padding:1.4rem 1.6rem;margin-top:.85rem;font-size:.92rem;line-height:1.78;color:var(--inklight);position:relative}
+    .annot-caption-dot{position:absolute;top:-7px;left:1.4rem;width:13px;height:13px;background:var(--honey);border-radius:50%;border:2.5px solid var(--paper)}
 
     /* HONEY UNDERLINE (carried from homepage hero) */
     .honey-u{position:relative;display:inline}
     .honey-u::after{content:'';position:absolute;left:0;bottom:-3px;width:100%;height:2px;background:linear-gradient(90deg,var(--apricot),var(--honey));border-radius:2px}
 
-    /* GRADIENT SECTION DIVIDER (from homepage) */
+    /* GRADIENT SECTION DIVIDER */
     .grad-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(18,18,17,.08),transparent);margin:2.75rem 0}
 
-    /* BRIDGE TEXT */
-    .bridge-line{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:1.5rem 0 1rem}
+    /* BRIDGE TEXT (mobile fallback) */
+    .bridge-line{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.13em;color:var(--honey);margin:1.25rem 0 1rem;display:none}
 
-    @media(max-width:600px){
-      .annot-svg-wrap{display:none}
-      figcaption.figure-caption{padding-left:1rem}
+    @media(prefers-reduced-motion:reduce){
+      .big-arrow-path{stroke-dashoffset:0!important;animation:none!important}
+      .big-arrow-head{opacity:1!important;animation:none!important}
+    }
+    @media(max-width:980px){
+      .annot-left-bleed{display:none}
+      .bridge-line{display:block}
     }
 
     /* REVEAL */
@@ -297,35 +297,40 @@
         <p>Not cold. Not SaaS-y. Not like an AI tool page with a glowing robot in the corner. Not like I was pretending to be a startup.</p>
         <p>I wanted it to feel warm, clean, useful, and a little more human than most AI things online.</p>
 
-        <p class="bridge-line">In other words, not like this.</p>
-
         <!-- ANNOTATED OLD SITE SCREENSHOT -->
-        <figure class="annotated-figure rv">
-          <div class="figure-media">
-            <img src="/images/builds/lilyp-ai/site-v2-old.png"
-                 alt="V2 through V4 of lilyp.ai: cream background, large terracotta italic type reading I find broken systems, I build things to fix them, I document what I learn. Placeholder photo on the right."
-                 loading="lazy">
-            <div class="annot-svg-wrap" aria-hidden="true">
-              <svg width="72" height="96" viewBox="0 0 72 96" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-                <!-- anchor dot on image surface -->
-                <circle class="annot-dot" cx="10" cy="6" r="3.5" fill="#ECA824"/>
-                <!-- curved line flowing down toward caption -->
-                <path class="draw-path"
-                      d="M 10 10 C 10 42, 38 64, 52 88"
-                      stroke="#ECA824" stroke-width="1.6"
-                      stroke-linecap="round" fill="none"/>
-                <!-- custom slim arrowhead: two angled strokes, not a filled triangle -->
-                <g class="annot-head" stroke="#ECA824" stroke-width="1.6" stroke-linecap="round">
-                  <line x1="43" y1="83" x2="52" y2="88"/>
-                  <line x1="52" y1="88" x2="56" y2="78"/>
-                </g>
-              </svg>
-            </div>
+        <div class="annot-outer rv">
+
+          <!-- Left-bleed: label + big brushstroke arrow (desktop only) -->
+          <div class="annot-left-bleed" aria-hidden="true">
+            <span class="annot-label-bleed">In other words,<br>not like this.</span>
+            <svg class="big-arrow-svg" viewBox="0 0 148 298" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- sweeping arc: starts top-right, curves out left, swings back to bottom-right -->
+              <path class="big-arrow-path"
+                    d="M 132 14 C 90 55, 8 95, 6 168 C 4 235, 78 262, 118 284"/>
+              <!-- slim custom arrowhead at endpoint -->
+              <g class="big-arrow-head">
+                <line x1="104" y1="275" x2="118" y2="284" stroke="#ECA824" stroke-width="7" stroke-linecap="round"/>
+                <line x1="118" y1="284" x2="124" y2="269" stroke="#ECA824" stroke-width="7" stroke-linecap="round"/>
+              </g>
+            </svg>
           </div>
-          <figcaption class="figure-caption">
+
+          <!-- Mobile fallback label -->
+          <p class="bridge-line">In other words, not like this.</p>
+
+          <!-- Screenshot -->
+          <img class="annot-figure-img"
+               src="/images/builds/lilyp-ai/site-v2-old.png"
+               alt="V2 through V4 of lilyp.ai: cream background with large terracotta italic type reading I find broken systems, I build things to fix them, I document what I learn. A placeholder photo sits to the right."
+               loading="lazy">
+
+          <!-- Blush caption card -->
+          <div class="annot-caption-card">
+            <div class="annot-caption-dot" aria-hidden="true"></div>
             This is what the site looked like through V1 to V4. I'll be honest: it was ugly. The cream and terracotta thing wasn't doing it. It was rigid and bland, and the hero copy wasn't great either. It sounded like someone who wanted to seem harder than they were. Not like someone actually trying to build something that felt like theirs. I wanted a home base that felt like mine, and that wasn't it.
-          </figcaption>
-        </figure>
+          </div>
+
+        </div>
 
         <div class="grad-divider"></div>
 
