@@ -72,6 +72,11 @@
   to     = "/library/meeting-notes-to-airtable.html"
   status = 200
 
+[[redirects]]
+  from   = "/library/project-handoff-audit-prompt"
+  to     = "/library/project-handoff-audit-prompt.html"
+  status = 200
+
 # ── Dynamic library item pages (catch-all fallback) ──
 # Any slug not matched above falls through to item.html for Airtable-backed pages.
 [[redirects]]

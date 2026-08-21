@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handoff Audit — lilyp.ai Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#FDFCF9;--ink:#121211;--inklight:#4A4A46;--muted:rgba(18,18,17,0.42);
+      --honey:#ECA824;--apricot:#F4AA96;--blush:#FCE8E3;--stone:#F0EFEA;--sand:#E5E3DC;--border:rgba(18,18,17,0.09);
+      --serif:'Fraunces',Georgia,serif;--sans:'Manrope',sans-serif;--mono:'Space Mono',monospace;
+      --out:cubic-bezier(0.25,0.46,0.45,0.94);--snappy:cubic-bezier(0.21,0.83,0.26,1);--spring:cubic-bezier(0.34,1.56,0.64,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+    body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(var(--ink) 1px,transparent 1px);background-size:28px 28px;opacity:.026;pointer-events:none;z-index:0}
+    @media(max-width:768px){body::before{display:none}}
+    .amb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+    .amb1{width:500px;height:400px;top:-80px;right:-80px;background:var(--blush);opacity:.45}
+    .amb2{width:350px;height:280px;bottom:10%;left:-60px;background:rgba(236,168,36,.12);opacity:1}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(253,252,249,.9);padding:1.1rem 0}
+    .nav-inner{max-width:780px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-family:var(--serif);font-size:1.25rem;font-weight:500;text-decoration:none;color:var(--ink)}
+    .nav-brand em{font-style:italic;color:var(--honey)}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .2s}
+    .nav-back:hover{color:var(--ink)}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* PAGE */
+    .page{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:4rem 2rem 8rem}
+
+    /* HEADER */
+    .entry-header{margin-bottom:3rem}
+    .meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+    .tag{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.22rem .6rem;border-radius:5px;border:1px solid var(--border);color:var(--inklight)}
+    .tag-cat{background:var(--stone);border-color:transparent}
+    .tag-prompt{border-color:rgba(244,170,150,.4);color:#a85040;background:rgba(244,170,150,.1)}
+    .tag-new{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--apricot);background:rgba(244,170,150,.14);border:1px solid rgba(244,170,150,.3);border-radius:999px;padding:.22rem .6rem}
+    .pdot{width:5px;height:5px;background:var(--apricot);border-radius:50%;animation:pr 2s ease-in-out infinite}
+    @keyframes pr{0%{box-shadow:0 0 0 0 rgba(244,170,150,.7)}60%{box-shadow:0 0 0 5px rgba(244,170,150,0)}100%{box-shadow:0 0 0 0 rgba(244,170,150,0)}}
+
+    .date-txt{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+
+    h1.entry-title{font-family:var(--serif);font-size:clamp(2.2rem,4vw,3.2rem);font-weight:400;line-height:1.1;letter-spacing:-.025em;margin-bottom:1.2rem}
+
+    .hook-line{font-family:var(--serif);font-style:italic;font-size:1.25rem;font-weight:300;color:var(--inklight);line-height:1.5;border-left:3px solid var(--apricot);padding-left:1.2rem;margin-bottom:2rem}
+
+    /* JUMP TO PROMPT — small, secondary, understated */
+    .jump-link{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--inklight);text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:.5rem 1.1rem;margin-bottom:.5rem;transition:border-color .2s,color .2s}
+    .jump-link:hover,.jump-link:focus-visible{border-color:var(--ink);color:var(--ink)}
+    .jump-link:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+    .jump-link svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* DIVIDER */
+    .entry-divider{height:1px;background:var(--border);margin:2.5rem 0}
+
+    /* BODY CONTENT */
+    .entry-body{font-size:1.05rem;line-height:1.75;color:var(--inklight)}
+    .entry-body h2{font-family:var(--serif);font-size:1.6rem;font-weight:400;color:var(--ink);margin:2.5rem 0 1rem;letter-spacing:-.015em}
+    .entry-body h3{font-family:var(--sans);font-weight:700;color:var(--ink);margin:2rem 0 .7rem;text-transform:uppercase;letter-spacing:.06em;font-size:.85rem}
+    .entry-body p{margin-bottom:1.25rem}
+    .entry-body p:last-child{margin-bottom:0}
+    .entry-body ul{margin:0 0 1.25rem 0;padding-left:0;list-style:none}
+    .entry-body ul li{position:relative;padding-left:1.4rem;margin-bottom:.5rem;font-size:1rem}
+    .entry-body ul li::before{content:'→';position:absolute;left:0;color:var(--apricot);font-family:var(--sans)}
+    .entry-body ol{margin:0 0 1.25rem 1.3rem;padding-left:0}
+    .entry-body ol li{margin-bottom:.5rem;font-size:1rem;padding-left:.3rem}
+    .entry-body strong{color:var(--ink);font-weight:600}
+    .entry-body a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--apricot);text-underline-offset:3px;transition:text-decoration-color .2s}
+    .entry-body a:hover,.entry-body a:focus-visible{text-decoration-color:var(--honey)}
+
+    /* Outer container — mimics Claude's code block */
+    .prompt-block{
+      position:relative;
+      background:#1e1e1e;
+      border-radius:12px;
+      overflow:hidden;
+      margin:2rem 0;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    /* Top bar — dark pill row like Claude */
+    .prompt-bar{
+      display:flex;align-items:center;justify-content:space-between;
+      background:#2a2a2a;
+      padding:.6rem 1rem;
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
+    .prompt-label{
+      font-family:var(--mono);font-size:.68rem;
+      text-transform:uppercase;letter-spacing:.1em;
+      color:rgba(255,255,255,.4);
+    }
+
+    /* Copy button */
+    .copy-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:6px;
+      padding:.3rem .7rem;
+      font-family:var(--mono);font-size:.65rem;
+      text-transform:uppercase;letter-spacing:.06em;
+      color:rgba(255,255,255,.55);
+      cursor:pointer;
+      transition:background .18s,color .18s,border-color .18s;
+      user-select:none;
+    }
+    .copy-btn:hover{background:rgba(255,255,255,.13);color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.2)}
+    .copy-btn:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+    .copy-btn.copied{background:rgba(39,201,63,.12);border-color:rgba(39,201,63,.3);color:#27c93f}
+    .copy-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+    /* Prompt text area */
+    .prompt-text{
+      padding:1.5rem 1.4rem;
+      font-family:var(--mono);font-size:.82rem;
+      line-height:1.75;
+      color:rgba(255,255,255,.82);
+      white-space:pre-wrap;
+      word-break:break-word;
+      overflow-x:auto;
+    }
+    /* Syntax-style colour hints */
+    .pt-comment{color:rgba(255,255,255,.28)}
+    .pt-label{color:#F4AA96}
+    .pt-bracket{color:#ECA824}
+    .pt-value{color:rgba(255,255,255,.82)}
+
+    /* CALLOUT */
+    .callout{background:var(--stone);border-radius:12px;padding:1.25rem 1.4rem;margin:1.5rem 0;display:flex;gap:.9rem;align-items:flex-start}
+    .callout svg{width:16px;height:16px;flex-shrink:0;margin-top:3px}
+    .callout p{font-size:.9rem;color:var(--inklight);line-height:1.6;margin:0}
+    .callout strong{color:var(--ink)}
+
+    /* CLOSING NOTE */
+    .closing-note{margin-top:3rem;padding-top:2.5rem;border-top:1px solid var(--border)}
+    .closing-note .signoff{font-family:var(--serif);font-style:italic;color:var(--inklight);margin-top:1.5rem}
+
+    /* SOFT CTA */
+    .soft-cta{margin-top:3.5rem;background:var(--blush);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+    .soft-cta::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,var(--apricot) 0%,transparent 65%);opacity:.15;border-radius:50%;pointer-events:none}
+    .soft-cta p.cta-eyebrow{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.75rem}
+    .soft-cta h3{font-family:var(--serif);font-size:1.7rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+    .soft-cta p.cta-sub{font-size:.95rem;color:var(--inklight);max-width:400px;margin:0 auto 1.75rem;line-height:1.65}
+    .cta-btn{display:inline-flex;align-items:center;gap:.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:.9rem;font-weight:600;padding:.85rem 2rem;border-radius:999px;text-decoration:none;transition:background .2s,box-shadow .2s;border:none;cursor:pointer}
+    .cta-btn:hover{background:var(--inklight);box-shadow:0 8px 24px -8px rgba(18,18,17,.25)}
+    .cta-btn:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+    .cta-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    /* SITE FOOTER */
+    .site-footer{margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--border)}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .footer-brand{font-family:var(--serif);font-size:1.1rem;font-weight:500;text-decoration:none;color:var(--ink)}
+    .footer-brand em{font-style:italic;color:var(--honey)}
+    .footer-links{display:flex;align-items:center;gap:1.5rem;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .footer-links a{color:inherit;text-decoration:none;transition:color .2s}
+    .footer-links a:hover,.footer-links a:focus-visible{color:var(--ink)}
+
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(16px);transition:opacity .6s var(--out),transform .6s var(--out)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+    @media(max-width:600px){
+      .page{padding:3rem 1.25rem 6rem}
+      .prompt-text{padding:1.1rem 1rem;font-size:.78rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="amb amb1"></div>
+  <div class="amb amb2"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">lilyp.<em>ai</em></a>
+      <a href="/library" class="nav-back">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="entry-header rv">
+      <div class="meta-row">
+        <span class="tag tag-new"><span class="pdot"></span>New</span>
+        <span class="tag tag-cat">Prompts Worth Keeping</span>
+        <span class="tag tag-prompt">Prompt</span>
+        <span class="date-txt">Aug 2026</span>
+      </div>
+      <h1 class="entry-title">The Handoff Audit</h1>
+      <p class="hook-line">A prompt for anyone wrapping up a job, internship, or project and trying to make sure their work doesn't leave with them.</p>
+      <a href="#prompt" class="jump-link">
+        Jump to prompt
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      </a>
+    </header>
+
+    <div class="entry-divider"></div>
+
+    <!-- BODY -->
+    <div class="entry-body">
+
+      <div class="rv d1">
+        <p>I'm in the last week of my internship right now, and one of my biggest projects has basically become figuring out how to make myself unnecessary :)</p>
+        <p>I've spent months building workflows, project instructions, automations, little systems, and a whole bunch of context that makes complete sense to me because&nbsp;&hellip; well, I built it.</p>
+        <p>Which is exactly the problem.</p>
+        <p>When you've been inside something for months, it gets really hard to see what another person wouldn't know. The weird file name makes sense to you. The missing instruction feels obvious. You know which spreadsheet feeds what, what needs to happen before something else runs, and which tiny step you stopped thinking about sometime in week two.</p>
+        <p>So I built this prompt to help me find all of that before I leave.</p>
+        <p>You give it the actual project material you have, and it audits the work from the perspective of someone trying to pick it up cold. It looks for missing context, unclear instructions, undocumented dependencies, setup gaps, assumptions living in your head, and anything else likely to make Future Person go, &ldquo;okay&hellip; now what?&rdquo;</p>
+        <p>Then it gives you a prioritized list of what's actually worth fixing with the time you have left.</p>
+        <p>I'm using it for my own internship handoff right now, but I cleaned it up so anyone can steal it, change it, and make it work for whatever they're handing over.</p>
+        <p>It should work with Claude, ChatGPT, Gemini, or another capable AI tool.</p>
+      </div>
+
+      <div class="rv d2">
+        <h2>Before you run it</h2>
+        <p>Grab whatever you have. You absolutely don't need every item below. The prompt is designed to work with partial context and tell you what it still can't see.</p>
+
+        <h3>Attach or paste</h3>
+        <ol>
+          <li>The files that define the project. Working documents, spreadsheets, templates, decks, code, notes. If there are many, attach the ten that matter most rather than everything.</li>
+          <li>Any existing documentation. READMEs, process docs, onboarding notes, even half-finished ones. Especially half-finished ones.</li>
+          <li>Any saved instructions or setup. If you use an AI workspace with custom instructions, a project description, or a system prompt, paste that text in.</li>
+          <li>A rough list of where things live. Folder names, shared drives, tools, platforms. A plain list is fine.</li>
+        </ol>
+
+        <h3>Have ready, but don't paste yet</h3>
+        <ol start="5">
+          <li>Your access list. Every account, login, tool, subscription, and shared folder tied to this work. The prompt will ask. Do not paste passwords or API keys into any AI tool, ever. Names of systems only.</li>
+          <li>Your recurring obligations. Anything with a rhythm: a weekly report, a monthly check, a standing call, a renewal date.</li>
+        </ol>
+
+        <p>One thing to check first. Most AI tools cannot read your past conversations unless a setting is turned on. If yours can, turn it on before running this, because Step 2 depends on it and Step 2 is where most of the value is. If yours can't, the prompt has a fallback.</p>
+
+        <div class="callout">
+          <svg viewBox="0 0 24 24" style="stroke:var(--honey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <p><strong>A word on confidentiality.</strong> You are about to feed work material into an AI tool. Check your employer's policy first. Strip client names, personal data, and anything commercially sensitive if you're unsure. No credentials, no keys, no passwords, no exceptions.</p>
+        </div>
+      </div>
+
+      <div class="rv d2">
+        <h2 id="prompt">The prompt</h2>
+        <p>Copy this exactly. The sections in <strong>[FILL IN]</strong> are the only things you need to change per use case.</p>
+      </div>
+
+      <!-- ══ PROMPT BLOCK ══ -->
+      <div class="prompt-block rv d2">
+        <div class="prompt-bar">
+          <span class="prompt-label">Prompt · Copy and adapt</span>
+          <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">
+            <svg id="copy-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            <span id="copy-label">Copy</span>
+          </button>
+        </div>
+        <div class="prompt-text" id="prompt-content"><span class="pt-value">You are a world-class knowledge management specialist. You take working systems that live mostly in one person's head and turn them into something a new person can pick up and run without that person present.</span>
+
+<span class="pt-comment"># MY SITUATION</span>
+<span class="pt-value">I am leaving this project and someone else will inherit it. My goal is that they can run it without me there to explain things.
+
+- What this project is, in one line: <span class="pt-bracket">[FILL IN]</span>
+- How long I have been working on it: <span class="pt-bracket">[FILL IN]</span>
+- Roughly how much time I have left: <span class="pt-bracket">[FILL IN]</span>
+- Who inherits it: <span class="pt-bracket">[A REPLACEMENT / MY MANAGER / A TEAMMATE / NOBODY YET / UNKNOWN]</span>
+
+Assume the person inheriting this knows the industry and the organization, and knows nothing about how this project works internally. Write everything for that person.
+
+Important: my own conversation history with AI tools will not transfer to them. Neither will anything that only exists in my head. Only what is written down and stored somewhere shared will survive.</span>
+
+<span class="pt-comment"># HOW TO WORK</span>
+<span class="pt-value">Run this in seven steps. Do one step, stop, and wait for me to say "next" before continuing. Do not run ahead. I am doing this while doing several other things, so I need one decision at a time.
+
+Where you produce a document, give it to me as a complete, finished, copy-ready file. Do not give me an outline of a document and expect me to write it. If your tool can produce downloadable files, do that. Otherwise put it in a single clean block I can copy in one action.</span>
+
+<span class="pt-comment"># STEP 0: WHAT CAN YOU ACTUALLY SEE</span>
+<span class="pt-value">Before auditing anything, tell me plainly:
+
+- What material I have given you, and what you can read from it
+- Whether you are able to search my past conversations in this tool, and if not, say so directly rather than working around it
+- What you would need from me that you do not have
+
+Then wait. Do not begin the audit until I have responded, because everything downstream depends on you not silently guessing.</span>
+
+<span class="pt-comment"># STEP 1: INVENTORY</span>
+<span class="pt-value">List everything that currently exists for this project. For each item: what it is called, what it actually contains in one or two lines, and a verdict of CURRENT, OUTDATED, DUPLICATE, or UNCLEAR.
+
+Where two things overlap, say which one wins and why. Where you cannot tell what something is for, say so rather than guessing, and mark it UNCLEAR. A file nobody can identify is a file nobody will use.
+
+End this step with one plain answer: could someone run this project today using only what is here? What is the single biggest hole?</span>
+
+<span class="pt-comment"># STEP 2: THE GAP HUNT</span>
+<span class="pt-value">This is the most important step.
+
+If you can search my past conversations, do it now. You are looking for work that never made it into a permanent file: finished documents that only exist inside a chat, decisions we made and never wrote down, standards or conventions we settled on informally, useful prompts I built and reused, and anything referenced repeatedly across conversations but never saved anywhere.
+
+If you cannot search my conversations, tell me that clearly, then ask me a focused set of questions designed to surface the same material. Ask about decisions I made that a new person would not understand, workarounds I invented, things that broke once and now get avoided without anyone writing down why, and anything I do out of habit that is not written anywhere.
+
+For every gap you find: name the document that should exist, say where the content came from, and then draft that document in full. Do not just tell me a gap exists. Close it.</span>
+
+<span class="pt-comment"># STEP 3: DEPENDENCIES, ACCESS, AND OBLIGATIONS</span>
+<span class="pt-value">This is where handoffs actually fail, so be thorough and be specific.
+
+Ask me about, and then document:
+
+- Access. Every account, tool, subscription, shared folder, or system this project touches. Which ones are tied to my personal login. Which ones nobody else currently has. Which ones cost money and renew automatically.
+- People. Anyone outside my immediate team who is part of how this works: an external contact, a vendor, someone in another department who does one specific thing. For each, what they do and what happens if nobody contacts them.
+- Rhythms. Anything that recurs. Weekly, monthly, quarterly, seasonal. Anything with a deadline or renewal date in the next six months.
+- Fragility. What breaks silently rather than loudly. What depends on a file being in an exact location, a naming convention being followed, or a step being done in a particular order.
+- Things that only work because of me. Be direct with me here. What currently functions only because I know to check it, know to fix it, or know it is wrong.
+
+Produce this as a single reference document. Never include actual passwords, keys, or credentials in it. Record only what exists and who needs to arrange access.</span>
+
+<span class="pt-comment"># STEP 4: THE CUT LIST</span>
+<span class="pt-value">Tell me exactly what to delete or archive. Be ruthless.
+
+Anything superseded, duplicated, or abandoned goes. For each one: name it, say why it is dead, and name the thing that replaces it. If nothing replaces it, say that too.
+
+Be specific about the difference between delete and archive. Delete anything that would actively mislead someone. Archive anything that is finished but might be referenced later. A tidy set of files nobody trusts is worse than a smaller set that is definitely correct.</span>
+
+<span class="pt-comment"># STEP 5: THE SETUP INSTRUCTIONS</span>
+<span class="pt-value">Write the standing instructions the next person needs in order to work on this well from their first attempt.
+
+Depending on my setup, this becomes the custom instructions in an AI workspace, a README, or a plain reference document. Ask me which, then write for that format.
+
+It should cover: what this project is for, what standards apply, what to always do, what to never do, and what good output looks like here. Write it so that a stranger's first attempt produces something usable rather than something that has to be redone.</span>
+
+<span class="pt-comment"># STEP 6: THE START HERE DOCUMENT</span>
+<span class="pt-value">Write the single document the next person opens first. Sections:
+
+- What this project is and why it exists
+- What is in here, and what each thing is for
+- The very first thing to do when you pick this up
+- If AI tools are part of this workflow: exactly what to open and the literal opening message to paste, written out in full and ready to copy. Not a description of what to say. The actual words.
+- The three things most likely to go wrong, and how to avoid them
+- What is deliberately not here, and why
+
+Write it for someone who is competent, busy, and slightly annoyed that this landed on their desk. Short sentences. No throat-clearing.</span>
+
+<span class="pt-comment"># STEP 7: THE VERDICT AND THE PLAN</span>
+<span class="pt-value">Two parts.
+
+First, the honest verdict. Pick one and defend it in three sentences:
+
+- READY: someone could pick this up on Monday and be productive by Tuesday.
+- RECOVERABLE: someone could run this after a week of figuring things out, and they will be annoyed.
+- DIES WITH ME: the essential parts of this exist only in my head, my accounts, or my conversations, and will be lost.
+
+Do not be kind about this. An inflated verdict costs me the chance to fix it.
+
+Second, the prioritized plan. Every issue you found across all steps, ranked, in exactly this structure:
+
+- CRITICAL: things that will break, get lost, or cost money if not handled before I leave. Include anything involving access, recurring obligations, or money.
+- IMPORTANT: things that will cost the next person significant time or cause them to redo work.
+- NICE TO HAVE: genuine improvements that do not block anyone.
+
+Then translate that into time:
+
+- If I only have two hours, do these things
+- If I have a full day, add these
+- If I have a week, add these
+
+Maximum ten items total across the three tiers. If you found more than ten problems, that means you have not prioritized. Cut to the ones that matter and tell me what you dropped.</span>
+
+<span class="pt-comment"># RULES THAT APPLY THROUGHOUT</span>
+<span class="pt-value">- Separate what you found from what you are inferring. Label inference every time. If you are guessing, say you are guessing.
+- If the material contradicts itself, or contradicts something I told you, flag it. Do not smooth it over. Contradictions are the most valuable thing you can find, because they are invisible to me and confusing to everyone else.
+- Plain language. Assume the reader is smart, busy, and has never done this job.
+- Never put credentials, passwords, or keys into any document you produce.
+- If you need something from me to do a step properly, ask before doing it badly.
+- Do not tell me things are fine in order to be encouraging. I would rather find a problem now than have someone else find it in six weeks.
+
+Start with Step 0.</span></div>
+      </div>
+
+      <div class="rv d3 closing-note">
+        <h2>After you run it</h2>
+        <p>Two things this prompt can't do for you.</p>
+        <ol>
+          <li><strong>Capture tacit knowledge.</strong> The judgment calls, the reasons behind decisions, the sense of why something is done a particular way. Those transfer through a conversation or a screen recording, not a document. Record a short walkthrough (I'm using <a href="https://www.loom.com/" target="_blank" rel="noopener noreferrer">Loom</a>!) for each significant project and put the link in your START HERE document.</li>
+          <li><strong>Make the decision about what to hand over at all.</strong> Some things you built genuinely just shouldn't be inherited, because nobody will maintain them and a broken inherited system is worse than an absent one. If something isn't going to survive, I'd say so explicitly in your handoff rather than letting it quietly rot.</li>
+        </ol>
+      </div>
+
+    </div><!-- /entry-body -->
+
+    <!-- CTA -->
+    <div class="soft-cta rv d4">
+      <p class="cta-eyebrow">Found this useful?</p>
+      <h3>Tell me what's slowing you down.</h3>
+      <p class="cta-sub">If you're copying and pasting the same thing more than twice a week, there's probably a workflow for it. I build these things — ask me.</p>
+      <a href="/#help" class="cta-btn">
+        Tell me what's broken
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="site-footer rv d4">
+      <div class="footer-inner">
+        <a href="/" class="footer-brand">lilyp.<em>ai</em></a>
+        <div class="footer-links">
+          <a href="https://www.linkedin.com/in/lily-papadopoulos/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="/library">Library</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+
+  <script>
+    // ── Copy button ──
+    function copyPrompt() {
+      // Extract plain text from the styled prompt block
+      const block = document.getElementById('prompt-content');
+      const text = block.innerText || block.textContent;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn   = document.getElementById('copy-btn');
+        const icon  = document.getElementById('copy-icon');
+        const label = document.getElementById('copy-label');
+
+        btn.classList.add('copied');
+        label.textContent = 'Copied!';
+        icon.innerHTML = '<path d="M20 6L9 17l-5-5"/>';
+
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          label.textContent = 'Copy';
+          icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>';
+        }, 2000);
+      }).catch(() => {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      });
+    }
+
+    // ── Scroll reveals ──
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+    document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
