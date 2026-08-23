@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Semester Plan — lilyp.ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:    #FDFCF9;
+  --ink:      #121211;
+  --inklight: #4A4A46;
+  --muted:    rgba(18,18,17,0.42);
+  --honey:    #ECA824;
+  --honey-bg: rgba(236,168,36,0.10);
+  --honey-border: rgba(236,168,36,0.30);
+  --apricot:  #F4AA96;
+  --apricot-bg: rgba(244,170,150,0.12);
+  --blush:    #FCE8E3;
+  --stone:    #F0EFEA;
+  --sand:     #E5E3DC;
+  --border:   rgba(18,18,17,0.08);
+  --serif: 'Fraunces', Georgia, serif;
+  --sans:  'Manrope', sans-serif;
+  --mono:  'Space Mono', monospace;
+  --out:cubic-bezier(0.25,0.46,0.45,0.94);
+  --snappy:cubic-bezier(0.21,0.83,0.26,1);
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: 32px 20px 80px;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.022;
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-1 {
+  position: fixed; border-radius: 50%;
+  width: 500px; height: 380px;
+  top: -80px; right: -100px;
+  background: var(--blush); opacity: 0.45;
+  filter: blur(80px); pointer-events: none; z-index: 0;
+}
+
+.shell { position: relative; z-index: 1; max-width: 740px; margin: 0 auto; }
+
+.site-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 40px;
+}
+.wordmark {
+  font-family: var(--serif); font-size: 1.05rem; font-weight: 400;
+  color: var(--ink); text-decoration: none; letter-spacing: -0.01em;
+}
+.wordmark em { font-style: italic; color: var(--honey); }
+.header-date {
+  font-family: var(--mono); font-size: 0.6rem;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+}
+.start-over-link {
+  font-family: var(--sans); font-size: 0.72rem; font-weight: 500;
+  color: var(--muted); background: none; border: none; cursor: pointer;
+  text-decoration: underline; padding: 0;
+}
+.start-over-link:hover { color: var(--inklight); }
+
+/* ══ SCREEN SWITCHING ══ */
+.screen { display: none; }
+.screen.visible { display: block; animation: fadeUp 0.4s ease both; }
+
+/* ══ PASTE SCREEN ══ */
+.paste-title {
+  font-family: var(--serif); font-size: clamp(1.9rem, 4vw, 2.5rem);
+  font-weight: 400; letter-spacing: -0.02em; line-height: 1.2;
+  margin-bottom: 10px;
+}
+.paste-title em { font-style: italic; color: var(--honey); }
+.paste-sub { font-size: 0.9rem; color: var(--inklight); line-height: 1.65; margin-bottom: 28px; max-width: 520px; }
+.paste-textarea {
+  width: 100%; min-height: 220px;
+  font-family: var(--mono); font-size: 0.78rem; line-height: 1.6;
+  padding: 16px; border: 1.5px solid var(--sand); border-radius: 12px;
+  background: white; color: var(--ink); resize: vertical;
+  outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.paste-textarea:focus { border-color: var(--honey); box-shadow: 0 0 0 3px var(--honey-bg); }
+.paste-error {
+  display: none; margin-top: 12px; padding: 12px 16px;
+  background: rgba(220,60,40,0.06); border: 1.5px solid rgba(220,60,40,0.25);
+  border-radius: 10px; font-size: 0.82rem; color: #C83020;
+}
+.paste-btn {
+  margin-top: 18px;
+  font-family: var(--sans); font-size: 0.88rem; font-weight: 600;
+  color: var(--ink); background: var(--honey); border: none;
+  border-radius: 99px; padding: 13px 28px; cursor: pointer;
+  transition: transform 0.18s var(--spring), box-shadow 0.18s ease;
+}
+.paste-btn:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(18,18,17,0.12); }
+.paste-hint { font-size: 0.78rem; color: var(--muted); margin-top: 10px; }
+
+/* ══ REVIEW SCREEN ══ */
+.review-banner {
+  padding: 14px 18px; border-radius: 12px; margin-bottom: 14px;
+  font-size: 0.84rem; line-height: 1.55; border: 1.5px solid;
+}
+.review-banner.amber { background: var(--honey-bg); border-color: var(--honey-border); color: var(--ink); }
+.review-banner.red { background: rgba(220,60,40,0.05); border-color: rgba(220,60,40,0.25); color: var(--ink); }
+.review-banner strong { display: inline; }
+
+.review-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.review-card, .pending-card {
+  background: white; border: 1.5px solid var(--honey-border);
+  border-radius: 12px; padding: 16px 18px;
+  transition: opacity 0.2s ease;
+}
+.review-card.resolved, .pending-card.acknowledged { border-color: var(--border); opacity: 0.6; }
+.review-card-head, .pending-card-head {
+  display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;
+}
+.review-course, .pending-course {
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+}
+.review-weight, .pending-weight {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 700; color: var(--ink);
+}
+.review-name, .pending-name { font-size: 0.92rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.review-status, .pending-status { font-size: 0.8rem; color: var(--inklight); margin-bottom: 4px; }
+.review-notes, .pending-notes { font-size: 0.76rem; color: var(--muted); margin-bottom: 10px; }
+.review-actions, .pending-actions {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.review-date-label { font-size: 0.76rem; color: var(--inklight); }
+.review-date-input, .pending-date-input {
+  font-family: var(--sans); font-size: 0.82rem; padding: 6px 10px;
+  border: 1.5px solid var(--sand); border-radius: 8px; background: white; color: var(--ink);
+}
+.review-confirm-btn, .pending-confirm-btn {
+  font-family: var(--sans); font-size: 0.78rem; font-weight: 600;
+  color: var(--ink); background: var(--honey); border: none;
+  border-radius: 99px; padding: 7px 16px; cursor: pointer;
+  transition: transform 0.15s var(--spring);
+}
+.review-confirm-btn:hover, .pending-confirm-btn:hover { transform: translateY(-1px); }
+.review-saved, .pending-saved {
+  font-family: var(--mono); font-size: 0.7rem; color: #0F7050;
+  letter-spacing: 0.03em;
+}
+.review-continue-btn {
+  font-family: var(--sans); font-size: 0.88rem; font-weight: 600;
+  color: var(--ink); background: var(--honey); border: none;
+  border-radius: 99px; padding: 13px 28px; cursor: pointer; margin-top: 8px;
+  transition: transform 0.18s var(--spring), box-shadow 0.18s ease;
+}
+.review-continue-btn:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(18,18,17,0.12); }
+
+/* ══ EXPORT TOOLBAR ══ */
+.export-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; animation: fadeUp 0.5s 0.14s ease both; }
+.export-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--sans); font-size: 0.85rem; font-weight: 600;
+  color: var(--ink); background: var(--honey); border: none;
+  border-radius: 99px; padding: 11px 22px; cursor: pointer;
+  transition: transform 0.18s var(--spring), box-shadow 0.18s ease;
+}
+.export-btn:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(18,18,17,0.12); }
+.export-btn.secondary { background: white; border: 1.5px solid var(--sand); color: var(--ink); }
+.export-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.export-note { font-size: 0.78rem; color: var(--muted); margin-bottom: 28px; }
+
+/* ══ CONTEXT / TITLE / STATS (reused pattern) ══ */
+.context-banner {
+  background: var(--stone); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+  margin-bottom: 36px; animation: fadeUp 0.5s ease both;
+}
+.context-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--honey); flex-shrink: 0; }
+.context-text { font-size: 0.82rem; color: var(--inklight); line-height: 1.5; }
+.context-text strong { color: var(--ink); font-weight: 600; }
+
+.page-title {
+  font-family: var(--serif); font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 400; letter-spacing: -0.025em; line-height: 1.15;
+  margin-bottom: 6px; animation: fadeUp 0.5s 0.08s ease both;
+}
+.page-title em { font-style: italic; color: var(--honey); }
+.page-sub { font-size: 0.88rem; color: var(--inklight); margin-bottom: 36px; animation: fadeUp 0.5s 0.12s ease both; }
+
+.section-label {
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+}
+
+.stat-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-bottom: 36px; animation: fadeUp 0.5s 0.18s ease both;
+}
+.stat-card { background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.stat-val {
+  font-family: var(--serif); font-size: 2rem; font-weight: 400;
+  letter-spacing: -0.02em; color: var(--ink); display: block; line-height: 1;
+}
+.stat-val em { font-style: italic; color: var(--honey); }
+.stat-label {
+  font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted); margin-top: 6px; display: block;
+}
+
+/* ══ WARNINGS ══ */
+.warnings { margin-bottom: 32px; animation: fadeUp 0.5s 0.16s ease both; }
+.warning-card {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: white; border: 1.5px solid; border-radius: 12px; padding: 14px 18px;
+  margin-bottom: 10px; transition: transform 0.18s var(--spring);
+}
+.warning-card:hover { transform: translateY(-2px); }
+.warning-card.red { border-color: rgba(220,60,40,0.25); background: rgba(220,60,40,0.03); }
+.warning-card.amber { border-color: var(--honey-border); background: var(--honey-bg); }
+.warning-card.teal { border-color: rgba(30,140,100,0.2); background: rgba(30,140,100,0.04); }
+.warn-icon {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.red .warn-icon { background: rgba(220,60,40,0.1); color: #C83020; }
+.amber .warn-icon { background: var(--honey-bg); color: #A07010; }
+.teal .warn-icon { background: rgba(30,140,100,0.1); color: #0F7050; }
+.warn-body { flex: 1; }
+.warn-title { font-size: 0.84rem; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.warn-detail { font-size: 0.78rem; color: var(--inklight); line-height: 1.5; }
+.warn-days { font-family: var(--mono); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; white-space: nowrap; margin-top: 3px; }
+.red .warn-days { color: #C83020; }
+.amber .warn-days { color: #A07010; }
+.teal .warn-days { color: #0F7050; }
+.warnings-empty { font-size: 0.84rem; color: var(--muted); padding: 8px 0 0; }
+
+/* ══ WORKLOAD CHART ══ */
+.workload-section { margin-bottom: 36px; animation: fadeUp 0.5s 0.22s ease both; }
+.workload-grid { display: grid; gap: 4px; align-items: end; height: 100px; margin-bottom: 6px; }
+.workload-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.workload-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: opacity 0.2s; cursor: default; position: relative; }
+.workload-bar:hover { opacity: 0.75; }
+.workload-bar.low { background: var(--sand); }
+.workload-bar.medium { background: var(--honey); }
+.workload-bar.high { background: #F4AA96; }
+.workload-bar.critical { background: #E05030; }
+.workload-week-label { font-family: var(--mono); font-size: 0.5rem; letter-spacing: 0.04em; color: var(--muted); text-align: center; line-height: 1.2; white-space: pre-line; }
+.workload-week-label.active { color: var(--ink); font-weight: 700; }
+.workload-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--inklight); }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* ══ TABS ══ */
+.tab-row { display: flex; gap: 4px; margin-bottom: 20px; animation: fadeUp 0.5s 0.28s ease both; }
+.tab-btn {
+  padding: 8px 16px; border-radius: 99px; font-family: var(--sans); font-size: 0.8rem; font-weight: 500;
+  border: 1.5px solid var(--sand); background: white; color: var(--inklight); cursor: pointer; transition: all 0.15s ease;
+}
+.tab-btn:hover { border-color: rgba(18,18,17,0.2); color: var(--ink); }
+.tab-btn.active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+/* ══ COURSE LEGEND / FILTER ══ */
+.course-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; animation: fadeUp 0.5s 0.3s ease both; }
+.course-pill {
+  display: flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 99px;
+  border: 1.5px solid var(--sand); background: white; font-size: 0.74rem; font-weight: 500;
+  color: var(--inklight); cursor: pointer; transition: all 0.15s ease; user-select: none;
+}
+.course-pill .pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.course-pill.active { border-color: rgba(18,18,17,0.25); color: var(--ink); }
+.course-pill.dimmed { opacity: 0.4; }
+.course-pill:hover { border-color: rgba(18,18,17,0.25); }
+
+/* ══ DEADLINE LIST ══ */
+.deadline-list { display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.5s 0.32s ease both; }
+.dl-item {
+  display: grid; grid-template-columns: 56px 1fr auto; gap: 14px; align-items: center;
+  background: white; border: 1.5px solid var(--border); border-left-width: 3px;
+  border-radius: 12px; padding: 14px 18px;
+  transition: transform 0.18s var(--spring), box-shadow 0.18s ease, opacity 0.2s ease;
+}
+.dl-item:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 rgba(18,18,17,0.07); }
+.dl-item.dimmed { opacity: 0.3; }
+.dl-item.past { opacity: 0.45; }
+.dl-date { text-align: center; flex-shrink: 0; }
+.dl-date-day { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; line-height: 1; color: var(--ink); }
+.dl-date-mon { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.dl-body { min-width: 0; }
+.dl-course-tag { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--inklight); margin-bottom: 4px; }
+.dl-course-tag .pip { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dl-name { font-size: 0.88rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-meta { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+.dl-right { text-align: right; flex-shrink: 0; }
+.dl-weight { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; color: var(--ink); display: block; }
+.dl-countdown { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.06em; color: var(--muted); display: block; margin-top: 3px; }
+.dl-urgency-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-left: 5px; vertical-align: middle; }
+.urgent-high .dl-urgency-dot { background: #E05030; }
+.urgent-med .dl-urgency-dot { background: var(--honey); }
+.urgent-low .dl-urgency-dot { background: #1D9E75; }
+
+.group-tag, .tbd-tag, .req-tag, .recur-tag {
+  display: inline-block; padding: 2px 7px; border-radius: 99px; font-family: var(--mono);
+  font-size: 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 6px; vertical-align: middle;
+}
+.group-tag { background: var(--stone); color: var(--muted); }
+.tbd-tag { background: var(--honey-bg); color: #A07010; }
+.req-tag { background: var(--stone); color: var(--muted); }
+.recur-tag { background: var(--apricot-bg); color: #A05030; }
+
+.empty { text-align: center; padding: 40px 0; color: var(--muted); font-size: 0.85rem; }
+
+/* ══ PENDING / ONGOING SECTIONS ══ */
+.pending-section, .ongoing-section { margin-top: 32px; animation: fadeUp 0.5s ease both; }
+.pending-card, .ongoing-card { border-color: var(--honey-border); }
+.ongoing-card { border-color: var(--apricot); }
+
+/* ══ WEEK VIEW ══ */
+.week-list { display: flex; flex-direction: column; gap: 20px; }
+.week-block { animation: fadeUp 0.35s ease both; }
+.week-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.week-num { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.week-dates { font-size: 0.8rem; color: var(--inklight); }
+.week-load-pill { margin-left: auto; padding: 3px 10px; border-radius: 99px; font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+.load-light { background: var(--stone); color: var(--muted); }
+.load-medium { background: var(--honey-bg); color: #A07010; }
+.load-heavy { background: rgba(244,170,150,0.2); color: #A05030; }
+.load-critical { background: rgba(220,60,40,0.08); color: #C83020; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 520px) {
+  body { padding: 20px 14px 60px; }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .stat-row .stat-card:last-child { grid-column: 1 / -1; }
+  .dl-item { grid-template-columns: 44px 1fr auto; gap: 10px; padding: 12px 14px; }
+  .workload-week-label { display: none; }
+}
+
+/* ══ PRINT ══ */
+@media print {
+  @page { margin: 1.5cm; }
+  body { padding: 0; background: white; font-size: 11pt; }
+  body::before, .ambient-1 { display: none !important; }
+  .screen:not(.visible) { display: none !important; }
+  .start-over-link, .export-toolbar, .export-note,
+  .paste-btn, .review-continue-btn, .tab-row,
+  .review-actions button, .pending-actions button {
+    display: none !important;
+  }
+  .course-pill.dimmed, .dl-item.dimmed { opacity: 1 !important; }
+  .course-pill { cursor: default; }
+  .warning-card, .dl-item, .week-block, .review-card,
+  .stat-card, .workload-bar-wrap {
+    break-inside: avoid;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  .dl-item:hover, .warning-card:hover { transform: none !important; box-shadow: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="ambient-1"></div>
+<div class="shell">
+
+  <header class="site-header">
+    <a href="#" class="wordmark">lily<em>p</em>.ai</a>
+    <span id="header-right"><span class="header-date">Semester Plan</span></span>
+  </header>
+
+  <!-- ══ SCREEN 1: PASTE IN ══ -->
+  <div class="screen visible" id="screen-paste">
+    <h1 class="paste-title">Paste what your<br><em>AI</em> gave you back.</h1>
+    <p class="paste-sub">Open the prompt from the last step in a fresh Claude conversation, attach your course outlines, send it, and copy the whole JSON response it hands back. Paste that here.</p>
+    <textarea class="paste-textarea" id="paste-input" placeholder="Paste the full JSON response here, starting with { and ending with }"></textarea>
+    <div class="paste-error" id="paste-error"></div>
+    <br>
+    <button class="paste-btn" onclick="submitPaste()">Build my plan</button>
+    <p class="paste-hint">If it comes back wrapped in code fences or with extra text around it, that's fine, this handles that.</p>
+    <p class="paste-hint">Haven't done the questionnaire yet? <a href="/tools/semester" style="color:var(--honey);font-weight:600;">Start there</a> to get your extraction prompt.</p>
+  </div>
+
+  <!-- ══ SCREEN 2: REVIEW ══ -->
+  <div class="screen" id="screen-review">
+    <p class="section-label">Before we build your plan</p>
+    <h1 class="page-title">A few things<br>to <em>confirm.</em></h1>
+    <p class="page-sub">Nothing below has a settled date yet. Fill in what you know, or leave it, either way it'll show up clearly in your plan as still pending, not as a fact.</p>
+
+    <div id="review-banners"></div>
+    <div class="review-list" id="review-list"></div>
+
+    <button class="review-continue-btn" onclick="continueToDashboard()">Continue to my plan</button>
+  </div>
+
+  <!-- ══ SCREEN 3: DASHBOARD ══ -->
+  <div class="screen" id="screen-dashboard">
+
+    <div class="context-banner">
+      <div class="context-dot"></div>
+      <div class="context-text" id="context-text-inner"></div>
+    </div>
+
+    <h1 class="page-title" id="dash-title">Here's what<br><em>your semester</em> looks like.</h1>
+    <p class="page-sub" id="dash-sub"></p>
+
+    <div class="export-toolbar">
+      <button class="export-btn" onclick="downloadICS()">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 12v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download calendar (.ics)
+      </button>
+      <button class="export-btn secondary" onclick="window.print()">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6V2h8v4M4 11h8v3H4v-3zm-2-5h12a1 1 0 011 1v4a1 1 0 01-1 1h-1v-2H3v2H2a1 1 0 01-1-1V7a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Print this plan
+      </button>
+    </div>
+    <p class="export-note" id="export-note"></p>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <span class="stat-val" id="stat-total">0</span>
+        <span class="stat-label">Deadlines</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val" id="stat-killer"><em>0</em></span>
+        <span class="stat-label">Killer weeks</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val" id="stat-span">0</span>
+        <span class="stat-label">Days in view</span>
+      </div>
+    </div>
+
+    <div class="warnings">
+      <p class="section-label">Flag early</p>
+      <div id="warnings-list"></div>
+    </div>
+
+    <div class="workload-section">
+      <p class="section-label">Workload intensity</p>
+      <div class="workload-grid" id="workload-chart"></div>
+      <div class="workload-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sand)"></div> Light</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--honey)"></div> Medium</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--apricot)"></div> Heavy</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E05030"></div> Critical</div>
+      </div>
+    </div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('timeline', this)">Timeline</button>
+      <button class="tab-btn" onclick="switchTab('byweek', this)">By week</button>
+    </div>
+
+    <div class="course-legend" id="course-legend"></div>
+
+    <div id="tab-timeline">
+      <div class="deadline-list" id="deadline-list"></div>
+
+      <div class="pending-section" id="pending-section" style="display:none">
+        <p class="section-label">Still pending, not on the timeline yet</p>
+        <div id="pending-list"></div>
+      </div>
+
+      <div class="ongoing-section" id="ongoing-section" style="display:none">
+        <p class="section-label">Ongoing all semester, no single due date</p>
+        <div id="ongoing-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-byweek" style="display:none">
+      <div class="week-list" id="week-list"></div>
+    </div>
+
+    <p style="margin-top:32px;"><button class="start-over-link" onclick="startOver()">Paste different data</button></p>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let PREFS = null;
+let EXTRACTION = null;
+let RESOLUTIONS = {};
+const TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
+
+const COURSE_PALETTE = ['#ECA824', '#121211', '#F4AA96', '#5C7A6D', '#B08BBB', '#4A4A46', '#C97B4A', '#3E6B8A'];
+let COURSE_META = {};
+let activeFilter = 'all';
+
+// ═══════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════
+function loadPrefs() {
+  try {
+    const raw = localStorage.getItem('semester_preferences');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function loadSavedExtraction() {
+  try {
+    const raw = localStorage.getItem('semester_extraction');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function loadSavedResolutions() {
+  try {
+    const raw = localStorage.getItem('semester_resolutions');
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+function saveExtraction() {
+  try { localStorage.setItem('semester_extraction', JSON.stringify(EXTRACTION)); } catch (e) {}
+}
+function saveResolutions() {
+  try { localStorage.setItem('semester_resolutions', JSON.stringify(RESOLUTIONS)); } catch (e) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+function parseISO(s) {
+  if (!s) return null;
+  const d = new Date(s + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+function isoOf(d) { return d.toISOString().slice(0, 10); }
+function fmtLong(dateStr) {
+  const d = parseISO(dateStr);
+  return d ? d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+}
+function fmtShort(dateStr) {
+  const d = parseISO(dateStr);
+  if (!d) return { day: '?', mon: '' };
+  return { day: d.getDate(), mon: d.toLocaleDateString('en-CA', { month: 'short' }).toUpperCase() };
+}
+function daysUntil(dateStr) {
+  const d = parseISO(dateStr);
+  if (!d) return null;
+  return Math.round((d - TODAY) / 86400000);
+}
+function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+function weightLabel(w) {
+  if (w === null || w === undefined) return 'No %';
+  return w === 0 ? 'Required' : w + '%';
+}
+function urgencyClass(days, weight) {
+  const w = weight || 0;
+  if (days !== null && days <= 7) return 'urgent-high';
+  if (w >= 25) return 'urgent-high';
+  if (days !== null && days <= 21) return 'urgent-med';
+  return 'urgent-low';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PARSING
+// ═══════════════════════════════════════════════════════════
+function stripCodeFences(text) {
+  let t = text.trim();
+  t = t.replace(/^```(?:json)?\s*/i, '');
+  t = t.replace(/```\s*$/, '');
+  return t.trim();
+}
+function tryParseExtraction(raw) {
+  const cleaned = stripCodeFences(raw);
+  let data;
+  try {
+    data = JSON.parse(cleaned);
+  } catch (e) {
+    return { ok: false, error: "That didn't parse as JSON. Make sure you copied the whole response, starting with { and ending with }." };
+  }
+  if (!data || typeof data !== 'object') {
+    return { ok: false, error: "That parsed, but it isn't the shape I expected." };
+  }
+  if (!Array.isArray(data.deadlines)) {
+    return { ok: false, error: 'I don\'t see a "deadlines" list in this. Make sure you pasted the full response from the extraction prompt, not a summary of it.' };
+  }
+  if (!Array.isArray(data.courses)) data.courses = [];
+  if (!data.extraction_meta || typeof data.extraction_meta !== 'object') data.extraction_meta = {};
+  if (!Array.isArray(data.extraction_meta.flagged_items)) data.extraction_meta.flagged_items = [];
+  if (!Array.isArray(data.extraction_meta.unreadable_files)) data.extraction_meta.unreadable_files = [];
+  return { ok: true, data };
+}
+
+function submitPaste() {
+  const raw = document.getElementById('paste-input').value;
+  const result = tryParseExtraction(raw);
+  const errEl = document.getElementById('paste-error');
+  if (!result.ok) {
+    errEl.textContent = result.error;
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  EXTRACTION = result.data;
+  RESOLUTIONS = {};
+  saveExtraction();
+  saveResolutions();
+  hideScreen('screen-paste');
+  routeAfterLoad();
+}
+
+// ═══════════════════════════════════════════════════════════
+// RESOLUTION LOGIC
+// ═══════════════════════════════════════════════════════════
+function getEffective(dl) {
+  if (dl.date_status === 'confirmed') {
+    return { date: dl.date, resolved: true, acknowledged: true };
+  }
+  const res = RESOLUTIONS[dl.id];
+  if (res && res.date) {
+    return { date: res.date, resolved: true, acknowledged: true };
+  }
+  return { date: null, resolved: false, acknowledged: !!(res && res.acknowledged) };
+}
+function getResolvedList() {
+  return (EXTRACTION.deadlines || []).map(dl => ({ dl, eff: getEffective(dl) }));
+}
+function getAllFlaggable() {
+  return getResolvedList().filter(({ dl }) => dl.date_status !== 'confirmed');
+}
+function getStillPending() {
+  return getResolvedList().filter(({ eff }) => !eff.resolved && !eff.acknowledged);
+}
+function confirmFlagItem(id) {
+  const input = document.getElementById('date-' + id);
+  const val = input ? input.value : '';
+  RESOLUTIONS[id] = { date: val || null, acknowledged: true };
+  saveResolutions();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCREEN SWITCHING
+// ═══════════════════════════════════════════════════════════
+function showScreen(id) { document.getElementById(id).classList.add('visible'); }
+function hideScreen(id) { document.getElementById(id).classList.remove('visible'); }
+
+function routeAfterLoad() {
+  if (getStillPending().length > 0) {
+    showScreen('screen-review');
+    renderReview();
+  } else {
+    showScreen('screen-dashboard');
+    renderDashboard();
+  }
+}
+
+function continueToDashboard() {
+  hideScreen('screen-review');
+  showScreen('screen-dashboard');
+  renderDashboard();
+}
+
+function startOver() {
+  localStorage.removeItem('semester_extraction');
+  localStorage.removeItem('semester_resolutions');
+  EXTRACTION = null;
+  RESOLUTIONS = {};
+  document.getElementById('paste-input').value = '';
+  hideScreen('screen-dashboard');
+  hideScreen('screen-review');
+  showScreen('screen-paste');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FLAG CARD (shared by review screen and dashboard pending section)
+// ═══════════════════════════════════════════════════════════
+function statusLineFor(dl) {
+  if (dl.date_status === 'tbd_window' && dl.date_window && dl.date_window.start && dl.date_window.end) {
+    return `Somewhere between ${fmtLong(dl.date_window.start)} and ${fmtLong(dl.date_window.end)}`;
+  }
+  if (dl.date_status === 'recurring') {
+    return dl.recurrence || 'Recurring, no single date';
+  }
+  return 'No date given in the outline';
+}
+
+function flagCardHtml(dl, eff) {
+  const resolvedCls = eff.acknowledged ? 'resolved' : '';
+  const actionsHtml = eff.acknowledged
+    ? `<span class="review-saved">${eff.date ? 'Saved for ' + fmtLong(eff.date) : 'Got it, still pending'}</span>`
+    : `
+      <label class="review-date-label">If you know the exact date:</label>
+      <input type="date" class="review-date-input" id="date-${dl.id}">
+      <button class="review-confirm-btn" onclick="handleFlagConfirm('${dl.id}')">Save</button>
+    `;
+  return `
+    <div class="review-card ${resolvedCls}" data-id="${dl.id}">
+      <div class="review-card-head">
+        <span class="review-course">${escapeHtml(dl.course_code)}</span>
+        <span class="review-weight">${weightLabel(dl.weight_percent)}</span>
+      </div>
+      <div class="review-name">${escapeHtml(dl.name)}</div>
+      <div class="review-status">${escapeHtml(statusLineFor(dl))}</div>
+      ${dl.notes ? `<div class="review-notes">${escapeHtml(dl.notes)}</div>` : ''}
+      <div class="review-actions" id="actions-${dl.id}">${actionsHtml}</div>
+    </div>
+  `;
+}
+
+function handleFlagConfirm(id) {
+  confirmFlagItem(id);
+  // re-render whichever context we're in
+  if (document.getElementById('screen-review').classList.contains('visible')) {
+    renderReview();
+  }
+  if (document.getElementById('screen-dashboard').classList.contains('visible')) {
+    renderDashboard();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// REVIEW SCREEN
+// ═══════════════════════════════════════════════════════════
+function renderReview() {
+  const meta = EXTRACTION.extraction_meta || {};
+  const bannerWrap = document.getElementById('review-banners');
+  let banners = '';
+  if (meta.term_note) {
+    banners += `<div class="review-banner amber"><strong>Worth a second look:</strong> ${escapeHtml(meta.term_note)}</div>`;
+  }
+  if (meta.unreadable_files && meta.unreadable_files.length) {
+    banners += `<div class="review-banner red"><strong>Couldn't read ${meta.unreadable_files.length === 1 ? 'this file' : 'these files'}:</strong> ${meta.unreadable_files.map(escapeHtml).join(', ')}. Check these manually, nothing from them made it into your plan.</div>`;
+  }
+  bannerWrap.innerHTML = banners;
+
+  const list = document.getElementById('review-list');
+  const flaggable = getAllFlaggable();
+  list.innerHTML = flaggable.map(({ dl }) => flagCardHtml(dl, getEffective(dl))).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// COURSE META
+// ═══════════════════════════════════════════════════════════
+function buildCourseMeta() {
+  let courses = EXTRACTION.courses && EXTRACTION.courses.length ? EXTRACTION.courses : null;
+  if (!courses) {
+    const codes = [...new Set((EXTRACTION.deadlines || []).map(d => d.course_code))];
+    courses = codes.map(code => ({ code, name: code }));
+  }
+  const meta = {};
+  courses.forEach((c, i) => {
+    meta[c.code] = { label: c.code, name: c.name || c.code, color: COURSE_PALETTE[i % COURSE_PALETTE.length] };
+  });
+  return meta;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEMESTER RANGE + WEEKS
+// ═══════════════════════════════════════════════════════════
+function getSemesterRange() {
+  if (PREFS && PREFS.semester && PREFS.semester.start && PREFS.semester.end) {
+    const s = parseISO(PREFS.semester.start);
+    const e = parseISO(PREFS.semester.end);
+    if (s && e && e > s) return { start: s, end: e };
+  }
+  const dates = [];
+  (EXTRACTION.deadlines || []).forEach(dl => {
+    if (dl.date) { const d = parseISO(dl.date); if (d) dates.push(d); }
+    if (dl.date_window) {
+      if (dl.date_window.start) { const d = parseISO(dl.date_window.start); if (d) dates.push(d); }
+      if (dl.date_window.end) { const d = parseISO(dl.date_window.end); if (d) dates.push(d); }
+    }
+  });
+  if (!dates.length) {
+    const s = new Date(TODAY); s.setDate(s.getDate() - 7);
+    const e = new Date(TODAY); e.setDate(e.getDate() + 8 * 7);
+    return { start: s, end: e };
+  }
+  let min = dates[0], max = dates[0];
+  dates.forEach(d => { if (d < min) min = d; if (d > max) max = d; });
+  const s = new Date(min); s.setDate(s.getDate() - 7);
+  const e = new Date(max); e.setDate(e.getDate() + 7);
+  return { start: s, end: e };
+}
+
+function buildWeeks() {
+  const { start, end } = getSemesterRange();
+  const weeks = [];
+  let cur = new Date(start);
+  let num = 1;
+  while (cur <= end && weeks.length < 24) {
+    const weekStart = new Date(cur);
+    const weekEnd = new Date(cur); weekEnd.setDate(weekEnd.getDate() + 6);
+    weeks.push({
+      num,
+      start: isoOf(weekStart),
+      end: isoOf(weekEnd),
+      label: weekStart.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }),
+      dates: weekStart.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) + '\u2013' + weekEnd.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })
+    });
+    cur.setDate(cur.getDate() + 7);
+    num++;
+  }
+  return weeks;
+}
+
+function scoreWeeks(weeks, resolvedList) {
+  const scores = weeks.map(() => 0);
+  const byDate = {};
+  resolvedList.forEach(({ dl, eff }) => {
+    if (!eff.resolved) return;
+    const idx = weeks.findIndex(w => eff.date >= w.start && eff.date <= w.end);
+    if (idx === -1) return;
+    const w = (dl.weight_percent === null || dl.weight_percent === undefined || dl.weight_percent === 0) ? 3 : dl.weight_percent;
+    scores[idx] += w;
+    byDate[eff.date] = (byDate[eff.date] || 0) + 1;
+  });
+  Object.entries(byDate).forEach(([date, count]) => {
+    if (count > 1) {
+      const idx = weeks.findIndex(w => date >= w.start && date <= w.end);
+      if (idx !== -1) scores[idx] += (count - 1) * 15;
+    }
+  });
+  return scores;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WARNINGS
+// ═══════════════════════════════════════════════════════════
+function generateWarnings(resolvedList) {
+  const warnDaysArr = (PREFS && PREFS.preferences && PREFS.preferences.deadline_warning_days && PREFS.preferences.deadline_warning_days.length)
+    ? PREFS.preferences.deadline_warning_days : [7];
+  const warnDays = Math.max(...warnDaysArr);
+
+  const byDate = {};
+  resolvedList.forEach(({ dl, eff }) => {
+    if (!eff.resolved) return;
+    const days = daysUntil(eff.date);
+    if (days === null || days < 0) return;
+    (byDate[eff.date] = byDate[eff.date] || []).push({ dl, days });
+  });
+
+  const warnings = [];
+  Object.entries(byDate).forEach(([date, items]) => {
+    const days = items[0].days;
+    const totalWeight = items.reduce((s, i) => s + (i.dl.weight_percent || 0), 0);
+    const isCollision = items.length > 1;
+    const isHigh = items.some(i => (i.dl.weight_percent || 0) >= 25);
+    if (!isCollision && !isHigh) return;
+
+    let severity = 'teal';
+    if (days <= 7 || isHigh) severity = 'red';
+    else if (days <= 21) severity = 'amber';
+
+    const prepDate = new Date(parseISO(date));
+    prepDate.setDate(prepDate.getDate() - warnDays);
+    const prepStr = fmtLong(isoOf(prepDate));
+
+    let title, detail;
+    if (isCollision) {
+      const names = items.map(i => `${i.dl.name} (${weightLabel(i.dl.weight_percent)})`).join(' + ');
+      title = `${items.length} things land on ${fmtLong(date)}`;
+      detail = `${names}. That's ${totalWeight}% combined in one day. Based on your ${warnDays}-day warning window, plan to start by ${prepStr}.`;
+    } else {
+      title = `${items[0].dl.name} is worth ${items[0].dl.weight_percent}%`;
+      detail = `Due ${fmtLong(date)}. Based on your ${warnDays}-day warning window, start by ${prepStr}.`;
+    }
+    warnings.push({ date, days, severity, title, detail });
+  });
+
+  warnings.sort((a, b) => a.days - b.days);
+  return warnings.slice(0, 6);
+}
+
+function renderWarnings(resolvedList) {
+  const wrap = document.getElementById('warnings-list');
+  const warnings = generateWarnings(resolvedList);
+  if (!warnings.length) {
+    wrap.innerHTML = '<p class="warnings-empty">Nothing collides and nothing\'s especially high stakes right now. That might change once pending items get dates.</p>';
+    return;
+  }
+  wrap.innerHTML = warnings.map(w => `
+    <div class="warning-card ${w.severity}">
+      <div class="warn-icon">${w.severity === 'teal' ? '\u2713' : '!'}</div>
+      <div class="warn-body">
+        <div class="warn-title">${escapeHtml(w.title)}</div>
+        <div class="warn-detail">${escapeHtml(w.detail)}</div>
+        <div class="warn-days">\u2191 ${w.days}d away</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTEXT / STATS
+// ═══════════════════════════════════════════════════════════
+function renderContextBanner() {
+  const el = document.getElementById('context-text-inner');
+  const courses = EXTRACTION.courses || [];
+  const n = courses.length || new Set((EXTRACTION.deadlines || []).map(d => d.course_code)).size;
+  const codes = courses.map(c => c.code).join(', ') || 'your courses';
+  let bits = [];
+  if (PREFS) {
+    if (PREFS.semester && PREFS.semester.year) bits.push(escapeHtml(PREFS.semester.year) + ' year');
+    if (PREFS.schedule && PREFS.schedule.works) bits.push(`Works ~${PREFS.schedule.work_hours_per_week} hrs/wk`);
+    if (PREFS.preferences && PREFS.preferences.deadline_warning_days && PREFS.preferences.deadline_warning_days.length) {
+      bits.push(`${Math.max(...PREFS.preferences.deadline_warning_days)}-day warning window`);
+    }
+  } else {
+    bits.push('No saved preferences found, using general warning thresholds');
+  }
+  el.innerHTML = `<strong>${n} outline${n === 1 ? '' : 's'} parsed.</strong> ${escapeHtml(codes)} &nbsp;\u00b7&nbsp; ${bits.map(escapeHtml).join(' &nbsp;\u00b7&nbsp; ')}`;
+
+  const subEl = document.getElementById('dash-sub');
+  const total = (EXTRACTION.deadlines || []).length;
+  subEl.textContent = `${total} deadline${total === 1 ? '' : 's'} across ${n} course${n === 1 ? '' : 's'}.`;
+}
+
+function renderStats(weeks, scores) {
+  const total = (EXTRACTION.deadlines || []).length;
+  const maxScore = Math.max(...scores, 1);
+  const killerWeeks = scores.filter(s => s >= maxScore * 0.7 && s > 0).length;
+  const spanDays = weeks.length ? daysBetween(parseISO(weeks[0].start), parseISO(weeks[weeks.length - 1].end)) : 0;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-killer').innerHTML = `<em>${killerWeeks}</em>`;
+  document.getElementById('stat-span').textContent = spanDays;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WORKLOAD CHART
+// ═══════════════════════════════════════════════════════════
+function buildChart(weeks, scores) {
+  const chart = document.getElementById('workload-chart');
+  chart.style.gridTemplateColumns = `repeat(${weeks.length}, 1fr)`;
+  chart.innerHTML = '';
+  const maxScore = Math.max(...scores, 1);
+  const todayIso = isoOf(TODAY);
+  weeks.forEach((week, i) => {
+    const score = scores[i];
+    const heightPct = Math.max(5, (score / maxScore) * 100);
+    let cls = 'low';
+    if (score >= maxScore * 0.7) cls = 'critical';
+    else if (score >= maxScore * 0.45) cls = 'high';
+    else if (score >= maxScore * 0.2) cls = 'medium';
+    const isCurrentWeek = todayIso >= week.start && todayIso <= week.end;
+    const wrap = document.createElement('div');
+    wrap.className = 'workload-bar-wrap';
+    wrap.innerHTML = `
+      <div class="workload-bar ${cls}" style="height:${heightPct}%" title="${week.dates}: ${score === 0 ? 'No deadlines' : score + ' load score'}"></div>
+      <div class="workload-week-label ${isCurrentWeek ? 'active' : ''}">${week.label.replace(' ', '\n')}</div>
+    `;
+    chart.appendChild(wrap);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TIMELINE
+// ═══════════════════════════════════════════════════════════
+function buildTimeline(resolvedList, filter) {
+  const list = document.getElementById('deadline-list');
+  const resolved = resolvedList.filter(({ eff }) => eff.resolved).sort((a, b) => a.eff.date.localeCompare(b.eff.date));
+
+  if (!resolved.length) {
+    list.innerHTML = '<p class="empty">Nothing with a settled date yet. Check the sections below.</p>';
+    return;
+  }
+
+  list.innerHTML = resolved.map(({ dl, eff }) => {
+    const { day, mon } = fmtShort(eff.date);
+    const days = daysUntil(eff.date);
+    const meta = COURSE_META[dl.course_code] || { label: dl.course_code, color: '#999' };
+    const urg = urgencyClass(days, dl.weight_percent);
+    const dimmed = filter !== 'all' && filter !== dl.course_code;
+    const isPast = days !== null && days < 0;
+    return `
+      <div class="dl-item ${urg} ${dimmed ? 'dimmed' : ''} ${isPast ? 'past' : ''}" style="border-left-color:${meta.color}" data-course="${escapeHtml(dl.course_code)}">
+        <div class="dl-date">
+          <div class="dl-date-day">${day}</div>
+          <div class="dl-date-mon">${mon}</div>
+        </div>
+        <div class="dl-body">
+          <div class="dl-course-tag"><span class="pip" style="background:${meta.color}"></span>${escapeHtml(meta.label)}</div>
+          <div class="dl-name">
+            ${escapeHtml(dl.name)}
+            ${dl.group_work ? '<span class="group-tag">group</span>' : ''}
+            ${dl.weight_percent === 0 ? '<span class="req-tag">required</span>' : ''}
+          </div>
+          <div class="dl-meta">${escapeHtml(dl.notes || '')}</div>
+        </div>
+        <div class="dl-right">
+          <span class="dl-weight">${weightLabel(dl.weight_percent)}<span class="dl-urgency-dot"></span></span>
+          <span class="dl-countdown">${isPast ? Math.abs(days) + 'd ago' : days + 'd away'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function buildPendingAndOngoing(resolvedList) {
+  const pendingSection = document.getElementById('pending-section');
+  const ongoingSection = document.getElementById('ongoing-section');
+  const pendingList = document.getElementById('pending-list');
+  const ongoingList = document.getElementById('ongoing-list');
+
+  const pendingWindowItems = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.date_status === 'tbd_window');
+  const pendingUnknownItems = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.date_status === 'tbd_unknown');
+  const recurringItems = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.date_status === 'recurring');
+
+  const pendingAll = [...pendingWindowItems, ...pendingUnknownItems];
+  if (pendingAll.length) {
+    pendingSection.style.display = 'block';
+    pendingList.innerHTML = pendingAll.map(({ dl }) => flagCardHtml(dl, getEffective(dl))).join('');
+  } else {
+    pendingSection.style.display = 'none';
+  }
+
+  if (recurringItems.length) {
+    ongoingSection.style.display = 'block';
+    ongoingList.innerHTML = recurringItems.map(({ dl }) => flagCardHtml(dl, getEffective(dl))).join('');
+  } else {
+    ongoingSection.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// BY WEEK
+// ═══════════════════════════════════════════════════════════
+function buildWeekView(weeks, scores, resolvedList, filter) {
+  const weekList = document.getElementById('week-list');
+  weekList.innerHTML = '';
+  const maxScore = Math.max(...scores, 1);
+
+  weeks.forEach((week, i) => {
+    const score = scores[i];
+    const weekItems = resolvedList.filter(({ dl, eff }) => {
+      if (!eff.resolved) return false;
+      if (eff.date < week.start || eff.date > week.end) return false;
+      return filter === 'all' || dl.course_code === filter;
+    });
+    if (!weekItems.length) return;
+
+    let loadLabel = 'Light', loadClass = 'load-light';
+    if (score >= maxScore * 0.7) { loadLabel = 'Critical'; loadClass = 'load-critical'; }
+    else if (score >= maxScore * 0.45) { loadLabel = 'Heavy'; loadClass = 'load-heavy'; }
+    else if (score >= maxScore * 0.2) { loadLabel = 'Medium'; loadClass = 'load-medium'; }
+
+    const block = document.createElement('div');
+    block.className = 'week-block';
+    block.style.animationDelay = (i * 0.04) + 's';
+
+    const dlHTML = weekItems
+      .sort((a, b) => a.eff.date.localeCompare(b.eff.date))
+      .map(({ dl, eff }) => {
+        const { day, mon } = fmtShort(eff.date);
+        const meta = COURSE_META[dl.course_code] || { label: dl.course_code, color: '#999' };
+        const days = daysUntil(eff.date);
+        return `
+          <div class="dl-item ${urgencyClass(days, dl.weight_percent)}" style="margin-bottom:8px;border-left-color:${meta.color}">
+            <div class="dl-date"><div class="dl-date-day">${day}</div><div class="dl-date-mon">${mon}</div></div>
+            <div class="dl-body">
+              <div class="dl-course-tag"><span class="pip" style="background:${meta.color}"></span>${escapeHtml(meta.label)}</div>
+              <div class="dl-name">${escapeHtml(dl.name)}${dl.group_work ? '<span class="group-tag">group</span>' : ''}</div>
+              <div class="dl-meta">${escapeHtml(dl.notes || '')}</div>
+            </div>
+            <div class="dl-right">
+              <span class="dl-weight">${weightLabel(dl.weight_percent)}<span class="dl-urgency-dot"></span></span>
+              <span class="dl-countdown">${days}d away</span>
+            </div>
+          </div>`;
+      }).join('');
+
+    block.innerHTML = `
+      <div class="week-header">
+        <span class="week-num">Week ${week.num}</span>
+        <span class="week-dates">${week.dates}</span>
+        <span class="week-load-pill ${loadClass}">${loadLabel}</span>
+      </div>
+      ${dlHTML}
+    `;
+    weekList.appendChild(block);
+  });
+
+  if (!weekList.innerHTML) {
+    weekList.innerHTML = '<p class="empty">No settled deadlines yet for this filter.</p>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// COURSE FILTER + TABS
+// ═══════════════════════════════════════════════════════════
+function renderCourseLegend() {
+  const wrap = document.getElementById('course-legend');
+  const entries = Object.entries(COURSE_META);
+  let html = `<div class="course-pill active" data-course="all" onclick="filterCourse('all', this)"><span class="pip" style="background:var(--ink)"></span> All courses</div>`;
+  entries.forEach(([code, meta]) => {
+    html += `<div class="course-pill active" data-course="${escapeHtml(code)}" onclick="filterCourse('${escapeHtml(code)}', this)"><span class="pip" style="background:${meta.color}"></span> ${escapeHtml(meta.label)}</div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function filterCourse(course, el) {
+  activeFilter = course;
+  document.querySelectorAll('.course-pill').forEach(p => {
+    p.classList.remove('active', 'dimmed');
+    if (course === 'all') p.classList.add('active');
+    else if (p.dataset.course === course || p.dataset.course === 'all') p.classList.add('active');
+    else p.classList.add('dimmed');
+  });
+  const resolvedList = getResolvedList();
+  buildTimeline(resolvedList, course);
+  const weeks = buildWeeks();
+  const scores = scoreWeeks(weeks, resolvedList);
+  buildWeekView(weeks, scores, resolvedList, course);
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-timeline').style.display = tab === 'timeline' ? 'block' : 'none';
+  document.getElementById('tab-byweek').style.display = tab === 'byweek' ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// ICS EXPORT
+// ═══════════════════════════════════════════════════════════
+function icsEscape(text) {
+  if (text === null || text === undefined) return '';
+  return String(text)
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r\n|\n|\r/g, '\\n');
+}
+function foldLine(line) {
+  const limit = 74;
+  if (line.length <= limit) return line;
+  let result = '';
+  let remaining = line;
+  let first = true;
+  while (remaining.length > 0) {
+    const chunkLen = first ? limit : limit - 1;
+    result += (first ? '' : '\r\n ') + remaining.slice(0, chunkLen);
+    remaining = remaining.slice(chunkLen);
+    first = false;
+  }
+  return result;
+}
+function isoDateCompact(dateStr) { return dateStr.replace(/-/g, ''); }
+function addDaysToISO(dateStr, days) {
+  const d = parseISO(dateStr);
+  d.setDate(d.getDate() + days);
+  return isoOf(d);
+}
+function icsDtstamp() {
+  return new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+function generateICS(resolvedList) {
+  const warnDaysArr = (PREFS && PREFS.preferences && PREFS.preferences.deadline_warning_days && PREFS.preferences.deadline_warning_days.length)
+    ? PREFS.preferences.deadline_warning_days : [7];
+  const warnDays = Math.max(...warnDaysArr);
+  const dtstamp = icsDtstamp();
+
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//lilyp.ai//Semester Structuring Build//EN', 'CALSCALE:GREGORIAN'];
+
+  resolvedList.filter(({ eff }) => eff.resolved).forEach(({ dl, eff }) => {
+    const startCompact = isoDateCompact(eff.date);
+    const endCompact = isoDateCompact(addDaysToISO(eff.date, 1));
+    const uidSafe = String(dl.id).replace(/[^a-zA-Z0-9]/g, '') + '-' + String(dl.course_code).replace(/[^a-zA-Z0-9]/g, '');
+
+    const summary = `${dl.course_code}: ${dl.name}${dl.weight_percent ? ' (' + dl.weight_percent + '%)' : ''}`;
+    const descParts = [dl.weight_percent === 0 ? 'Required, no grade weight' : weightLabel(dl.weight_percent) + ' of final grade', dl.group_work ? 'Group work' : 'Individual'];
+    if (dl.notes) descParts.push(dl.notes);
+    if (dl.time) descParts.push('Time noted in outline: ' + dl.time);
+
+    lines.push('BEGIN:VEVENT');
+    lines.push(foldLine('UID:' + uidSafe + '@lilyp.ai'));
+    lines.push('DTSTAMP:' + dtstamp);
+    lines.push('DTSTART;VALUE=DATE:' + startCompact);
+    lines.push('DTEND;VALUE=DATE:' + endCompact);
+    lines.push(foldLine('SUMMARY:' + icsEscape(summary)));
+    lines.push(foldLine('DESCRIPTION:' + icsEscape(descParts.join('. '))));
+    lines.push(foldLine('CATEGORIES:' + icsEscape(dl.course_code)));
+    lines.push('BEGIN:VALARM');
+    lines.push('ACTION:DISPLAY');
+    lines.push(foldLine('DESCRIPTION:' + icsEscape(dl.name + ' is coming up')));
+    lines.push('TRIGGER:-P' + warnDays + 'D');
+    lines.push('END:VALARM');
+    lines.push('END:VEVENT');
+  });
+
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n') + '\r\n';
+}
+
+function renderExportNote() {
+  const resolvedList = getResolvedList();
+  const included = resolvedList.filter(({ eff }) => eff.resolved).length;
+  const excluded = resolvedList.length - included;
+  const el = document.getElementById('export-note');
+  el.textContent = excluded > 0
+    ? `Includes ${included} confirmed deadline${included === 1 ? '' : 's'}. ${excluded} recurring or still-pending item${excluded === 1 ? '' : 's'} ${excluded === 1 ? "isn't" : "aren't"} on the calendar file since ${excluded === 1 ? "it doesn't" : "they don't"} have a single date yet.`
+    : `Includes all ${included} deadline${included === 1 ? '' : 's'}.`;
+}
+
+function downloadICS() {
+  const resolvedList = getResolvedList();
+  const hasAny = resolvedList.some(({ eff }) => eff.resolved);
+  const el = document.getElementById('export-note');
+  if (!hasAny) {
+    el.textContent = "Nothing has a settled date yet, resolve at least one pending item first.";
+    return;
+  }
+  const icsContent = generateICS(resolvedList);
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const semName = (PREFS && PREFS.semester && PREFS.semester.name) ? PREFS.semester.name.replace(/[^a-zA-Z0-9]+/g, '-') : 'semester';
+  a.download = `${semName}-deadlines.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAIN DASHBOARD RENDER
+// ═══════════════════════════════════════════════════════════
+function renderDashboard() {
+  COURSE_META = buildCourseMeta();
+  const resolvedList = getResolvedList();
+  const weeks = buildWeeks();
+  const scores = scoreWeeks(weeks, resolvedList);
+
+  renderContextBanner();
+  renderStats(weeks, scores);
+  renderExportNote();
+  renderWarnings(resolvedList);
+  buildChart(weeks, scores);
+  renderCourseLegend();
+  buildTimeline(resolvedList, activeFilter);
+  buildPendingAndOngoing(resolvedList);
+  buildWeekView(weeks, scores, resolvedList, activeFilter);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+(function init() {
+  PREFS = loadPrefs();
+  const saved = loadSavedExtraction();
+  if (saved) {
+    EXTRACTION = saved;
+    RESOLUTIONS = loadSavedResolutions();
+    routeAfterLoad();
+  } else {
+    showScreen('screen-paste');
+  }
+})();
+</script>
+</body>
+</html>

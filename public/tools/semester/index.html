@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semester Setup — lilyp.ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Manrope:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:    #FDFCF9;
+  --ink:      #121211;
+  --inklight: #4A4A46;
+  --muted:    rgba(18,18,17,0.42);
+  --honey:    #ECA824;
+  --honey-bg: rgba(236,168,36,0.10);
+  --apricot:  #F4AA96;
+  --blush:    #FCE8E3;
+  --stone:    #F0EFEA;
+  --sand:     #E5E3DC;
+  --border:   rgba(18,18,17,0.09);
+  --serif: 'Fraunces', Georgia, serif;
+  --sans:  'Manrope', sans-serif;
+  --mono:  'Space Mono', monospace;
+  --out:cubic-bezier(0.25,0.46,0.45,0.94);
+  --snappy:cubic-bezier(0.21,0.83,0.26,1);
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 20px 80px;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.022;
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-1 {
+  position: fixed; border-radius: 50%;
+  width: 500px; height: 400px;
+  top: -80px; right: -100px;
+  background: var(--blush);
+  opacity: 0.5;
+  filter: blur(80px);
+  pointer-events: none; z-index: 0;
+}
+.ambient-2 {
+  position: fixed; border-radius: 50%;
+  width: 360px; height: 300px;
+  bottom: 5%; left: -80px;
+  background: rgba(236,168,36,0.12);
+  filter: blur(70px);
+  pointer-events: none; z-index: 0;
+}
+
+/* ══ SHELL ══ */
+.shell {
+  position: relative; z-index: 1;
+  width: 100%;
+  max-width: 560px;
+}
+
+/* ══ HEADER ══ */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 48px;
+}
+.wordmark {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.wordmark em {
+  font-style: italic;
+  color: var(--honey);
+}
+.step-badge {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ══ PROGRESS ══ */
+.progress-track {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 40px;
+}
+.progress-pip {
+  height: 3px;
+  flex: 1;
+  border-radius: 99px;
+  background: var(--sand);
+  transition: background 0.4s ease, transform 0.3s ease;
+}
+.progress-pip.done  { background: var(--honey); }
+.progress-pip.active { background: var(--ink); transform: scaleY(1.5); transform-origin: left; }
+
+/* ══ STEP PANEL ══ */
+.step-panel {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  display: none;
+}
+.step-panel.visible {
+  opacity: 1;
+  transform: translateY(0);
+  display: block;
+}
+
+.step-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.step-title {
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 4vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.step-title em { font-style: italic; color: var(--honey); }
+.step-subtitle {
+  font-size: 0.9rem;
+  color: var(--inklight);
+  line-height: 1.6;
+  margin-bottom: 36px;
+}
+
+/* ══ FORM ELEMENTS ══ */
+.field-group { margin-bottom: 24px; }
+.field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--inklight);
+  margin-bottom: 8px;
+}
+.field-label .optional {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-left: 5px;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: white;
+  border: 1.5px solid var(--sand);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--honey);
+  box-shadow: 0 0 0 3px var(--honey-bg);
+}
+textarea { resize: vertical; min-height: 80px; }
+
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ══ CHOICE CHIPS ══ */
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  padding: 9px 16px;
+  border-radius: 99px;
+  border: 1.5px solid var(--sand);
+  background: white;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--inklight);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.chip:hover { border-color: rgba(18,18,17,0.25); color: var(--ink); }
+.chip.selected {
+  background: var(--honey);
+  border-color: var(--honey);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ══ DAY SELECTOR ══ */
+.day-row {
+  display: flex;
+  gap: 6px;
+}
+.day-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border-radius: 8px;
+  border: 1.5px solid var(--sand);
+  background: white;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--inklight);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.day-btn:hover { border-color: rgba(18,18,17,0.25); }
+.day-btn.selected {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* ══ TOGGLE ══ */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: white;
+  border: 1.5px solid var(--sand);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+.toggle-row:hover { border-color: rgba(18,18,17,0.2); }
+.toggle-label { font-size: 0.9rem; color: var(--ink); flex: 1; }
+.toggle-switch {
+  width: 40px; height: 22px;
+  border-radius: 99px;
+  background: var(--sand);
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: white;
+  top: 3px; left: 3px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.toggle-row.on .toggle-switch { background: var(--honey); }
+.toggle-row.on .toggle-switch::after { transform: translateX(18px); }
+
+.conditional-block {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+.conditional-block.visible { display: block; }
+
+/* ══ RANGE SLIDER ══ */
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.range-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--sand);
+  border: none;
+  outline: none;
+  padding: 0;
+  box-shadow: none;
+}
+.range-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--honey);
+  border: 2px solid var(--paper);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.range-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.range-val {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 48px;
+  text-align: right;
+}
+
+/* ══ DIVIDER ══ */
+.field-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0 24px;
+}
+
+/* ══ NAV BUTTONS ══ */
+.nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 40px;
+  gap: 12px;
+}
+.btn-back {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 0;
+  transition: color 0.2s;
+}
+.btn-back:hover { color: var(--inklight); }
+.btn-back:disabled { opacity: 0; pointer-events: none; }
+.btn-next {
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--honey);
+  border: none;
+  border-radius: 99px;
+  padding: 13px 28px;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-next:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 rgba(18,18,17,0.12);
+}
+.btn-next:active { transform: scale(0.98); }
+.btn-next svg { width: 14px; height: 14px; }
+
+/* ══ COMPLETION SCREEN ══ */
+.completion {
+  text-align: center;
+  padding: 20px 0 40px;
+}
+.completion-check {
+  width: 56px; height: 56px;
+  background: var(--honey);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+.completion-check svg { width: 24px; height: 24px; }
+.completion h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.completion h2 em { font-style: italic; color: var(--honey); }
+.completion p {
+  font-size: 0.92rem;
+  color: var(--inklight);
+  line-height: 1.65;
+  max-width: 420px;
+  margin: 0 auto 36px;
+}
+
+.summary-card {
+  text-align: left;
+  background: white;
+  border: 1.5px solid var(--sand);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.summary-section-title {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.86rem;
+}
+.summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+.summary-row .key { color: var(--muted); flex-shrink: 0; }
+.summary-row .val { color: var(--ink); font-weight: 500; text-align: right; }
+.summary-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.json-block {
+  background: var(--ink);
+  border-radius: 10px;
+  padding: 18px;
+  position: relative;
+  margin-bottom: 24px;
+  text-align: left;
+}
+.json-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(253,252,249,0.38);
+  margin-bottom: 10px;
+}
+.json-pre {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: rgba(253,252,249,0.85);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* Prompt text is readable prose, not JSON, so it wraps at word
+   boundaries instead of breaking mid-word, and gets a little more
+   room since it runs longer than the preferences object. */
+.prompt-pre {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: rgba(253,252,249,0.85);
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: break-word;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.next-steps {
+  background: var(--stone);
+  border: 1.5px solid var(--sand);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 24px;
+}
+.next-steps-title {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.next-steps ol {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.next-steps li {
+  font-size: 0.87rem;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.tech-details {
+  margin-bottom: 8px;
+}
+.tech-details summary {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px 0;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+.tech-details summary:hover { color: var(--inklight); }
+.tech-details[open] summary { margin-bottom: 10px; }
+.tech-details .json-pre {
+  background: var(--ink);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(253,252,249,0.08);
+  border: 1px solid rgba(253,252,249,0.15);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: rgba(253,252,249,0.6);
+  cursor: pointer;
+  transition: all 0.15s var(--out);
+}
+.copy-btn:hover { background: rgba(253,252,249,0.14); color: rgba(253,252,249,0.9); }
+.copy-btn.copied { color: #7ed88a; border-color: #7ed88a; }
+
+/* ══ FIELD ROW HELPERS ══ */
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  body { padding: 24px 16px 60px; }
+  .date-row, .two-col { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="ambient-1"></div>
+<div class="ambient-2"></div>
+
+<div class="shell">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <a href="#" class="wordmark">lily<em>p</em>.ai</a>
+    <span class="step-badge" id="step-counter">Step 1 of 4</span>
+  </header>
+
+  <!-- PROGRESS -->
+  <div class="progress-track" id="progress-track">
+    <div class="progress-pip active" data-pip="1"></div>
+    <div class="progress-pip" data-pip="2"></div>
+    <div class="progress-pip" data-pip="3"></div>
+    <div class="progress-pip" data-pip="4"></div>
+  </div>
+
+  <!-- ══ STEP 1: SEMESTER BASICS ══ -->
+  <div class="step-panel visible" id="step-1">
+    <p class="step-eyebrow">Step 01 — Basics</p>
+    <h1 class="step-title">What are we<br>working <em>with?</em></h1>
+    <p class="step-subtitle">Tell me about this semester so the planner knows what it's dealing with.</p>
+
+    <div class="field-group">
+      <label class="field-label" for="semester-name">What semester is this?</label>
+      <input type="text" id="semester-name" placeholder="e.g. Winter 2026 or Fall 2026">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Semester dates</label>
+      <div class="date-row">
+        <div>
+          <input type="date" id="sem-start">
+          <p class="field-hint">First day of classes</p>
+        </div>
+        <div>
+          <input type="date" id="sem-end">
+          <p class="field-hint">Last exam / final day</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">What year of your program are you in?</label>
+      <div class="chip-group" id="year-chips">
+        <div class="chip" data-val="1st">1st</div>
+        <div class="chip" data-val="2nd">2nd</div>
+        <div class="chip" data-val="3rd">3rd</div>
+        <div class="chip" data-val="4th">4th</div>
+        <div class="chip" data-val="5th+">5th+</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="program">Program or major <span class="optional">optional</span></label>
+      <input type="text" id="program" placeholder="e.g. Real Estate (Co-op)">
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" disabled>Back</button>
+      <button class="btn-next" onclick="goTo(2)">
+        Next
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: YOUR SCHEDULE ══ -->
+  <div class="step-panel" id="step-2">
+    <p class="step-eyebrow">Step 02 — Schedule</p>
+    <h1 class="step-title">What does your<br><em>week</em> actually look like?</h1>
+    <p class="step-subtitle">Real planning requires knowing what time you actually have, not just what you wish you had.</p>
+
+    <div class="field-group">
+      <label class="field-label">Do you work during the semester?</label>
+      <div class="toggle-row" id="work-toggle" onclick="toggleWork()">
+        <span class="toggle-label">Yes, I have a job or internship</span>
+        <div class="toggle-switch"></div>
+      </div>
+      <div class="conditional-block" id="work-block">
+        <div class="field-group">
+          <label class="field-label">Roughly how many hours per week?</label>
+          <div class="range-row">
+            <input type="range" id="work-hours" min="0" max="50" step="5" value="20" oninput="updateRange('work-hours','work-hours-val')">
+            <span class="range-val" id="work-hours-val">20 hrs</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Which days do you typically work?</label>
+          <div class="day-row" id="work-days">
+            <div class="day-btn" data-day="Mon">MON</div>
+            <div class="day-btn" data-day="Tue">TUE</div>
+            <div class="day-btn" data-day="Wed">WED</div>
+            <div class="day-btn" data-day="Thu">THU</div>
+            <div class="day-btn" data-day="Fri">FRI</div>
+            <div class="day-btn" data-day="Sat">SAT</div>
+            <div class="day-btn" data-day="Sun">SUN</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="other-commitments">Any other fixed weekly commitments? <span class="optional">optional</span></label>
+      <input type="text" id="other-commitments" placeholder="e.g. volleyball Thursdays 6–8pm, club meetings Tuesdays">
+      <p class="field-hint">Anything recurring that blocks time most weeks</p>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(1)">Back</button>
+      <button class="btn-next" onclick="goTo(3)">
+        Next
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: YOUR STYLE ══ -->
+  <div class="step-panel" id="step-3">
+    <p class="step-eyebrow">Step 03 — How you work</p>
+    <h1 class="step-title">How do you<br>actually <em>operate?</em></h1>
+    <p class="step-subtitle">Honest answers here make the planner more useful. No judgment on the deadline one.</p>
+
+    <div class="field-group">
+      <label class="field-label">When do you focus best?</label>
+      <div class="chip-group" id="focus-chips">
+        <div class="chip" data-val="morning">Morning</div>
+        <div class="chip" data-val="afternoon">Afternoon</div>
+        <div class="chip" data-val="evening">Evening / night</div>
+        <div class="chip" data-val="varies">It varies</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">How far in advance do you typically start assignments?</label>
+      <div class="chip-group" id="advance-chips">
+        <div class="chip" data-val="last-minute">Day of or night before</div>
+        <div class="chip" data-val="2-3-days">2–3 days before</div>
+        <div class="chip" data-val="1-week">About a week out</div>
+        <div class="chip" data-val="2-plus-weeks">2+ weeks ahead</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">How many days before a deadline do you want a heads-up?</label>
+      <div class="chip-group" id="warning-chips">
+        <div class="chip" data-val="1">1 day</div>
+        <div class="chip" data-val="3">3 days</div>
+        <div class="chip" data-val="7">1 week</div>
+        <div class="chip" data-val="14">2 weeks</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">When multiple big things are due in the same week, your instinct is to...</label>
+      <div class="chip-group" id="stress-chips" style="flex-direction: column; gap: 8px;">
+        <div class="chip" style="border-radius: 10px;" data-val="push-through">Push through and get everything done early</div>
+        <div class="chip" style="border-radius: 10px;" data-val="daily-chunks">Break it into daily chunks and work steadily</div>
+        <div class="chip" style="border-radius: 10px;" data-val="panic-then-fix">Panic a little, then figure it out</div>
+        <div class="chip" style="border-radius: 10px;" data-val="triage">Triage — do the most important thing first</div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(2)">Back</button>
+      <button class="btn-next" onclick="goTo(4)">
+        Next
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 4: YOUR COURSES ══ -->
+  <div class="step-panel" id="step-4">
+    <p class="step-eyebrow">Step 04 — Courses</p>
+    <h1 class="step-title">Tell me about<br>this <em>semester.</em></h1>
+    <p class="step-subtitle">You'll upload the outlines right after this — these questions help me know what to flag.</p>
+
+    <div class="field-group">
+      <label class="field-label">How many course outlines are you uploading?</label>
+      <div class="chip-group" id="course-count-chips">
+        <div class="chip" data-val="1">1</div>
+        <div class="chip" data-val="2">2</div>
+        <div class="chip" data-val="3">3</div>
+        <div class="chip" data-val="4">4</div>
+        <div class="chip" data-val="5">5</div>
+        <div class="chip" data-val="6">6</div>
+        <div class="chip" data-val="7+">7+</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="top-course">Which course is your highest priority this semester?</label>
+      <input type="text" id="top-course" placeholder="e.g. Real Estate Finance">
+      <p class="field-hint">The one that matters most for your GPA or future plans</p>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="worried-course">Is there a course you're most worried about? <span class="optional">optional</span></label>
+      <input type="text" id="worried-course" placeholder="e.g. Econometrics, anything with group projects">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="notes">Anything else the planner should know? <span class="optional">optional</span></label>
+      <textarea id="notes" placeholder="e.g. I have a major recruiting deadline in October, I'm doing a co-op application in November, I'm already behind on one course..."></textarea>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goTo(3)">Back</button>
+      <button class="btn-next" onclick="finish()">
+        Get my prompt
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ COMPLETION ══ -->
+  <div class="step-panel" id="step-complete">
+    <div class="completion">
+      <div class="completion-check">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 13l4 4L19 7" stroke="#121211" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>Your prompt is <em>ready.</em></h2>
+      <p>Copy this, paste it into a fresh Claude conversation, and attach your course outlines. Bring back whatever it gives you.</p>
+    </div>
+
+    <div class="summary-card" id="summary-card"></div>
+
+    <div class="json-block">
+      <p class="json-label">Your extraction prompt</p>
+      <button class="copy-btn" id="copy-prompt-btn" onclick="copyPrompt()">Copy</button>
+      <pre class="prompt-pre" id="prompt-output"></pre>
+    </div>
+
+    <div class="next-steps">
+      <p class="next-steps-title">What to do with this</p>
+      <ol>
+        <li>Copy the prompt above.</li>
+        <li>Open a new conversation in Claude.</li>
+        <li>Paste the prompt, then attach your course outline files to that same message.</li>
+        <li>Send it. You'll get back a block of JSON.</li>
+        <li>Copy that whole response and paste it into your semester plan.</li>
+      </ol>
+      <a href="/tools/semester/plan" class="btn-next" style="display:inline-flex;margin-top:16px;text-decoration:none;">
+        Go to my semester plan
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+
+    <details class="tech-details">
+      <summary>View saved preferences (technical)</summary>
+      <pre class="json-pre" id="json-output"></pre>
+    </details>
+  </div>
+
+</div>
+
+<script>
+let currentStep = 1;
+const totalSteps = 4;
+
+const state = {
+  semesterName: '',
+  semStart: '',
+  semEnd: '',
+  year: '',
+  program: '',
+  works: false,
+  workHours: 20,
+  workDays: [],
+  otherCommitments: '',
+  focusTime: [],
+  advanceStart: '',
+  warningDays: [],
+  stressStyle: '',
+  courseCount: '',
+  topCourse: '',
+  worriedCourse: '',
+  notes: ''
+};
+
+// Locked extraction prompt text, verbatim from semester-build-data-contract.md.
+// If the schema or extraction rules change, update the contract file first,
+// then re-embed here. Do not hand-edit this string on its own.
+const EXTRACTION_PROMPT_TEXT = `You are extracting structured deadline data from one or more university or
+college course outlines. I will attach the outline(s) as files. Read all of
+them carefully.
+
+For EACH course outline attached, extract:
+- The course code and full course name
+- The instructor's name if listed (null if not listed)
+- The term stated on the outline itself if given (e.g. "Fall 2023", "Winter 2026")
+- Every graded or required deliverable: assignments, tests, exams,
+  presentations, reports, participation components, anything the student
+  produces or is examined on
+
+Do NOT extract administrative or regulatory dates that aren't academic
+work, such as course drop deadlines, add/drop dates, or accommodation
+booking deadlines. Only extract things the student has to do or submit.
+
+For EACH deliverable, extract:
+- name: a short, clear name (in your own words if the outline's label is
+  vague, e.g. a generic "Assessment 8")
+- weight_percent: percentage of the final grade. Use 0 if required but
+  ungraded (e.g. a team contract). If the outline gives no percentage at
+  all (points out of a total, letter grade, pass/fail), set this to null
+  and put the actual grading info in notes instead of converting it
+  yourself.
+- date: the due date in YYYY-MM-DD format, only if the outline states one
+  clearly
+- date_status: "confirmed" if an exact date is stated, "tbd_window" if the
+  outline gives a range but not an exact date, "tbd_unknown" if no date or
+  window is given at all, "recurring" if the deliverable happens on a
+  repeating schedule (e.g. weekly) described in the outline. If a
+  deliverable happens repeatedly across the course (e.g. a check embedded
+  in every chapter) but no specific frequency or interval is stated, still
+  use "recurring" rather than "tbd_unknown". Reserve "tbd_unknown" for a
+  deliverable with no repeating pattern and no date information at all.
+- date_window: if date_status is "tbd_window", include
+  {"start": "YYYY-MM-DD", "end": "YYYY-MM-DD"}. Otherwise set this to null.
+- recurrence: if date_status is "recurring", a short plain description of
+  the pattern (e.g. "Every Friday by 5pm, weeks 1-11, lowest score
+  dropped"). Otherwise null.
+- time: the specific time of day if stated (e.g. "8:30 AM"), otherwise null
+- group_work: true if this is a group/team deliverable, false if individual
+- notes: one or two sentences of genuinely useful context (page counts,
+  format, what it covers, anything a student would want at a glance). Do
+  not just restate the name.
+
+IMPORTANT RULES:
+- Never invent or guess a date. If the outline is ambiguous, use
+  "tbd_window" or "tbd_unknown" rather than picking a date that seems
+  reasonable.
+- Never rely on the outline's own numbering (like "Assessment 8"). If two
+  items share a label or number in the source, that's fine, extract each as
+  its own entry with its own name and date.
+- If the same deliverable appears in both a weekly schedule table and a
+  separate assessment/grading table with slightly different details,
+  reconcile into one entry and use the assessment table's weight if they
+  conflict.
+- Include every deliverable, including 0%-weighted required items and
+  ongoing items with no fixed date.
+- If a file can't be read clearly (for example, a scanned image with no
+  extractable text), do not guess at its contents. Name it in the
+  "unreadable_files" field of extraction_meta instead.
+- If a deliverable recurs on a fixed schedule (e.g. a weekly reading
+  response), do not create a separate entry for every occurrence. Create
+  ONE entry describing the pattern in notes, unless a single final or
+  cumulative due date is also given, in which case use that date.
+- If an exam or deliverable's date is set by an external authority not
+  stated in the outline (e.g. "scheduled by the registrar during the
+  December exam period"), use date_status "tbd_unknown" and note in
+  "notes" where the student should actually go to find the real date once
+  it's released.
+- If a deliverable is optional or extra credit rather than required, say
+  so explicitly in notes (e.g. "optional, bonus only").
+- If a deliverable is truly recurring with no single due date (e.g. a
+  weekly reflection due every Friday for 11 weeks), use date_status
+  "recurring" with a "recurrence" description. Do not create a separate
+  entry for every occurrence, and do not use "tbd_unknown" for this case,
+  since the pattern IS known even though a single date isn't.
+- If a deliverable's date is only given as a week number plus a day of the
+  week (e.g. "due Friday of Week 6"), and the exact calendar date isn't
+  stated directly next to it, do NOT calculate the exact date yourself
+  even if a weekly schedule elsewhere in the document gives that week's
+  start date. Use "tbd_window" instead, with the window set to that
+  week's known date range, and explain in notes exactly what the outline
+  said so the student can confirm the precise day.
+- If an assignment "opens" on one date and "closes" on another (common in
+  online discussion-style work), use the closing date as the "date" with
+  date_status "confirmed", and mention the opening date in notes if it
+  seems useful.
+- If a graded item bundles an earlier sub-milestone that has its own due
+  date but no percentage of its own (e.g. a "topic approval" required
+  before a larger weighted project), extract it as two separate entries:
+  one at weight_percent 0 for the sub-milestone, and one with the full
+  stated weight for the main deliverable. Do not merge them into one
+  entry or drop the sub-milestone's date.
+
+Return ONLY a single JSON object in exactly this shape, with no text before
+or after it, and no markdown code fences:
+
+{
+  "schema_version": "1.0",
+  "courses": [
+    { "code": "...", "name": "...", "instructor": "...", "term": "..." }
+  ],
+  "deadlines": [
+    {
+      "id": "d1",
+      "course_code": "...",
+      "name": "...",
+      "weight_percent": 0,
+      "date": "YYYY-MM-DD or null",
+      "date_status": "confirmed",
+      "date_window": null,
+      "recurrence": null,
+      "time": null,
+      "group_work": false,
+      "notes": "..."
+    }
+  ],
+  "extraction_meta": {
+    "outlines_processed": 0,
+    "flagged_items": [],
+    "term_note": null,
+    "unreadable_files": []
+  }
+}
+
+Number the "id" fields sequentially as d1, d2, d3, and so on. In
+"flagged_items", list the ids of every deadline where date_status is not
+"confirmed".`;
+
+function buildExtractionPrompt() {
+  const countRaw = state.courseCount;
+  const countText = countRaw === '7+' ? '7 or more' : (countRaw || 'a few');
+  const plural = countRaw === '1' ? 'outline' : 'outlines';
+
+  const fmtLong = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric' }) : null;
+  const semName = state.semesterName || 'this semester';
+  const start = fmtLong(state.semStart);
+  const end = fmtLong(state.semEnd);
+  const dateRange = (start && end) ? ` running from ${start} to ${end}` : '';
+
+  const preamble = `For context: I'm attaching ${countText} course ${plural} for a semester I'm calling "${semName}"${dateRange}. If anything you read looks like it's from a different term than that, note it in the term_note field of your JSON output, but still extract everything as instructed below.\n\n`;
+
+  return preamble + EXTRACTION_PROMPT_TEXT;
+}
+
+function copyPrompt() {
+  const txt = document.getElementById('prompt-output').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-prompt-btn');
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function goTo(step) {
+  const from = document.getElementById('step-' + currentStep);
+  from.classList.remove('visible');
+
+  setTimeout(() => {
+    from.style.display = 'none';
+
+    const to = document.getElementById('step-' + step);
+    to.style.display = 'block';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => to.classList.add('visible'));
+    });
+
+    currentStep = step;
+    updateProgress();
+    document.getElementById('step-counter').textContent = 'Step ' + step + ' of ' + totalSteps;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 280);
+}
+
+function updateProgress() {
+  document.querySelectorAll('.progress-pip').forEach(pip => {
+    const n = parseInt(pip.dataset.pip);
+    pip.classList.remove('done','active');
+    if (n < currentStep) pip.classList.add('done');
+    else if (n === currentStep) pip.classList.add('active');
+  });
+}
+
+function finish() {
+  collectState();
+  buildSummary();
+  const prefs = buildJson();
+
+  try {
+    localStorage.setItem('semester_preferences', JSON.stringify(prefs));
+  } catch (e) {
+    console.error('Could not save preferences locally:', e);
+  }
+
+  document.getElementById('prompt-output').textContent = buildExtractionPrompt();
+
+  const from = document.getElementById('step-4');
+  from.classList.remove('visible');
+  setTimeout(() => {
+    from.style.display = 'none';
+    document.getElementById('step-counter').textContent = 'Setup complete';
+    document.querySelectorAll('.progress-pip').forEach(pip => {
+      pip.classList.remove('active');
+      pip.classList.add('done');
+    });
+    const to = document.getElementById('step-complete');
+    to.style.display = 'block';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => to.classList.add('visible'));
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 280);
+}
+
+function collectState() {
+  state.semesterName = document.getElementById('semester-name').value.trim();
+  state.semStart = document.getElementById('sem-start').value;
+  state.semEnd = document.getElementById('sem-end').value;
+  state.program = document.getElementById('program').value.trim();
+  state.workHours = parseInt(document.getElementById('work-hours').value);
+  state.otherCommitments = document.getElementById('other-commitments').value.trim();
+  state.topCourse = document.getElementById('top-course').value.trim();
+  state.worriedCourse = document.getElementById('worried-course').value.trim();
+  state.notes = document.getElementById('notes').value.trim();
+
+  state.year = getSelected('year-chips');
+  state.focusTime = getMultiSelected('focus-chips');
+  state.advanceStart = getSelected('advance-chips');
+  state.warningDays = getMultiSelected('warning-chips');
+  state.stressStyle = getSelected('stress-chips');
+  state.courseCount = getSelected('course-count-chips');
+
+  state.workDays = [...document.querySelectorAll('#work-days .day-btn.selected')].map(d => d.dataset.day);
+}
+
+function getSelected(groupId) {
+  const sel = document.querySelector('#' + groupId + ' .chip.selected');
+  return sel ? sel.dataset.val : '';
+}
+
+function getMultiSelected(groupId) {
+  const sels = [...document.querySelectorAll('#' + groupId + ' .chip.selected')];
+  return sels.map(s => s.dataset.val);
+}
+
+function buildSummary() {
+  const card = document.getElementById('summary-card');
+
+  const fmt = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set';
+
+  const workDesc = state.works
+    ? (state.workHours + ' hrs/wk' + (state.workDays.length ? ' · ' + state.workDays.join(', ') : ''))
+    : 'No';
+
+  const warningMap = { '1': '1 day', '3': '3 days', '7': '1 week', '14': '2 weeks' };
+  const advMap = {
+    'last-minute': 'Day of / night before',
+    '2-3-days': '2–3 days before',
+    '1-week': 'About 1 week out',
+    '2-plus-weeks': '2+ weeks ahead'
+  };
+  const stressMap = {
+    'push-through': 'Push through early',
+    'daily-chunks': 'Daily chunks',
+    'panic-then-fix': 'Panic then figure it out',
+    'triage': 'Triage by priority'
+  };
+
+  card.innerHTML = `
+    <p class="summary-section-title">Semester</p>
+    <div class="summary-row"><span class="key">Name</span><span class="val">${state.semesterName || 'Not set'}</span></div>
+    <div class="summary-row"><span class="key">Dates</span><span class="val">${fmt(state.semStart)} — ${fmt(state.semEnd)}</span></div>
+    <div class="summary-row"><span class="key">Year</span><span class="val">${state.year || 'Not set'}</span></div>
+    ${state.program ? `<div class="summary-row"><span class="key">Program</span><span class="val">${state.program}</span></div>` : ''}
+    <div class="summary-divider"></div>
+    <p class="summary-section-title">Schedule</p>
+    <div class="summary-row"><span class="key">Works</span><span class="val">${workDesc}</span></div>
+    ${state.otherCommitments ? `<div class="summary-row"><span class="key">Other</span><span class="val">${state.otherCommitments}</span></div>` : ''}
+    <div class="summary-divider"></div>
+    <p class="summary-section-title">Work style</p>
+    <div class="summary-row"><span class="key">Focus time</span><span class="val">${state.focusTime.length ? state.focusTime.join(', ') : 'Not set'}</span></div>
+    <div class="summary-row"><span class="key">Starts assignments</span><span class="val">${advMap[state.advanceStart] || 'Not set'}</span></div>
+    <div class="summary-row"><span class="key">Warning window</span><span class="val">${state.warningDays.length ? state.warningDays.map(d => warningMap[d] || d).join(', ') : 'Not set'} before deadlines</span></div>
+    <div class="summary-row"><span class="key">Crunch style</span><span class="val">${stressMap[state.stressStyle] || 'Not set'}</span></div>
+    <div class="summary-divider"></div>
+    <p class="summary-section-title">Courses</p>
+    <div class="summary-row"><span class="key">Uploading</span><span class="val">${state.courseCount || '?'} outlines</span></div>
+    ${state.topCourse ? `<div class="summary-row"><span class="key">Top priority</span><span class="val">${state.topCourse}</span></div>` : ''}
+    ${state.worriedCourse ? `<div class="summary-row"><span class="key">Most worried</span><span class="val">${state.worriedCourse}</span></div>` : ''}
+    ${state.notes ? `<div class="summary-row"><span class="key">Notes</span><span class="val">${state.notes}</span></div>` : ''}
+  `;
+}
+
+function buildPreferencesObject() {
+  return {
+    schema_version: "1.0",
+    semester: {
+      name: state.semesterName,
+      start: state.semStart,
+      end: state.semEnd,
+      year: state.year,
+      program: state.program || null
+    },
+    schedule: {
+      works: state.works,
+      work_hours_per_week: state.works ? state.workHours : 0,
+      work_days: state.works ? state.workDays : [],
+      other_commitments: state.otherCommitments || null
+    },
+    preferences: {
+      focus_time: state.focusTime.length ? state.focusTime : null,
+      advance_start: state.advanceStart,
+      deadline_warning_days: state.warningDays.length ? state.warningDays.map(Number) : [3],
+      crunch_style: state.stressStyle
+    },
+    courses_meta: {
+      count: state.courseCount,
+      top_priority: state.topCourse || null,
+      most_worried: state.worriedCourse || null,
+      notes: state.notes || null
+    }
+  };
+}
+
+function buildJson() {
+  const obj = buildPreferencesObject();
+  document.getElementById('json-output').textContent = JSON.stringify(obj, null, 2);
+  return obj;
+}
+
+function copyJson() {
+  const txt = document.getElementById('json-output').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleWork() {
+  const row = document.getElementById('work-toggle');
+  const block = document.getElementById('work-block');
+  state.works = !state.works;
+  if (state.works) { row.classList.add('on'); block.classList.add('visible'); }
+  else { row.classList.remove('on'); block.classList.remove('visible'); }
+}
+
+function updateRange(inputId, valId) {
+  const v = document.getElementById(inputId).value;
+  document.getElementById(valId).textContent = v + ' hrs';
+}
+
+// Single-select chip groups
+['year-chips','advance-chips','course-count-chips'].forEach(gid => {
+  const g = document.getElementById(gid);
+  if (!g) return;
+  g.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      g.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    });
+  });
+});
+
+// Multi-select chip groups (toggle)
+['focus-chips','warning-chips'].forEach(gid => {
+  const g = document.getElementById(gid);
+  if (!g) return;
+  g.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+    });
+  });
+});
+
+// Stress chips (single select, column layout)
+const stressGroup = document.getElementById('stress-chips');
+if (stressGroup) {
+  stressGroup.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      stressGroup.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    });
+  });
+}
+
+// Work days (multi-select)
+document.querySelectorAll('#work-days .day-btn').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('selected'));
+});
+</script>
+</body>
+</html>
