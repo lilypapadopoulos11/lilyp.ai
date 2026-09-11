@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "lilyp.ai personal site",
   "scripts": {
-    "dev": "netlify dev"
+    "dev": "netlify dev",
+    "test": "node test/semester-plan.test.js"
   },
   "engines": {
     "node": ">=18"

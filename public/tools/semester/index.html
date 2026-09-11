@@ -886,6 +886,11 @@ const state = {
 // Locked extraction prompt text, verbatim from semester-build-data-contract.md.
 // If the schema or extraction rules change, update the contract file first,
 // then re-embed here. Do not hand-edit this string on its own.
+// Schema 1.1: a recurring deadline can now carry an "occurrences" array of
+// its instances, each with its own date_status and optional date_window, so a
+// partially published schedule survives the import. plan.html reads 1.0 and
+// 1.1, treats a missing "occurrences" as empty, and treats an occurrence with
+// a date and no date_status as confirmed.
 const EXTRACTION_PROMPT_TEXT = `You are extracting structured deadline data from one or more university or
 college course outlines. I will attach the outline(s) as files. Read all of
 them carefully.
@@ -925,6 +930,30 @@ For EACH deliverable, extract:
 - recurrence: if date_status is "recurring", a short plain description of
   the pattern (e.g. "Every Friday by 5pm, weeks 1-11, lowest score
   dropped"). Otherwise null.
+- occurrences: the individual instances of a recurring deliverable, as an
+  array of objects. Each occurrence is
+  {"id": "<parent id>_o1", "name": "...", "date": "YYYY-MM-DD or null",
+  "date_status": "confirmed", "date_window": null, "time": null,
+  "weight_percent": null, "notes": "..."}. Each instance gets its own
+  date_status, judged on its own:
+    - "confirmed" with a real "date" when the outline states that
+      instance's calendar date outright
+    - "tbd_window" with a "date_window" of {"start": ..., "end": ...} when
+      the outline gives only a range for that instance
+    - "tbd_unknown" with "date": null when that instance is named but its
+      date is not published
+  Set "date_window" to null unless date_status is "tbd_window". Use the
+  outline's own label for the instance if it has one, otherwise a short
+  clear name. Set an occurrence's "weight_percent" ONLY if the outline
+  states a percentage for that specific instance, otherwise leave it null
+  and keep the full weight on the parent entry. Never split, divide or
+  repeat the parent's weight across occurrences yourself. Never invent,
+  calculate or infer an occurrence date. Use an empty array for anything
+  that is not recurring, and for a continuous requirement that has no
+  separate instances to schedule at all. An empty array is reserved for
+  that case. When instances exist but their dates do not, list the
+  instances as stubs with date_status "tbd_unknown" rather than leaving
+  the array empty.
 - time: the specific time of day if stated (e.g. "8:30 AM"), otherwise null
 - group_work: true if this is a group/team deliverable, false if individual
 - notes: one or two sentences of genuinely useful context (page counts,
@@ -948,9 +977,10 @@ IMPORTANT RULES:
   extractable text), do not guess at its contents. Name it in the
   "unreadable_files" field of extraction_meta instead.
 - If a deliverable recurs on a fixed schedule (e.g. a weekly reading
-  response), do not create a separate entry for every occurrence. Create
-  ONE entry describing the pattern in notes, unless a single final or
-  cumulative due date is also given, in which case use that date.
+  response), do not create a separate top-level entry for every occurrence.
+  Create ONE entry describing the pattern in notes, and list every instance
+  the outline dates in that entry's "occurrences" array, unless a single
+  final or cumulative due date is also given, in which case use that date.
 - If an exam or deliverable's date is set by an external authority not
   stated in the outline (e.g. "scheduled by the registrar during the
   December exam period"), use date_status "tbd_unknown" and note in
@@ -958,11 +988,55 @@ IMPORTANT RULES:
   it's released.
 - If a deliverable is optional or extra credit rather than required, say
   so explicitly in notes (e.g. "optional, bonus only").
-- If a deliverable is truly recurring with no single due date (e.g. a
-  weekly reflection due every Friday for 11 weeks), use date_status
-  "recurring" with a "recurrence" description. Do not create a separate
-  entry for every occurrence, and do not use "tbd_unknown" for this case,
-  since the pattern IS known even though a single date isn't.
+- A recurring assessment category stays ONE parent deadline with
+  date_status "recurring". Its instances go in "occurrences", never as
+  extra top-level deadlines, and never as "tbd_unknown" on the parent.
+- THE MOST IMPORTANT DECISION for a recurring deliverable is what goes in
+  its "occurrences" array, because that is what separates work the student
+  can put on a calendar from work they simply do all term. Three cases:
+
+  (a) It is made of separate, countable instances and the outline gives
+      their dates. One occurrence per instance, date_status "confirmed",
+      with that instance's date.
+
+  (b) It is made of separate, countable instances but the outline does not
+      give some or all of their dates. STILL create one occurrence per
+      instance, with "date": null and date_status "tbd_unknown", or
+      "tbd_window" when only a range is given. These stubs carry real
+      information: they tell the student how many pieces of work exist and
+      let each one be tracked and dated on its own once announced. Do NOT
+      leave "occurrences" empty just because the dates are missing, and do
+      NOT collapse the instances into the recurrence sentence. Example of
+      a deliverable with named instances and no published dates:
+
+        "date_status": "recurring",
+        "occurrences": [
+          { "id": "d1_o1", "name": "<first instance>", "date": null,
+            "date_status": "tbd_unknown", "date_window": null },
+          { "id": "d1_o2", "name": "<second instance>", "date": null,
+            "date_status": "tbd_unknown", "date_window": null }
+        ]
+
+  (c) It has no separate instances at all. It is one continuous
+      requirement satisfied by doing it throughout the term, with nothing
+      individual to schedule: ongoing participation, attendance, general
+      engagement, professionalism, or any similar non-terminal
+      requirement. ONLY this case gets "occurrences": []. An empty array
+      is reserved for it and means "there is nothing here to put on a
+      calendar", not "the dates are unknown".
+
+  Do not invent a count. If the outline says something repeats but never
+  says how many times and never names a single instance, leave the array
+  empty rather than guessing at instances that may not exist.
+- If the outline states the actual calendar date of any instance of a
+  recurring deliverable, do not leave it buried in the recurrence sentence.
+  Keep the recurrence description AND put that instance in the
+  "occurrences" array with date_status "confirmed". Those dates are the
+  ones the student has to act on.
+- A recurring deliverable's instances do not have to be uniform. Some
+  outlines date every instance, some date only a few, some name instances
+  with no dates at all. Give each instance the certainty the outline
+  actually gives it, one by one.
 - If a deliverable's date is only given as a week number plus a day of the
   week (e.g. "due Friday of Week 6"), and the exact calendar date isn't
   stated directly next to it, do NOT calculate the exact date yourself
@@ -985,7 +1059,7 @@ Return ONLY a single JSON object in exactly this shape, with no text before
 or after it, and no markdown code fences:
 
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "courses": [
     { "code": "...", "name": "...", "instructor": "...", "term": "..." }
   ],
@@ -1001,7 +1075,57 @@ or after it, and no markdown code fences:
       "recurrence": null,
       "time": null,
       "group_work": false,
-      "notes": "..."
+      "notes": "...",
+      "occurrences": []
+    },
+    {
+      "id": "d2",
+      "course_code": "...",
+      "name": "...",
+      "weight_percent": 35,
+      "date": null,
+      "date_status": "recurring",
+      "date_window": null,
+      "recurrence": "...",
+      "time": null,
+      "group_work": true,
+      "notes": "...",
+      "occurrences": [
+        {
+          "id": "d2_o1",
+          "name": "...",
+          "date": "YYYY-MM-DD",
+          "date_status": "confirmed",
+          "date_window": null,
+          "time": null,
+          "weight_percent": null,
+          "notes": "..."
+        },
+        {
+          "id": "d2_o2",
+          "name": "...",
+          "date": null,
+          "date_status": "tbd_unknown",
+          "date_window": null,
+          "time": null,
+          "weight_percent": null,
+          "notes": "..."
+        }
+      ]
+    },
+    {
+      "id": "d3",
+      "course_code": "...",
+      "name": "...",
+      "weight_percent": 10,
+      "date": null,
+      "date_status": "recurring",
+      "date_window": null,
+      "recurrence": "...",
+      "time": null,
+      "group_work": false,
+      "notes": "...",
+      "occurrences": []
     }
   ],
   "extraction_meta": {
@@ -1012,9 +1136,14 @@ or after it, and no markdown code fences:
   }
 }
 
-Number the "id" fields sequentially as d1, d2, d3, and so on. In
-"flagged_items", list the ids of every deadline where date_status is not
-"confirmed".`;
+Number the "id" fields sequentially as d1, d2, d3, and so on, and number
+occurrence ids after their parent as d2_o1, d2_o2, and so on. Include
+"occurrences" on every deadline, using an empty array where there are none.
+In "flagged_items", list the ids of every entry that still needs a date from
+the student: any top-level deadline with date_status "tbd_window" or
+"tbd_unknown", plus any occurrence with one of those statuses. Do not flag a
+"recurring" parent that has no occurrences, since ongoing work is not a
+missing date, and do not flag an entry that already has a confirmed date.`;
 
 function buildExtractionPrompt() {
   const countRaw = state.courseCount;

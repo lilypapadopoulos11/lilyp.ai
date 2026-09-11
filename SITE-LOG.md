@@ -4,6 +4,131 @@ A running record of changes, fixes, and additions to lilyp.ai. Drop this into an
 
 ---
 
+## 2026-09-11 | Semester tool: paste box accepts whatever the model wraps the JSON in
+
+**What was wrong:** The paste box stripped code fences from the very start and end of the input, then called `JSON.parse` on the rest. Any commentary around the JSON ("Sure! Here you go:", "Let me know if you want changes") made the parse fail with "That didn't parse as JSON". The hint under the box promised that extra text was fine, so the copy was wrong rather than merely unclear. Chattier models hit this constantly.
+
+**The fix:** `findJsonObject()` walks the paste for the first balanced `{ ... }` span that actually parses, so raw JSON, fenced JSON, and JSON buried in prose all work. The scan is string-aware, so braces and escaped quotes inside string values do not throw off the brace count, and a stray object in the commentary does not win over the real payload: a parsed object carrying a `deadlines` array is preferred, with the first parseable object as fallback so the existing "no deadlines list" error still fires for a genuinely wrong paste.
+
+Scanning is capped at 50 candidate start positions, so a paste full of stray braces fails fast instead of spinning.
+
+**Error state preserved:** no valid object found is still an error that blocks the load, with wording updated to match what the parser now accepts.
+
+**Hint text unchanged.** It already said fences and surrounding text were fine. That statement is now true.
+
+**Tests:** 24 new checks covering raw, fenced with and without a language tag, prose before, after and both sides, fence plus prose, prose containing braces, a stray object before the real payload, braces and escaped quotes inside string values, single-line pastes, empty input, truncated JSON, an object with no deadlines, and a pathological brace input. Plus an end-to-end run through a realistic messy paste, all the way to the calendar export. 135 checks total, all passing.
+
+**Files changed:** `public/tools/semester/plan.html`, `test/semester-plan.test.js`
+
+**Revert:** Safe commit to revert to: `a08e9db`.
+
+---
+
+## 2026-09-11 | Semester tool: product contract for empty occurrences and load_weight
+
+Two contract details confirmed and locked down with tests. No architecture change was needed.
+
+**1. `occurrences: []` is now explicitly reserved.** The extraction prompt previously said an empty array meant "no meaningful individual instances", which left room to empty the array whenever dates were missing. It now spells out three cases for a recurring deliverable:
+
+- instances exist and are dated: one occurrence each, `date_status: "confirmed"`
+- instances exist but dates are not published: still one occurrence each, as stubs with `date: null` and `date_status: "tbd_unknown"` (or `tbd_window` for a range). Stubs carry real information, namely how many pieces of work exist, and let each be dated on its own later. The prompt shows the stub shape inline.
+- no separate instances at all, a continuous requirement satisfied by doing it all term: **only this case** gets `"occurrences": []`
+
+An empty array now means "nothing here to put on a calendar", never "the dates are unknown". The prompt also says not to invent a count when the outline never says how many times something repeats. The example JSON gained a third deadline showing the ongoing shape.
+
+The frontend does not change and does not recognize any word. The distinction is entirely structural: stubs become `needs_date`, an empty array becomes `ongoing`. A test loads the same parent twice, with identical names and identical recurrence wording, differing only in whether the array holds a stub, and asserts the two land in opposite states.
+
+**2. `load_weight` is workload-only, confirmed by audit.** It has exactly one consumer, `scoreWeeks()`, which feeds bar heights, week load labels and the killer-weeks stat. It is never rendered as a percentage and never enters a grade calculation. Every percentage on the page comes from either an explicitly stated `weight_percent` or a parent's stated total shown as category context. Nothing divides a parent weight for display, which matters for dropped assessments, best-of-N rules, optional attempts and uneven weighting.
+
+Locked with a test that renders a course whose parent weights divide both cleanly (40 across 4) and unevenly (20 across 3), then asserts that every percentage anywhere on the page is a number the import actually stated. Mutation-checked: feeding `load_weight` into the weight pill breaks four checks.
+
+**3. Schema 1.0 prose is never parsed, confirmed.** `recurrence` is stored as metadata and rendered as text. Every date in the app comes from `date`, `date_window.start/end`, or the saved semester range. An old 1.0 import whose recurring dates live only in a sentence stays ongoing work with no dates, which is correct. Gaining individual dated occurrences requires re-importing under 1.1. A test asserts a prose sentence full of dates yields zero dated items and zero calendar events.
+
+**Tests:** 111 checks, all passing. `npm test`.
+
+**Files changed:** `public/tools/semester/index.html`, `test/semester-plan.test.js`
+
+**Revert:** Safe commit to revert to: `a08e9db`.
+
+---
+
+## 2026-09-11 | Semester tool: unresolved-date logic is now structural, plus occurrence-level date status
+
+**Context:** This is a public tool. It has to work for any student, any school, any outline. Nothing in it may key off a particular course code, assessment name, or semester.
+
+**What was still wrong:** A recurring parent has `date: null` by design, because it stands for several instances rather than one. The unresolved sections read `date_status` directly, so any recurring parent was treated as "missing a date" and the review screen asked the student to supply one exact date for it. For genuinely ongoing work (participation, attendance, weekly engagement, anything non-terminal) there is no such date to give.
+
+**The change:** Unresolved-ness is now a derived property of the normalized item, not a status string the UI re-interprets. Every item carries `resolution_kind`, one of:
+
+- `dated` : a real, parseable date. Timeline, weekly view, workload chart, export.
+- `needs_date` : no date, and the import says one exists or is expected (`tbd_window`, `tbd_unknown`). The student is asked for it.
+- `ongoing` : a repeating requirement with no single due date. Shown as ongoing work, never asked for one exact date.
+
+`getAllFlaggable()`, `getStillPending()` and the pending/ongoing split now branch on that field alone. No component reads `date_status`, names, or wording to decide whether something is unresolved.
+
+**Occurrence-level dates (still schema 1.1):** An occurrence may now carry its own `date_status` (`confirmed`, `tbd_window`, `tbd_unknown`) and `date_window`, so a partly published schedule survives the import. Each occurrence is evaluated on its own: the dated ones land on the timeline, the undated ones appear individually in the pending section where the student can supply a date.
+
+**Backward compatibility:**
+
+- Occurrence with a date and no `date_status`: confirmed.
+- Occurrence with `date: null` and no `date_status`: ignored, exactly as before. No status is invented.
+- Schema 1.0 imports with no `occurrences` behave as they always did.
+- An entry that claims `confirmed` but supplies no usable date is now unresolved rather than a broken timeline row. That was a latent crash: the timeline sorts on the date string.
+
+**Never inferred:** no date is calculated from week numbers, ranges, or surrounding schedule information anywhere in the frontend. A window is shown as a window until the student replaces it.
+
+**Also:** the load share across an assessment's dated instances is no longer rounded, so the instances sum to the parent's weight exactly. Scores are only ever compared or displayed rounded.
+
+**Extraction prompt (`public/tools/semester/index.html`):** now documents occurrence-level `date_status` and `date_window`, and instructs the model that a recurring category stays one parent deadline, that every explicitly stated instance date belongs in `occurrences`, that partly known instances use `tbd_window` or `tbd_unknown`, that dates must never be calculated from week numbers or inferred from surrounding schedule information, that parent weights must never be split or copied onto instances, and that an ongoing requirement with no meaningful single deadline stays `recurring` with an empty array instead of being pushed into a date-chasing workflow.
+
+**Tests:** `npm test` runs `test/semester-plan.test.js`. It pulls the real `<script>` out of `plan.html` and runs it against a DOM stub, so it always tests the shipped file. Fixtures are generic and every date is relative to the run date, so the suite does not rot. Coverage: recurring parent with all instances dated, recurring parent with a mixture of dated and unresolved instances, recurring parent with no instances (ongoing), standalone confirmed, standalone `tbd_window`, standalone `tbd_unknown`, a schema 1.0 import, and malformed occurrence data (non-array, junk entries, unparseable dates, contradictory statuses, duplicate ids). 71 checks, all passing.
+
+**Files changed:** `public/tools/semester/plan.html`, `public/tools/semester/index.html`, `test/semester-plan.test.js` (new), `package.json`
+
+**Revert:** Safe commit to revert to: `a08e9db`.
+
+---
+
+## 2026-09-11 | Semester tool: recurring assessments with real dates now show up
+
+**What changed:** The semester plan tool treated a repeating assessment (a repeating assessment) as one deadline object with `date_status: "recurring"`, and kept its actual calendar dates as prose inside `recurrence`. Every view built itself from objects that had a real `date`, so those dated instances were invisible: no timeline rows, no workload, no course filter hits. Filtering to a course whose work is mostly recurring said "No settled deadlines yet for this filter" even though the course had many explicitly dated assessments.
+
+**Import schema is now 1.1.** A recurring deadline can carry an `occurrences` array of its real dated instances:
+
+```
+{ "id": "d29", "name": "<recurring assessment>", "weight_percent": 35,
+  "date": null, "date_status": "recurring",
+  "recurrence": "<plain description of the pattern>",
+  "occurrences": [
+    { "id": "d29_o1", "name": "<instance name>",
+      "date": "YYYY-MM-DD", "time": "11:59 PM",
+      "weight_percent": null, "notes": "<instance note>" }
+  ] }
+```
+
+**The fix (`public/tools/semester/plan.html`):** Added one normalization layer. `normalizeDeadlines()` flattens the raw import into a single runtime list of actionable items, and `getResolvedList()`, which every view already called, now reads that list instead of the raw JSON. So no component interprets the syllabus JSON on its own any more.
+
+- A dated occurrence becomes its own deadline, inheriting `course_code`, `group_work` and parent context, using its own name, date, time, notes and weight.
+- A null occurrence weight stays null. The parent's weight is never copied onto each instance (that would multiply a 35% assessment by five). It is kept as category metadata and shown as context, "Part of <assessment name> (35% total), 1 of 5".
+- The workload chart shares the parent's weight across its dated instances (`load_weight`), so five instances of a 35% assessment total 35 rather than 175 or 15.
+- A parent represented by its occurrences is no longer a dated item itself, so nothing is counted twice.
+- A recurring parent with an empty array is untouched: still visible as ongoing work, still no invented date.
+- Collision warnings stop claiming a combined percentage when an item on that day has no stated weight.
+
+**Backward compatible:** Schema 1.0 JSON has no `occurrences` property. The parser normalizes missing to an empty array, so old saved imports in localStorage and old pastes behave exactly as before. Confirmed standalone deadlines are unchanged.
+
+**Also updated (`public/tools/semester/index.html`):** The locked extraction prompt now documents the `occurrences` field, tells the model to put stated instance dates there instead of burying them in the recurrence sentence, never to invent or split weights, and emits `schema_version: "1.1"`. The preferences object stays at its own 1.0.
+
+**Contract note:** `semester-build-data-contract.md` is not in this repo. It is the stated source of truth for that prompt string and needs the same 1.1 update so the two do not drift.
+
+**Tested:** Ran the real `plan.html` script in a stubbed DOM against a 1.1 fixture, a 1.0 version with `occurrences` stripped, and a malformed one. 45 checks covering flattening, inheritance, weight handling, course filters, weekly scoring, warnings, counts and the ICS export. (Superseded by the committed suite in the next entry.)
+
+**Files changed:** `public/tools/semester/plan.html`, `public/tools/semester/index.html`
+
+**Revert:** Safe commit to revert to: `a08e9db`.
+
+---
+
 ## 2026-04-05 | Dynamic article template upgrade
 
 **What changed:** Rewrote `public/library/item.html` so dynamically rendered articles (ones pulling from Airtable, not hand-crafted HTML) look dramatically better.
