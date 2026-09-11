@@ -582,22 +582,60 @@ function urgencyClass(days, weight) {
 // ═══════════════════════════════════════════════════════════
 // PARSING
 // ═══════════════════════════════════════════════════════════
-function stripCodeFences(text) {
-  let t = text.trim();
-  t = t.replace(/^```(?:json)?\s*/i, '');
-  t = t.replace(/```\s*$/, '');
-  return t.trim();
-}
-function tryParseExtraction(raw) {
-  const cleaned = stripCodeFences(raw);
-  let data;
-  try {
-    data = JSON.parse(cleaned);
-  } catch (e) {
-    return { ok: false, error: "That didn't parse as JSON. Make sure you copied the whole response, starting with { and ending with }." };
+// Different models hand back the JSON differently: raw, inside a code fence,
+// or with a sentence of commentary before and after it. Rather than guess at
+// the wrapper, walk the text for the first balanced { ... } span that actually
+// parses. Scanning is capped so a paste full of stray braces cannot spin.
+const MAX_JSON_SCAN_STARTS = 50;
+
+// Returns the substring from `start` to its matching close brace, or null if
+// the braces never balance. String-aware, so braces and escaped quotes inside
+// JSON string values do not throw the count off.
+function balancedObjectFrom(text, start) {
+  let depth = 0, inString = false, escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
   }
-  if (!data || typeof data !== 'object') {
-    return { ok: false, error: "That parsed, but it isn't the shape I expected." };
+  return null;
+}
+
+function findJsonObject(raw) {
+  const text = String(raw === null || raw === undefined ? '' : raw);
+  let firstParsed = null;
+  let starts = 0;
+  for (let i = 0; i < text.length && starts < MAX_JSON_SCAN_STARTS; i++) {
+    if (text[i] !== '{') continue;
+    starts++;
+    const span = balancedObjectFrom(text, i);
+    if (!span) continue;
+    let parsed;
+    try { parsed = JSON.parse(span); } catch (e) { continue; }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) continue;
+    // An object carrying a "deadlines" array is what we came for. Anything
+    // else may be a stray object in the surrounding commentary, so remember
+    // the first one and keep looking.
+    if (Array.isArray(parsed.deadlines)) return parsed;
+    if (!firstParsed) firstParsed = parsed;
+  }
+  return firstParsed;
+}
+
+function tryParseExtraction(raw) {
+  const data = findJsonObject(raw);
+  if (!data) {
+    return { ok: false, error: "I couldn't find any JSON in that. Paste the reply that contains the { ... } block, any text around it is fine." };
   }
   if (!Array.isArray(data.deadlines)) {
     return { ok: false, error: 'I don\'t see a "deadlines" list in this. Make sure you pasted the full response from the extraction prompt, not a summary of it.' };

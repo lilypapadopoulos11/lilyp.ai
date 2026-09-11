@@ -4,6 +4,26 @@ A running record of changes, fixes, and additions to lilyp.ai. Drop this into an
 
 ---
 
+## 2026-09-11 | Semester tool: paste box accepts whatever the model wraps the JSON in
+
+**What was wrong:** The paste box stripped code fences from the very start and end of the input, then called `JSON.parse` on the rest. Any commentary around the JSON ("Sure! Here you go:", "Let me know if you want changes") made the parse fail with "That didn't parse as JSON". The hint under the box promised that extra text was fine, so the copy was wrong rather than merely unclear. Chattier models hit this constantly.
+
+**The fix:** `findJsonObject()` walks the paste for the first balanced `{ ... }` span that actually parses, so raw JSON, fenced JSON, and JSON buried in prose all work. The scan is string-aware, so braces and escaped quotes inside string values do not throw off the brace count, and a stray object in the commentary does not win over the real payload: a parsed object carrying a `deadlines` array is preferred, with the first parseable object as fallback so the existing "no deadlines list" error still fires for a genuinely wrong paste.
+
+Scanning is capped at 50 candidate start positions, so a paste full of stray braces fails fast instead of spinning.
+
+**Error state preserved:** no valid object found is still an error that blocks the load, with wording updated to match what the parser now accepts.
+
+**Hint text unchanged.** It already said fences and surrounding text were fine. That statement is now true.
+
+**Tests:** 24 new checks covering raw, fenced with and without a language tag, prose before, after and both sides, fence plus prose, prose containing braces, a stray object before the real payload, braces and escaped quotes inside string values, single-line pastes, empty input, truncated JSON, an object with no deadlines, and a pathological brace input. Plus an end-to-end run through a realistic messy paste, all the way to the calendar export. 135 checks total, all passing.
+
+**Files changed:** `public/tools/semester/plan.html`, `test/semester-plan.test.js`
+
+**Revert:** Safe commit to revert to: `a08e9db`.
+
+---
+
 ## 2026-09-11 | Semester tool: product contract for empty occurrences and load_weight
 
 Two contract details confirmed and locked down with tests. No architecture change was needed.

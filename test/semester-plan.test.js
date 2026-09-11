@@ -497,5 +497,94 @@ describe('Schema 1.0 prose dates are never parsed');
   check('export contains no events from it', (app.generateICS(app.getResolvedList()).match(/BEGIN:VEVENT/g) || []).length === 0);
 }
 
+describe('Paste parsing: raw, fenced, or buried in prose');
+{
+  const { app } = loadPage();
+  const payload = {
+    schema_version: '1.1',
+    courses: [{ code: 'CRS101', name: 'Course One' }],
+    deadlines: [
+      { id: 'd1', course_code: 'CRS101', name: 'An item', weight_percent: 10,
+        date: plusDays(12), date_status: 'confirmed', date_window: null, recurrence: null,
+        time: null, group_work: false, notes: null, occurrences: [] }
+    ]
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const ok = (label, raw) => {
+    const r = app.tryParseExtraction(raw);
+    check(label, r.ok && Array.isArray(r.data.deadlines) && r.data.deadlines[0].id === 'd1',
+      r.ok ? undefined : r.error);
+  };
+
+  ok('raw JSON', json);
+  ok('JSON with surrounding whitespace', '\n\n  ' + json + '  \n\n');
+  ok('fenced with a language tag', '```json\n' + json + '\n```');
+  ok('fenced without a language tag', '```\n' + json + '\n```');
+  ok('prose before', 'Here is the extracted data for your semester:\n\n' + json);
+  ok('prose after', json + '\n\nLet me know if you want me to adjust anything!');
+  ok('prose on both sides', 'Sure! Here you go:\n\n' + json + '\n\nHope that helps.');
+  ok('fence plus prose on both sides',
+    'Got it. Here is the JSON:\n\n```json\n' + json + '\n```\n\nI flagged two items for you.');
+  ok('prose containing braces before the object',
+    'I used {these rules} and {this format} to build it:\n' + json);
+  ok('prose containing a closing brace after the object',
+    json + '\nNote: anything in {curly braces} above is a placeholder.');
+  ok('single line, no newlines at all', 'Result: ' + JSON.stringify(payload) + ' done');
+
+  // A stray object in the commentary must not win over the real payload.
+  ok('stray JSON object before the real one',
+    'Quick summary: {"courses": 1, "items": 1}\n\nAnd the full extraction:\n' + json);
+
+  // Braces and escaped quotes inside string values must not break the scan.
+  const tricky = JSON.parse(json);
+  tricky.deadlines[0].notes = 'Use {curly} braces and a \\"quoted\\" phrase; watch the } here';
+  const trickyJson = JSON.stringify(tricky);
+  const trickyResult = app.tryParseExtraction('Here:\n' + trickyJson + '\nThanks!');
+  check('braces and escaped quotes inside strings survive',
+    trickyResult.ok && trickyResult.data.deadlines[0].notes === tricky.deadlines[0].notes,
+    trickyResult.ok ? trickyResult.data.deadlines[0].notes : trickyResult.error);
+
+  // Error states are preserved.
+  const noJson = app.tryParseExtraction('I could not read your outline, sorry.');
+  check('plain prose with no JSON is an error', noJson.ok === false && typeof noJson.error === 'string');
+  const empty = app.tryParseExtraction('');
+  check('empty paste is an error', empty.ok === false);
+  const truncated = app.tryParseExtraction('Here you go: {"deadlines": [{"id": "d1",');
+  check('truncated JSON is an error', truncated.ok === false);
+  const noDeadlines = app.tryParseExtraction('{"courses": [], "notes": "nothing here"}');
+  check('an object with no deadlines keeps the deadlines error',
+    noDeadlines.ok === false && /deadlines/.test(noDeadlines.error), noDeadlines.error);
+
+  // A paste full of stray braces must not spin.
+  const started = Date.now();
+  const pathological = app.tryParseExtraction('{'.repeat(20000));
+  check('pathological brace input fails fast',
+    pathological.ok === false && Date.now() - started < 2000, Date.now() - started);
+}
+
+describe('Paste parsing end to end');
+{
+  const { app, el } = loadPage();
+  const data = genericImport();
+  el['paste-input'].value =
+    'Absolutely! Here is the structured extraction from the three outlines you attached:\n\n' +
+    '```json\n' + JSON.stringify(data, null, 2) + '\n```\n\n' +
+    'I flagged the items that did not have firm dates. Let me know if you want them adjusted.';
+  app.submitPaste();
+  check('messy paste is accepted', el['paste-error'].style.display !== 'block', el['paste-error'].textContent);
+  check('all items normalized from the messy paste', app.getRuntimeDeadlines().length > 0);
+  app.renderDashboard();
+  check('dashboard renders from the messy paste', /Standalone confirmed item/.test(el['deadline-list'].innerHTML));
+  const ics = app.generateICS(app.getResolvedList());
+  check('calendar export still produced', /BEGIN:VCALENDAR/.test(ics) && /BEGIN:VEVENT/.test(ics));
+
+  // And the error path still surfaces in the UI.
+  const fresh = loadPage();
+  fresh.el['paste-input'].value = 'Sorry, I was not able to extract anything.';
+  fresh.app.submitPaste();
+  check('unparseable paste shows the error state', fresh.el['paste-error'].style.display === 'block');
+  check('unparseable paste does not load a plan', fresh.app.getRuntimeDeadlines().length === 0);
+}
+
 console.log('\n' + passes + ' passed, ' + failures + ' failed');
 process.exit(failures ? 1 : 0);
