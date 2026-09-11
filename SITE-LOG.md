@@ -4,6 +4,34 @@ A running record of changes, fixes, and additions to lilyp.ai. Drop this into an
 
 ---
 
+## 2026-09-11 | Semester tool: product contract for empty occurrences and load_weight
+
+Two contract details confirmed and locked down with tests. No architecture change was needed.
+
+**1. `occurrences: []` is now explicitly reserved.** The extraction prompt previously said an empty array meant "no meaningful individual instances", which left room to empty the array whenever dates were missing. It now spells out three cases for a recurring deliverable:
+
+- instances exist and are dated: one occurrence each, `date_status: "confirmed"`
+- instances exist but dates are not published: still one occurrence each, as stubs with `date: null` and `date_status: "tbd_unknown"` (or `tbd_window` for a range). Stubs carry real information, namely how many pieces of work exist, and let each be dated on its own later. The prompt shows the stub shape inline.
+- no separate instances at all, a continuous requirement satisfied by doing it all term: **only this case** gets `"occurrences": []`
+
+An empty array now means "nothing here to put on a calendar", never "the dates are unknown". The prompt also says not to invent a count when the outline never says how many times something repeats. The example JSON gained a third deadline showing the ongoing shape.
+
+The frontend does not change and does not recognize any word. The distinction is entirely structural: stubs become `needs_date`, an empty array becomes `ongoing`. A test loads the same parent twice, with identical names and identical recurrence wording, differing only in whether the array holds a stub, and asserts the two land in opposite states.
+
+**2. `load_weight` is workload-only, confirmed by audit.** It has exactly one consumer, `scoreWeeks()`, which feeds bar heights, week load labels and the killer-weeks stat. It is never rendered as a percentage and never enters a grade calculation. Every percentage on the page comes from either an explicitly stated `weight_percent` or a parent's stated total shown as category context. Nothing divides a parent weight for display, which matters for dropped assessments, best-of-N rules, optional attempts and uneven weighting.
+
+Locked with a test that renders a course whose parent weights divide both cleanly (40 across 4) and unevenly (20 across 3), then asserts that every percentage anywhere on the page is a number the import actually stated. Mutation-checked: feeding `load_weight` into the weight pill breaks four checks.
+
+**3. Schema 1.0 prose is never parsed, confirmed.** `recurrence` is stored as metadata and rendered as text. Every date in the app comes from `date`, `date_window.start/end`, or the saved semester range. An old 1.0 import whose recurring dates live only in a sentence stays ongoing work with no dates, which is correct. Gaining individual dated occurrences requires re-importing under 1.1. A test asserts a prose sentence full of dates yields zero dated items and zero calendar events.
+
+**Tests:** 111 checks, all passing. `npm test`.
+
+**Files changed:** `public/tools/semester/index.html`, `test/semester-plan.test.js`
+
+**Revert:** Safe commit to revert to: `a08e9db`.
+
+---
+
 ## 2026-09-11 | Semester tool: unresolved-date logic is now structural, plus occurrence-level date status
 
 **Context:** This is a public tool. It has to work for any student, any school, any outline. Nothing in it may key off a particular course code, assessment name, or semester.
