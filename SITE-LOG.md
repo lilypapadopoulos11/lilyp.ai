@@ -4,6 +4,46 @@ A running record of changes, fixes, and additions to lilyp.ai. Drop this into an
 
 ---
 
+## 2026-09-11 | Semester tool: recurring assessments with real dates now show up
+
+**What changed:** The semester plan tool treated a repeating assessment (weekly quizzes, Business Brief Seminars, discussions, learning exercises) as one deadline object with `date_status: "recurring"`, and kept its actual calendar dates as prose inside `recurrence`. Every view built itself from objects that had a real `date`, so those dated instances were invisible: no timeline rows, no workload, no course filter hits. Filtering to MGMT4000 said "No settled deadlines yet for this filter" even though the course had many explicitly dated assessments.
+
+**Import schema is now 1.1.** A recurring deadline can carry an `occurrences` array of its real dated instances:
+
+```
+{ "id": "d29", "name": "Business Brief Seminars", "weight_percent": 35,
+  "date": null, "date_status": "recurring",
+  "recurrence": "Five recorded team seminars.",
+  "occurrences": [
+    { "id": "d29_o1", "name": "Unit 2 Business Brief Seminar Submission",
+      "date": "2026-09-27", "time": "11:59 PM",
+      "weight_percent": null, "notes": "Submit the team's recording link and RNSS." }
+  ] }
+```
+
+**The fix (`public/tools/semester/plan.html`):** Added one normalization layer. `normalizeDeadlines()` flattens the raw import into a single runtime list of actionable items, and `getResolvedList()`, which every view already called, now reads that list instead of the raw JSON. So no component interprets the syllabus JSON on its own any more.
+
+- A dated occurrence becomes its own deadline, inheriting `course_code`, `group_work` and parent context, using its own name, date, time, notes and weight.
+- A null occurrence weight stays null. The parent's weight is never copied onto each instance (that would multiply a 35% assessment by five). It is kept as category metadata and shown as context, "Part of Business Brief Seminars (35% total), 1 of 5".
+- The workload chart shares the parent's weight across its dated instances (`load_weight`), so five seminars total 35 rather than 175 or 15.
+- A parent represented by its occurrences is no longer a dated item itself, so nothing is counted twice.
+- A recurring parent with an empty array is untouched: still visible as ongoing work, still no invented date.
+- Collision warnings stop claiming a combined percentage when an item on that day has no stated weight.
+
+**Backward compatible:** Schema 1.0 JSON has no `occurrences` property. The parser normalizes missing to an empty array, so old saved imports in localStorage and old pastes behave exactly as before. Confirmed standalone deadlines are unchanged.
+
+**Also updated (`public/tools/semester/index.html`):** The locked extraction prompt now documents the `occurrences` field, tells the model to put stated instance dates there instead of burying them in the recurrence sentence, never to invent or split weights, and emits `schema_version: "1.1"`. The preferences object stays at its own 1.0.
+
+**Contract note:** `semester-build-data-contract.md` is not in this repo. It is the stated source of truth for that prompt string and needs the same 1.1 update so the two do not drift.
+
+**Tested:** Ran the real `plan.html` script in a stubbed DOM against a 1.1 fixture (confirmed deadline, recurring parent with five dated occurrences, recurring parent with per-instance weights, recurring parent with an empty array, tbd_window), a 1.0 version of the same file with `occurrences` stripped, and a malformed one. 45 checks covering flattening, inheritance, weight handling, course filters, weekly scoring, warnings, counts and the ICS export.
+
+**Files changed:** `public/tools/semester/plan.html`, `public/tools/semester/index.html`
+
+**Revert:** Safe commit to revert to: `a08e9db`.
+
+---
+
 ## 2026-04-05 | Dynamic article template upgrade
 
 **What changed:** Rewrote `public/library/item.html` so dynamically rendered articles (ones pulling from Airtable, not hand-crafted HTML) look dramatically better.

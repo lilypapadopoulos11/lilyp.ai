@@ -499,6 +499,7 @@ body::before {
 let PREFS = null;
 let EXTRACTION = null;
 let RESOLUTIONS = {};
+let RUNTIME_DEADLINES = null;
 const TODAY = new Date();
 TODAY.setHours(0, 0, 0, 0);
 
@@ -602,6 +603,12 @@ function tryParseExtraction(raw) {
     return { ok: false, error: 'I don\'t see a "deadlines" list in this. Make sure you pasted the full response from the extraction prompt, not a summary of it.' };
   }
   if (!Array.isArray(data.courses)) data.courses = [];
+  // Schema 1.1 adds "occurrences" to recurring deadlines. Schema 1.0 files
+  // have no such property, so normalize it to an empty array on the way in
+  // and everything downstream can stop caring which version it is reading.
+  data.deadlines.forEach(dl => {
+    if (dl && typeof dl === 'object' && !Array.isArray(dl.occurrences)) dl.occurrences = [];
+  });
   if (!data.extraction_meta || typeof data.extraction_meta !== 'object') data.extraction_meta = {};
   if (!Array.isArray(data.extraction_meta.flagged_items)) data.extraction_meta.flagged_items = [];
   if (!Array.isArray(data.extraction_meta.unreadable_files)) data.extraction_meta.unreadable_files = [];
@@ -620,10 +627,152 @@ function submitPaste() {
   errEl.style.display = 'none';
   EXTRACTION = result.data;
   RESOLUTIONS = {};
+  invalidateRuntimeDeadlines();
   saveExtraction();
   saveResolutions();
   hideScreen('screen-paste');
   routeAfterLoad();
+}
+
+// ═══════════════════════════════════════════════════════════
+// NORMALIZATION  (schema 1.0 and 1.1)
+// ═══════════════════════════════════════════════════════════
+// Schema 1.1 lets a recurring deadline carry an "occurrences" array: the
+// real, dated instances of a repeating assessment (weekly quizzes, seminar
+// submissions, discussion posts). Those dates used to live only as prose in
+// "recurrence", so every dated instance was invisible to the timeline.
+//
+// Everything in this file reads getResolvedList(), which is built from the
+// one normalized list below, so a dated occurrence is a first-class deadline
+// everywhere: timeline, weekly view, workload chart, course filters, counts,
+// warnings and the calendar export.
+//
+// Rules:
+//   - A dated occurrence becomes its own actionable item. It inherits
+//     course_code, group_work and parent context, and uses its own name,
+//     date, time, notes and weight when it has them.
+//   - A null occurrence weight stays null. The parent's weight is never
+//     copied onto each instance, which would multiply the assessment. It is
+//     kept as category metadata, and shared across the dated instances only
+//     for the workload score.
+//   - A parent that is represented by its occurrences is not itself a dated
+//     item, so one assessment is never counted twice.
+//   - A recurring parent with no dated occurrences is left alone: it stays
+//     visible as ongoing work and gets no invented date.
+//   - Schema 1.0 has no "occurrences" property at all. Missing reads as
+//     empty, so those files behave exactly as they did before.
+
+function pick(a, b) { return (a === null || a === undefined) ? b : a; }
+
+function occurrencesOf(dl) {
+  return Array.isArray(dl && dl.occurrences) ? dl.occurrences : [];
+}
+function datedOccurrencesOf(dl) {
+  return occurrencesOf(dl).filter(o => o && typeof o.date === 'string' && parseISO(o.date));
+}
+
+// What the workload chart counts for one item. The displayed weight of an
+// occurrence stays null when the outline gives no per-instance split, but the
+// chart still needs to know work lands that week, so the parent's weight is
+// divided across its dated instances rather than repeated on each one.
+function loadWeightFor(ownWeight, parentWeight, siblingCount) {
+  if (typeof ownWeight === 'number' && ownWeight > 0) return ownWeight;
+  if (typeof parentWeight === 'number' && parentWeight > 0 && siblingCount > 0) {
+    return Math.max(1, Math.round(parentWeight / siblingCount));
+  }
+  return 3;
+}
+
+function normalizeDeadlines(extraction) {
+  const raw = (extraction && Array.isArray(extraction.deadlines)) ? extraction.deadlines : [];
+  const items = [];
+  const usedIds = new Set();
+  function claimId(preferred, fallback) {
+    let id = String(preferred === null || preferred === undefined || preferred === '' ? fallback : preferred);
+    while (usedIds.has(id)) id = id + '-dup';
+    usedIds.add(id);
+    return id;
+  }
+
+  raw.forEach((dl, di) => {
+    if (!dl || typeof dl !== 'object') return;
+    const fallbackId = 'd' + (di + 1);
+    const dated = datedOccurrencesOf(dl);
+    const parentHasOwnDate = !!(dl.date && dl.date_status === 'confirmed');
+
+    // Keep the parent as its own item when it carries a real date, or when it
+    // has no dated occurrences standing in for it. That covers every schema
+    // 1.0 deadline, so confirmed, tbd_window and tbd_unknown items are
+    // untouched, and a recurring parent with an empty array stays ongoing.
+    if (parentHasOwnDate || !dated.length) {
+      items.push(Object.assign({}, dl, {
+        id: claimId(dl.id, fallbackId),
+        occurrences: occurrencesOf(dl),
+        is_occurrence: false,
+        parent_id: null,
+        occurrence_count: dated.length,
+        load_weight: loadWeightFor(dl.weight_percent, null, 0)
+      }));
+    }
+
+    dated.forEach((occ, oi) => {
+      if (parentHasOwnDate && occ.date === dl.date) return; // already on the board
+      const name = (occ.name && String(occ.name).trim())
+        ? occ.name
+        : dl.name + ' (' + (oi + 1) + ' of ' + dated.length + ')';
+      items.push({
+        id: claimId(occ.id, String(pick(dl.id, fallbackId)) + '_o' + (oi + 1)),
+        course_code: dl.course_code,
+        name: name,
+        weight_percent: pick(occ.weight_percent, null),
+        date: occ.date,
+        date_status: 'confirmed',
+        date_window: null,
+        recurrence: null,
+        time: pick(occ.time, pick(dl.time, null)),
+        group_work: !!pick(occ.group_work, dl.group_work),
+        notes: pick(occ.notes, pick(dl.notes, null)),
+        is_occurrence: true,
+        parent_id: pick(dl.id, null),
+        parent_name: dl.name,
+        parent_weight_percent: pick(dl.weight_percent, null),
+        parent_recurrence: pick(dl.recurrence, null),
+        occurrence_index: oi + 1,
+        occurrence_count: dated.length,
+        load_weight: loadWeightFor(pick(occ.weight_percent, null), dl.weight_percent, dated.length)
+      });
+    });
+  });
+
+  return items;
+}
+
+function getRuntimeDeadlines() {
+  if (!EXTRACTION) return [];
+  if (!RUNTIME_DEADLINES) RUNTIME_DEADLINES = normalizeDeadlines(EXTRACTION);
+  return RUNTIME_DEADLINES;
+}
+function invalidateRuntimeDeadlines() { RUNTIME_DEADLINES = null; }
+
+// The parent an occurrence came from, shown as context so a single quiz never
+// reads as if it were the whole 35% assessment.
+function parentContextFor(item) {
+  if (!item || !item.is_occurrence) return '';
+  let line = 'Part of ' + item.parent_name;
+  if (typeof item.parent_weight_percent === 'number' && item.parent_weight_percent > 0) {
+    line += ' (' + item.parent_weight_percent + '% total)';
+  }
+  if (item.occurrence_count > 1) {
+    line += ', ' + item.occurrence_index + ' of ' + item.occurrence_count;
+  }
+  return line;
+}
+function itemMetaLine(item) {
+  const parts = [];
+  if (item.notes) parts.push(item.notes);
+  const ctx = parentContextFor(item);
+  if (ctx) parts.push(ctx);
+  return parts.join(' \u00b7 ');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -640,7 +789,7 @@ function getEffective(dl) {
   return { date: null, resolved: false, acknowledged: !!(res && res.acknowledged) };
 }
 function getResolvedList() {
-  return (EXTRACTION.deadlines || []).map(dl => ({ dl, eff: getEffective(dl) }));
+  return getRuntimeDeadlines().map(dl => ({ dl, eff: getEffective(dl) }));
 }
 function getAllFlaggable() {
   return getResolvedList().filter(({ dl }) => dl.date_status !== 'confirmed');
@@ -682,6 +831,7 @@ function startOver() {
   localStorage.removeItem('semester_resolutions');
   EXTRACTION = null;
   RESOLUTIONS = {};
+  invalidateRuntimeDeadlines();
   document.getElementById('paste-input').value = '';
   hideScreen('screen-dashboard');
   hideScreen('screen-review');
@@ -761,7 +911,7 @@ function renderReview() {
 function buildCourseMeta() {
   let courses = EXTRACTION.courses && EXTRACTION.courses.length ? EXTRACTION.courses : null;
   if (!courses) {
-    const codes = [...new Set((EXTRACTION.deadlines || []).map(d => d.course_code))];
+    const codes = [...new Set(getRuntimeDeadlines().map(d => d.course_code))];
     courses = codes.map(code => ({ code, name: code }));
   }
   const meta = {};
@@ -781,7 +931,7 @@ function getSemesterRange() {
     if (s && e && e > s) return { start: s, end: e };
   }
   const dates = [];
-  (EXTRACTION.deadlines || []).forEach(dl => {
+  getRuntimeDeadlines().forEach(dl => {
     if (dl.date) { const d = parseISO(dl.date); if (d) dates.push(d); }
     if (dl.date_window) {
       if (dl.date_window.start) { const d = parseISO(dl.date_window.start); if (d) dates.push(d); }
@@ -828,8 +978,7 @@ function scoreWeeks(weeks, resolvedList) {
     if (!eff.resolved) return;
     const idx = weeks.findIndex(w => eff.date >= w.start && eff.date <= w.end);
     if (idx === -1) return;
-    const w = (dl.weight_percent === null || dl.weight_percent === undefined || dl.weight_percent === 0) ? 3 : dl.weight_percent;
-    scores[idx] += w;
+    scores[idx] += dl.load_weight || 3;
     byDate[eff.date] = (byDate[eff.date] || 0) + 1;
   });
   Object.entries(byDate).forEach(([date, count]) => {
@@ -876,8 +1025,13 @@ function generateWarnings(resolvedList) {
     let title, detail;
     if (isCollision) {
       const names = items.map(i => `${i.dl.name} (${weightLabel(i.dl.weight_percent)})`).join(' + ');
+      // Only claim a combined percentage when every item on the day states one.
+      // An occurrence with no stated split would otherwise make the day look
+      // lighter than it is.
+      const allWeighted = items.every(i => typeof i.dl.weight_percent === 'number');
+      const combined = (allWeighted && totalWeight > 0) ? ` That's ${totalWeight}% combined in one day.` : '';
       title = `${items.length} things land on ${fmtLong(date)}`;
-      detail = `${names}. That's ${totalWeight}% combined in one day. Based on your ${warnDays}-day warning window, plan to start by ${prepStr}.`;
+      detail = `${names}.${combined} Based on your ${warnDays}-day warning window, plan to start by ${prepStr}.`;
     } else {
       title = `${items[0].dl.name} is worth ${items[0].dl.weight_percent}%`;
       detail = `Due ${fmtLong(date)}. Based on your ${warnDays}-day warning window, start by ${prepStr}.`;
@@ -914,7 +1068,7 @@ function renderWarnings(resolvedList) {
 function renderContextBanner() {
   const el = document.getElementById('context-text-inner');
   const courses = EXTRACTION.courses || [];
-  const n = courses.length || new Set((EXTRACTION.deadlines || []).map(d => d.course_code)).size;
+  const n = courses.length || new Set(getRuntimeDeadlines().map(d => d.course_code)).size;
   const codes = courses.map(c => c.code).join(', ') || 'your courses';
   let bits = [];
   if (PREFS) {
@@ -929,12 +1083,12 @@ function renderContextBanner() {
   el.innerHTML = `<strong>${n} outline${n === 1 ? '' : 's'} parsed.</strong> ${escapeHtml(codes)} &nbsp;\u00b7&nbsp; ${bits.map(escapeHtml).join(' &nbsp;\u00b7&nbsp; ')}`;
 
   const subEl = document.getElementById('dash-sub');
-  const total = (EXTRACTION.deadlines || []).length;
+  const total = getRuntimeDeadlines().length;
   subEl.textContent = `${total} deadline${total === 1 ? '' : 's'} across ${n} course${n === 1 ? '' : 's'}.`;
 }
 
 function renderStats(weeks, scores) {
-  const total = (EXTRACTION.deadlines || []).length;
+  const total = getRuntimeDeadlines().length;
   const maxScore = Math.max(...scores, 1);
   const killerWeeks = scores.filter(s => s >= maxScore * 0.7 && s > 0).length;
   const spanDays = weeks.length ? daysBetween(parseISO(weeks[0].start), parseISO(weeks[weeks.length - 1].end)) : 0;
@@ -963,7 +1117,7 @@ function buildChart(weeks, scores) {
     const wrap = document.createElement('div');
     wrap.className = 'workload-bar-wrap';
     wrap.innerHTML = `
-      <div class="workload-bar ${cls}" style="height:${heightPct}%" title="${week.dates}: ${score === 0 ? 'No deadlines' : score + ' load score'}"></div>
+      <div class="workload-bar ${cls}" style="height:${heightPct}%" title="${week.dates}: ${score === 0 ? 'No deadlines' : Math.round(score) + ' load score'}"></div>
       <div class="workload-week-label ${isCurrentWeek ? 'active' : ''}">${week.label.replace(' ', '\n')}</div>
     `;
     chart.appendChild(wrap);
@@ -1002,7 +1156,7 @@ function buildTimeline(resolvedList, filter) {
             ${dl.group_work ? '<span class="group-tag">group</span>' : ''}
             ${dl.weight_percent === 0 ? '<span class="req-tag">required</span>' : ''}
           </div>
-          <div class="dl-meta">${escapeHtml(dl.notes || '')}</div>
+          <div class="dl-meta">${escapeHtml(itemMetaLine(dl))}</div>
         </div>
         <div class="dl-right">
           <span class="dl-weight">${weightLabel(dl.weight_percent)}<span class="dl-urgency-dot"></span></span>
@@ -1077,7 +1231,7 @@ function buildWeekView(weeks, scores, resolvedList, filter) {
             <div class="dl-body">
               <div class="dl-course-tag"><span class="pip" style="background:${meta.color}"></span>${escapeHtml(meta.label)}</div>
               <div class="dl-name">${escapeHtml(dl.name)}${dl.group_work ? '<span class="group-tag">group</span>' : ''}</div>
-              <div class="dl-meta">${escapeHtml(dl.notes || '')}</div>
+              <div class="dl-meta">${escapeHtml(itemMetaLine(dl))}</div>
             </div>
             <div class="dl-right">
               <span class="dl-weight">${weightLabel(dl.weight_percent)}<span class="dl-urgency-dot"></span></span>
@@ -1187,6 +1341,7 @@ function generateICS(resolvedList) {
 
     const summary = `${dl.course_code}: ${dl.name}${dl.weight_percent ? ' (' + dl.weight_percent + '%)' : ''}`;
     const descParts = [dl.weight_percent === 0 ? 'Required, no grade weight' : weightLabel(dl.weight_percent) + ' of final grade', dl.group_work ? 'Group work' : 'Individual'];
+    if (parentContextFor(dl)) descParts.push(parentContextFor(dl));
     if (dl.notes) descParts.push(dl.notes);
     if (dl.time) descParts.push('Time noted in outline: ' + dl.time);
 
@@ -1270,6 +1425,7 @@ function renderDashboard() {
   if (saved) {
     EXTRACTION = saved;
     RESOLUTIONS = loadSavedResolutions();
+    invalidateRuntimeDeadlines();
     routeAfterLoad();
   } else {
     showScreen('screen-paste');
