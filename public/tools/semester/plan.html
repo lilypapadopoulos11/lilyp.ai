@@ -638,9 +638,9 @@ function submitPaste() {
 // NORMALIZATION  (schema 1.0 and 1.1)
 // ═══════════════════════════════════════════════════════════
 // Schema 1.1 lets a recurring deadline carry an "occurrences" array: the
-// real, dated instances of a repeating assessment (weekly quizzes, seminar
-// submissions, discussion posts). Those dates used to live only as prose in
-// "recurrence", so every dated instance was invisible to the timeline.
+// individual instances of a repeating assessment. Their dates used to live
+// only as prose in "recurrence", so every dated instance was invisible to the
+// timeline.
 //
 // Everything in this file reads getResolvedList(), which is built from the
 // one normalized list below, so a dated occurrence is a first-class deadline
@@ -655,30 +655,87 @@ function submitPaste() {
 //     copied onto each instance, which would multiply the assessment. It is
 //     kept as category metadata, and shared across the dated instances only
 //     for the workload score.
-//   - A parent that is represented by its occurrences is not itself a dated
-//     item, so one assessment is never counted twice.
-//   - A recurring parent with no dated occurrences is left alone: it stays
+//   - A parent that has usable occurrences is represented by them and is not
+//     itself an item, so one assessment is never counted twice.
+//   - A recurring parent with no usable occurrences is left alone: it stays
 //     visible as ongoing work and gets no invented date.
 //   - Schema 1.0 has no "occurrences" property at all. Missing reads as
 //     empty, so those files behave exactly as they did before.
+//
+// Every item carries a resolution_kind, derived from the structure of the
+// import alone:
+//
+//   'dated'      a real, parseable date. Appears in the timeline, the weekly
+//                view, the workload chart and the export.
+//   'needs_date' no date, and the import says one exists or is expected
+//                (tbd_window, tbd_unknown). The student is asked for it.
+//   'ongoing'    a repeating requirement with no single due date of its own.
+//                Shown as ongoing work. Never asked for one exact date.
+//
+// That field is the only thing the unresolved sections branch on. Nothing in
+// the UI reads date_status, course codes, names or wording to decide whether
+// something is unresolved, so any outline from any school behaves the same
+// way as long as its JSON is well formed.
 
 function pick(a, b) { return (a === null || a === undefined) ? b : a; }
 
 function occurrencesOf(dl) {
   return Array.isArray(dl && dl.occurrences) ? dl.occurrences : [];
 }
-function datedOccurrencesOf(dl) {
-  return occurrencesOf(dl).filter(o => o && typeof o.date === 'string' && parseISO(o.date));
+function validWindow(w) {
+  return (w && typeof w === 'object' && w.start && w.end && parseISO(w.start) && parseISO(w.end))
+    ? { start: w.start, end: w.end }
+    : null;
+}
+
+// Reads one occurrence's date state without inventing anything. Returns null
+// when the entry carries no date and makes no claim about one, which is the
+// schema 1.0 shape and stays ignored exactly as before.
+function occurrenceDateState(occ) {
+  if (!occ || typeof occ !== 'object') return null;
+  const hasDate = typeof occ.date === 'string' && parseISO(occ.date);
+  const declared = (typeof occ.date_status === 'string' && occ.date_status) ? occ.date_status : null;
+
+  // A real date wins. An occurrence with a date and no status is confirmed,
+  // which is the 1.1 backward-compatibility rule.
+  if (hasDate) return { date_status: 'confirmed', date: occ.date, date_window: null };
+
+  if (!declared) return null;            // no date, no claim: not an item
+  if (declared === 'tbd_window') {
+    const win = validWindow(occ.date_window);
+    return win
+      ? { date_status: 'tbd_window', date: null, date_window: win }
+      : { date_status: 'tbd_unknown', date: null, date_window: null };
+  }
+  // Anything else that states a status but carries no usable date is simply
+  // an unknown date, including a "confirmed" that never supplied one. Surface
+  // it so the student can chase it, rather than dropping it or guessing.
+  return { date_status: 'tbd_unknown', date: null, date_window: null };
+}
+
+function usableOccurrencesOf(dl) {
+  return occurrencesOf(dl)
+    .map(occ => ({ occ, state: occurrenceDateState(occ) }))
+    .filter(entry => entry.state !== null);
+}
+
+// The one place unresolved-ness is decided, for parents and occurrences alike.
+function resolutionKindFor(dateStatus, date) {
+  if (date && parseISO(date)) return 'dated';
+  if (dateStatus === 'recurring') return 'ongoing';
+  return 'needs_date';
 }
 
 // What the workload chart counts for one item. The displayed weight of an
 // occurrence stays null when the outline gives no per-instance split, but the
 // chart still needs to know work lands that week, so the parent's weight is
-// divided across its dated instances rather than repeated on each one.
+// divided across its dated instances rather than repeated on each one. The
+// share is left unrounded so the instances still add up to the parent's
+// weight exactly. Scores are only ever compared or shown rounded.
 function loadWeightFor(ownWeight, parentWeight, siblingCount) {
   if (typeof ownWeight === 'number' && ownWeight > 0) return ownWeight;
   if (typeof parentWeight === 'number' && parentWeight > 0 && siblingCount > 0) {
-    return Math.max(1, Math.round(parentWeight / siblingCount));
+    return parentWeight / siblingCount;
   }
   return 3;
 }
@@ -697,37 +754,43 @@ function normalizeDeadlines(extraction) {
   raw.forEach((dl, di) => {
     if (!dl || typeof dl !== 'object') return;
     const fallbackId = 'd' + (di + 1);
-    const dated = datedOccurrencesOf(dl);
-    const parentHasOwnDate = !!(dl.date && dl.date_status === 'confirmed');
+    const usable = usableOccurrencesOf(dl);
+    const datedCount = usable.filter(u => u.state.date_status === 'confirmed').length;
+    const parentHasOwnDate = !!(dl.date && parseISO(dl.date) && dl.date_status === 'confirmed');
 
     // Keep the parent as its own item when it carries a real date, or when it
-    // has no dated occurrences standing in for it. That covers every schema
+    // has no usable occurrences standing in for it. That covers every schema
     // 1.0 deadline, so confirmed, tbd_window and tbd_unknown items are
-    // untouched, and a recurring parent with an empty array stays ongoing.
-    if (parentHasOwnDate || !dated.length) {
+    // untouched, and a recurring parent with nothing under it stays ongoing
+    // instead of being asked for one exact date it cannot have.
+    if (parentHasOwnDate || !usable.length) {
       items.push(Object.assign({}, dl, {
         id: claimId(dl.id, fallbackId),
         occurrences: occurrencesOf(dl),
+        date_window: validWindow(dl.date_window),
         is_occurrence: false,
         parent_id: null,
-        occurrence_count: dated.length,
+        occurrence_count: datedCount,
+        resolution_kind: resolutionKindFor(dl.date_status, dl.date),
         load_weight: loadWeightFor(dl.weight_percent, null, 0)
       }));
     }
 
-    dated.forEach((occ, oi) => {
-      if (parentHasOwnDate && occ.date === dl.date) return; // already on the board
+    usable.forEach(({ occ, state }, oi) => {
+      // A dated occurrence that repeats the parent's own date is already on
+      // the board, so it is not added twice.
+      if (parentHasOwnDate && state.date === dl.date) return;
       const name = (occ.name && String(occ.name).trim())
         ? occ.name
-        : dl.name + ' (' + (oi + 1) + ' of ' + dated.length + ')';
+        : dl.name + ' (' + (oi + 1) + ' of ' + usable.length + ')';
       items.push({
         id: claimId(occ.id, String(pick(dl.id, fallbackId)) + '_o' + (oi + 1)),
         course_code: dl.course_code,
         name: name,
         weight_percent: pick(occ.weight_percent, null),
-        date: occ.date,
-        date_status: 'confirmed',
-        date_window: null,
+        date: state.date,
+        date_status: state.date_status,
+        date_window: state.date_window,
         recurrence: null,
         time: pick(occ.time, pick(dl.time, null)),
         group_work: !!pick(occ.group_work, dl.group_work),
@@ -738,8 +801,11 @@ function normalizeDeadlines(extraction) {
         parent_weight_percent: pick(dl.weight_percent, null),
         parent_recurrence: pick(dl.recurrence, null),
         occurrence_index: oi + 1,
-        occurrence_count: dated.length,
-        load_weight: loadWeightFor(pick(occ.weight_percent, null), dl.weight_percent, dated.length)
+        occurrence_count: usable.length,
+        resolution_kind: resolutionKindFor(state.date_status, state.date),
+        // Load is shared only across the occurrences that actually landed on
+        // a date, so an undated sibling never inflates or deflates the chart.
+        load_weight: loadWeightFor(pick(occ.weight_percent, null), dl.weight_percent, datedCount)
       });
     });
   });
@@ -754,8 +820,8 @@ function getRuntimeDeadlines() {
 }
 function invalidateRuntimeDeadlines() { RUNTIME_DEADLINES = null; }
 
-// The parent an occurrence came from, shown as context so a single quiz never
-// reads as if it were the whole 35% assessment.
+// The parent an occurrence came from, shown as context so one instance never
+// reads as if it carried the whole assessment's weight.
 function parentContextFor(item) {
   if (!item || !item.is_occurrence) return '';
   let line = 'Part of ' + item.parent_name;
@@ -779,7 +845,10 @@ function itemMetaLine(item) {
 // RESOLUTION LOGIC
 // ═══════════════════════════════════════════════════════════
 function getEffective(dl) {
-  if (dl.date_status === 'confirmed') {
+  // 'dated' already guarantees a parseable date, so a malformed entry that
+  // claims to be confirmed without one falls through to the pending path
+  // instead of resolving to null.
+  if (dl.resolution_kind === 'dated') {
     return { date: dl.date, resolved: true, acknowledged: true };
   }
   const res = RESOLUTIONS[dl.id];
@@ -791,11 +860,13 @@ function getEffective(dl) {
 function getResolvedList() {
   return getRuntimeDeadlines().map(dl => ({ dl, eff: getEffective(dl) }));
 }
+// Only items that are actually missing a date the student could supply. An
+// ongoing requirement is deliberately not in here.
 function getAllFlaggable() {
-  return getResolvedList().filter(({ dl }) => dl.date_status !== 'confirmed');
+  return getResolvedList().filter(({ dl }) => dl.resolution_kind === 'needs_date');
 }
 function getStillPending() {
-  return getResolvedList().filter(({ eff }) => !eff.resolved && !eff.acknowledged);
+  return getAllFlaggable().filter(({ eff }) => !eff.resolved && !eff.acknowledged);
 }
 function confirmFlagItem(id) {
   const input = document.getElementById('date-' + id);
@@ -842,24 +913,30 @@ function startOver() {
 // FLAG CARD (shared by review screen and dashboard pending section)
 // ═══════════════════════════════════════════════════════════
 function statusLineFor(dl) {
-  if (dl.date_status === 'tbd_window' && dl.date_window && dl.date_window.start && dl.date_window.end) {
+  // normalizeDeadlines() only keeps a window that is complete and parseable,
+  // so its presence is the whole test.
+  if (dl.date_window && dl.date_window.start && dl.date_window.end) {
     return `Somewhere between ${fmtLong(dl.date_window.start)} and ${fmtLong(dl.date_window.end)}`;
   }
-  if (dl.date_status === 'recurring') {
-    return dl.recurrence || 'Recurring, no single date';
+  if (dl.resolution_kind === 'ongoing') {
+    return dl.recurrence || 'Ongoing, no single due date';
   }
   return 'No date given in the outline';
 }
 
 function flagCardHtml(dl, eff) {
   const resolvedCls = eff.acknowledged ? 'resolved' : '';
-  const actionsHtml = eff.acknowledged
-    ? `<span class="review-saved">${eff.date ? 'Saved for ' + fmtLong(eff.date) : 'Got it, still pending'}</span>`
-    : `
+  // Ongoing work has no single date to ask for, so it gets no date prompt.
+  const actionsHtml = dl.resolution_kind === 'ongoing'
+    ? ''
+    : (eff.acknowledged
+      ? `<span class="review-saved">${eff.date ? 'Saved for ' + fmtLong(eff.date) : 'Got it, still pending'}</span>`
+      : `
       <label class="review-date-label">If you know the exact date:</label>
       <input type="date" class="review-date-input" id="date-${dl.id}">
       <button class="review-confirm-btn" onclick="handleFlagConfirm('${dl.id}')">Save</button>
-    `;
+    `);
+  const meta = itemMetaLine(dl);
   return `
     <div class="review-card ${resolvedCls}" data-id="${dl.id}">
       <div class="review-card-head">
@@ -868,8 +945,8 @@ function flagCardHtml(dl, eff) {
       </div>
       <div class="review-name">${escapeHtml(dl.name)}</div>
       <div class="review-status">${escapeHtml(statusLineFor(dl))}</div>
-      ${dl.notes ? `<div class="review-notes">${escapeHtml(dl.notes)}</div>` : ''}
-      <div class="review-actions" id="actions-${dl.id}">${actionsHtml}</div>
+      ${meta ? `<div class="review-notes">${escapeHtml(meta)}</div>` : ''}
+      ${actionsHtml ? `<div class="review-actions" id="actions-${dl.id}">${actionsHtml}</div>` : ''}
     </div>
   `;
 }
@@ -1173,11 +1250,11 @@ function buildPendingAndOngoing(resolvedList) {
   const pendingList = document.getElementById('pending-list');
   const ongoingList = document.getElementById('ongoing-list');
 
-  const pendingWindowItems = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.date_status === 'tbd_window');
-  const pendingUnknownItems = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.date_status === 'tbd_unknown');
-  const recurringItems = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.date_status === 'recurring');
+  // Both sections read resolution_kind only. A dated occurrence is never in
+  // either one, and an ongoing parent is never in the pending one.
+  const pendingAll = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.resolution_kind === 'needs_date');
+  const recurringItems = resolvedList.filter(({ dl, eff }) => !eff.resolved && dl.resolution_kind === 'ongoing');
 
-  const pendingAll = [...pendingWindowItems, ...pendingUnknownItems];
   if (pendingAll.length) {
     pendingSection.style.display = 'block';
     pendingList.innerHTML = pendingAll.map(({ dl }) => flagCardHtml(dl, getEffective(dl))).join('');
