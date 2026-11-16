@@ -4,5 +4,6 @@ Allow: /
 Disallow: /course/login
 Disallow: /course/dashboard
 Disallow: /thanks
+Disallow: /award/coop-2026/
 
 Sitemap: https://lilyp.ai/sitemap.xml
