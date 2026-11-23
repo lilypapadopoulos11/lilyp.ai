@@ -5,6 +5,11 @@
 [build.environment]
   NODE_VERSION = "18"
 
+[[redirects]]
+  from = "/study/real4870-the-last-look"
+  to = "/study/real4870-the-last-look/index.html"
+  status = 200
+
 # ── API: builds list ──
 [[redirects]]
   from   = "/api/builds"

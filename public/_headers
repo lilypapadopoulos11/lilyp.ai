@@ -4,3 +4,9 @@
 
 /award/coop-2026/*
   X-Robots-Tag: noindex, nofollow, noarchive
+
+/study/real4870-the-last-look
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/study/real4870-the-last-look/*
+  X-Robots-Tag: noindex, nofollow, noarchive
